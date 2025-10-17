@@ -1,0 +1,168 @@
+/* ==========================================================================
+   PANEL VIEW
+   Estilos para el Panel de Control, incluyendo las tarjetas de estadísticas
+   y los placeholders para gráficos.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. GRID PRINCIPAL DEL PANEL
+-------------------------------------------------------------------------- */
+.panel-grid {
+    display: grid;
+    /* ANÁLISIS: auto-fit es excelente para la responsividad. Llena el espacio
+       con tantas columnas como quepan, con un mínimo de 280px. */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   2. TARJETAS DE ESTADÍSTICAS (.stat-card)
+-------------------------------------------------------------------------- */
+.stat-card {
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+.stat-card-icon {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--bs-border-radius); /* Coherencia con otros radios */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-white);
+}
+.stat-card-icon i {
+    font-size: 1.75rem;
+}
+
+/* Colores específicos para cada tarjeta */
+.stat-card.productos .stat-card-icon { background-color: #0ea5e9; } /* Azul cielo */
+.stat-card.inversion .stat-card-icon { background-color: #eab308; } /* Amarillo/Oro */
+.stat-card.stock .stat-card-icon    { background-color: #22c55e; } /* Verde */
+.stat-card.ganancia .stat-card-icon { background-color: #db2777; } /* Fucsia */
+
+.stat-card-info {
+    display: flex;
+    flex-direction: column;
+}
+.stat-card-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--bs-gray-600);
+    margin-bottom: 0.25rem;
+}
+.stat-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    line-height: 1.2;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. PLACEHOLDERS PARA GRÁFICOS
+-------------------------------------------------------------------------- */
+.chart-placeholder {
+    background-color: var(--bs-card-bg);
+    border: 2px dashed var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 2rem;
+    text-align: center;
+    color: var(--bs-gray-600);
+    grid-column: span 1;
+    transition: all var(--transition-normal);
+}
+.chart-placeholder:hover {
+    border-color: var(--primary-light);
+    background-color: var(--bs-gray-50);
+}
+
+/* En pantallas más grandes, los placeholders ocupan dos columnas */
+@media (min-width: 992px) {
+    .chart-placeholder {
+        grid-column: span 2;
+    }
+}
+
+.chart-placeholder h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--bs-heading-color);
+    margin-bottom: 1rem;
+}
+.chart-placeholder small {
+    display: block;
+    margin-top: 1.5rem;
+    font-style: italic;
+    color: var(--bs-gray-500);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    color: var(--bs-gray-500);
+    border: 2px dashed var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    height: 100%;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state-message {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+/* Estilos para el Panel de Resultados de la Calculadora */
+.results-panel {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--bs-gray-100);
+    border-radius: var(--bs-border-radius);
+    border: 1px solid var(--bs-border-color);
+}
+
+.results-panel h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+}
+
+.result-item + .result-item {
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.result-item strong {
+    font-weight: 600;
+}

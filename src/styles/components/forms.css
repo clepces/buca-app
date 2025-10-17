@@ -1,0 +1,45 @@
+/* ==========================================================================
+   FORM STYLES
+   Contiene estilos de ayuda para la estructura de formularios y la
+   retroalimentación de validación visual.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. LAYOUT HELPERS
+-------------------------------------------------------------------------- */
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   2. VALIDATION FEEDBACK
+   Estas clases son añadidas por JavaScript (ValidationModule) para dar
+   retroalimentación visual instantánea en los campos de entrada.
+-------------------------------------------------------------------------- */
+
+/* Estilo para un campo de entrada que ha sido validado como correcto */
+input.valid,
+select.valid,
+textarea.valid {
+    border-color: var(--bs-success) !important;
+    background-color: rgba(23, 198, 83, 0.05) !important;
+}
+
+/* Estilo para un campo de entrada que tiene un error de validación */
+input.invalid,
+select.invalid,
+textarea.invalid {
+    border-color: var(--error-color) !important;
+    background-color: rgba(220, 38, 38, 0.05) !important;
+}
+
+/* ANÁLISIS: Se han eliminado las clases obsoletas .form-label, .form-hint,
+   .form-progress y .progress-step ya que no se utilizan en el HTML actual. */

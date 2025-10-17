@@ -1,0 +1,242 @@
+/* ==========================================================================
+   CALCULATOR COMPONENT
+   Estilos para los paneles de la calculadora en la vista principal.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CONTENEDOR PRINCIPAL DEL PANEL (.calculator)
+-------------------------------------------------------------------------- */
+
+.calculator {
+    flex: 1; /* Permite que los paneles crezcan y ocupen el espacio disponible */
+    min-width: 300px; /* Ancho mínimo antes de que se apilen */
+    background: var(--bs-card-bg); /* Usamos la variable de fondo de tarjeta */
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--bs-border-color);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+.calculator-title i {
+    font-size: 1.2em; /* Hacemos el icono proporcional al texto */
+}
+
+.calculator:hover {
+    transform: translateY(-3px); /* Un efecto hover ligeramente más pronunciado */
+    box-shadow: var(--shadow-lg);
+}
+
+.calculator-title {
+    text-align: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-size: 1.25rem; /* Ajustamos el tamaño para consistencia */
+    margin-bottom: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   2. SECCIONES INTERNAS
+-------------------------------------------------------------------------- */
+
+.calculator section {
+    background-color: var(--bs-gray-50);
+    border-radius: var(--bs-border-radius); /* Radio de borde más estándar */
+    padding: 1.25rem;
+    border: 1px solid var(--bs-border-color);
+    transition: border-color var(--transition-normal);
+}
+
+.calculator section:not(:last-child) {
+    margin-bottom: 1.5rem;
+}
+
+.calculator section:hover {
+    border-color: var(--primary-light);
+}
+
+.calculator section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem; /* Más espacio debajo del título de sección */
+    color: var(--bs-gray-700);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calculator section h3 i {
+    color: var(--primary-color);
+    width: 1.25rem;
+    text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   3. ELEMENTOS DE FORMULARIO ESPECÍFICOS
+-------------------------------------------------------------------------- */
+
+.tasa-input-group {
+    display: flex;
+    align-items: stretch;
+
+}
+
+.tasa-input-group input {
+    flex: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+}
+
+.tasa-input-group button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border: 1px solid var(--primary-color);
+    padding: 0 1rem; /* Usamos padding horizontal en lugar de fijo */
+    flex-shrink: 0;  /* Evita que el botón se encoja */
+}
+
+.tasa-input-group input:focus, 
+.tasa-input-group input:focus + button {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    z-index: 2; /* Asegura que el borde del botón se vea sobre otros elementos */
+}
+
+/* --------------------------------------------------------------------------
+   4. SECCIÓN DE RESULTADOS (.resultados-v2)
+-------------------------------------------------------------------------- */
+
+.resultados-v2 {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.resultado-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--bs-gray-200);
+}
+
+.resultado-item:last-child {
+    border-bottom: none;
+}
+
+.resultado-item .label {
+    font-size: 0.9rem;
+    color: var(--bs-gray-700);
+}
+
+.resultado-item .value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color); /* Usamos el color de encabezado para más contraste */
+}
+
+.resultado-item.total .value {
+    font-size: 1.3rem; /* Hacemos el total más grande */
+    color: var(--primary-color);
+}
+
+.resultado-item.unitario .value {
+    font-size: 1.1rem; /* Hacemos el unitario un poco más pequeño que el total */
+    font-weight: 700;
+    color: var(--secondary-color);
+}
+
+.calcular-y-save {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* Un poco más de espacio */
+    margin-top: 1.5rem;
+}
+
+/* ANÁLISIS: Se han eliminado las reglas para la clase obsoleta ".resultados" */
+/* DENTRO DE: 2.9.4/css/components/calculator.css */
+
+/* ==========================================================================
+   5. DISEÑO RESPONSIVO PARA LA CALCULADORA (NUEVO)
+   ========================================================================== */
+
+@media (max-width: 480px) {
+    .calculator {
+        min-width: 0;
+    }
+}
+
+/* [NUEVO] Estilos mejorados para el Panel de Resultados */
+.results-panel {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--bs-gray-100);
+    border-radius: var(--bs-border-radius-lg);
+    border: 1px solid var(--bs-border-color);
+    display: none; /* Se mantiene oculto hasta el cálculo */
+}
+
+.results-panel h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.results-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
+.results-table tr:last-child td {
+    border-bottom: none;
+}
+
+.results-table .label {
+    color: var(--bs-gray-600);
+}
+
+.results-table .value {
+    font-weight: 600;
+    text-align: right;
+}
+
+.results-table .total-row td {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--bs-heading-color);
+}
+
+/* ARCHIVO: src/styles/components/calculator.css (AÑADIR AL FINAL) */
+
+.form-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.form-column-left, .form-column-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media (max-width: 992px) {
+    .form-grid-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}

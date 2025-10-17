@@ -1,0 +1,129 @@
+/* ARCHIVO FINAL CORREGIDO: src/styles/components/loader.css */
+
+.app-loader {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bs-body-bg);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.loader-icon-wrapper {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    animation: pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.loader-icon-svg { 
+    width: 100%; 
+    height: 100%; 
+}
+
+.loader-icon-wrapper::after {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    z-index: -1; opacity: 0;
+    animation: sonar 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.loader-text {
+    font-size: 1.5rem; font-weight: 600;
+    color: var(--bs-heading-color); letter-spacing: 0.1em;
+    animation: fadeInText 1.5s ease-in-out forwards;
+}
+
+.buca-logo-animation {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    overflow: hidden; 
+}
+
+.buca-logo-animation::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: translateX(-150%) skewX(-30deg);
+    animation: shimmer 2s ease-in-out 3s infinite;
+}
+
+.logo-svg, .logo-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.logo-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    animation: fadeOutText 0.5s ease 2.2s forwards;
+}
+.loader-text {
+    font-size: 1.5rem; font-weight: 600;
+    color: var(--bs-heading-color); letter-spacing: 0.1em;
+    animation: fadeInText 1.5s ease-in-out forwards;
+}
+.logo-text .char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: revealChar 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation-delay: calc(0.1s * var(--i));
+}
+
+.logo-svg {
+    opacity: 0;
+    animation: scaleInUp 0.6s ease-out 2.5s forwards;
+
+    /* --- ¡CAMBIO CLAVE! --- */
+    /* Aplicamos el color de relleno directamente al contenedor del SVG. */
+    fill: var(--bs-black);
+}
+
+.loader-message-text {
+    font-size: 1.1rem;
+    color: var(--bs-gray-600);
+    opacity: 0;
+    animation: fadeIn 0.5s ease 1.5s forwards;
+}
+
+@keyframes shimmer { 100% { transform: translateX(250%) skewX(-30deg); } }
+
+@keyframes revealChar { to {opacity: 1; transform: translateY(0); } }
+
+@keyframes fadeOutText { to { opacity: 0; transform: scale(0.8); } }
+
+@keyframes scaleInUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+@keyframes pulse { 50% { transform: scale(0.95); } }
+
+@keyframes sonar { 0% { transform: scale(0.8); opacity: 0.4; } 100% { transform: scale(1.6); opacity: 0; } }
+
+@keyframes fadeInText { from { opacity: 0; } to { opacity: 1; } }

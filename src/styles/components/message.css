@@ -1,0 +1,119 @@
+/* ==========================================================================
+   MESSAGE COMPONENTS
+   Estilos para varios tipos de mensajes y notificaciones en la UI.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. BARRA DE VISTA TEMPORAL (.temporal-message)
+-------------------------------------------------------------------------- */
+
+.temporal-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--warning-color);
+    color: var(--bs-white);
+    font-size: 0.9rem;
+    font-weight: 500;
+    width: 100%;
+    position: sticky; /* Se pega en la parte superior al hacer scroll */
+    top: 0;
+    z-index: 1001; /* Se muestra por encima del contenido pero debajo del header */
+    border-bottom: 2px solid #b45309; /* Borde inferior más oscuro */
+}
+
+.temporal-message i {
+    font-size: 1.2rem;
+}
+
+.temporal-message button {
+    /* Los estilos base de 'button' son suficientes, pero ajustamos el tamaño */
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. MENSAJE DE "NO HAY PRODUCTOS"
+-------------------------------------------------------------------------- */
+
+.no-products-message {
+    text-align: center;
+    padding: 3rem; /* Más padding para más impacto visual */
+    color: var(--bs-gray-500);
+    font-size: 1.1rem; /* Ligeramente más pequeño para ser menos abrumador */
+    font-weight: 500;
+    background-color: transparent; /* Fondo transparente */
+    border-radius: var(--bs-border-radius);
+    border: 2px dashed var(--bs-border-color);
+    transition: all var(--transition-normal);
+}
+
+.no-products-message:hover {
+    background-color: var(--bs-gray-50);
+    border-color: var(--primary-light);
+    transform: scale(1.02); /* Efecto de zoom sutil */
+}
+
+.no-products-message i {
+    font-size: 2.5rem;
+    color: var(--bs-gray-400); /* Un color más suave */
+    margin-bottom: 1rem;
+    transition: all var(--transition-fast);
+}
+
+.no-products-message:hover i {
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+/* ANÁLISIS: Se han eliminado las reglas para la clase obsoleta ".conversion-text" */
+
+/* --- ESTILOS PARA LA PANTALLA DE ERROR CRÍTICO --- */
+.critical-error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    z-index: 10000;
+    text-align: center;
+}
+
+.critical-error-icon {
+    font-size: 4rem;
+    color: var(--error-color);
+    margin-bottom: 1.5rem;
+}
+
+.critical-error-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 0.5rem;
+}
+
+.critical-error-message {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+}
+
+.critical-error-details {
+    font-family: monospace;
+    font-size: 0.8rem;
+    padding: 1rem;
+    background-color: rgba(128, 128, 128, 0.1);
+    border-radius: var(--bs-border-radius);
+    max-width: 80%;
+    overflow-wrap: break-word;
+}

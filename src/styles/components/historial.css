@@ -1,0 +1,97 @@
+/* ==========================================================================
+   WIDGET DE HISTORIAL DE TASAS
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CONTENEDOR PRINCIPAL
+-------------------------------------------------------------------------- */
+.historial-tasas {
+    margin-top: 1.5rem; /* Aumentamos el margen superior para más aire */
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+    background-color: var(--bs-card-bg); /* Usamos el color de fondo de tarjeta */
+}
+
+.historial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.historial-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600; /* Un poco más de peso */
+    color: var(--bs-heading-color);
+}
+
+/* --------------------------------------------------------------------------
+   2. GRID DE TASAS
+-------------------------------------------------------------------------- */
+.tasas-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* Hacemos las tarjetas un poco más pequeñas */
+    gap: 0.75rem;
+}
+
+.tasa-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    background-color: var(--bs-gray-50);
+    border-radius: var(--bs-border-radius-sm);
+    border: 1px solid var(--bs-border-color);
+    transition: all var(--transition-fast);
+    cursor: pointer; /* Hacemos que parezca clickeable */
+}
+
+.tasa-item:hover {
+    background-color: var(--primary-light-hover);
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.tasa-item .fecha {
+    font-size: 0.8rem;
+    color: var(--bs-gray-600);
+}
+
+.tasa-item .valor {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.9rem;
+}
+
+/* ANÁLISIS: Se han eliminado las reglas de scroll. Ahora debes usar
+   la clase global .custom-scrollbar en el HTML:
+   <div class="tasas-container custom-scrollbar">...</div> */
+
+/* --------------------------------------------------------------------------
+   3. ESTADO VACÍO
+-------------------------------------------------------------------------- */
+.tasas-container .estado-vacio {
+    grid-column: 1 / -1; /* Asegura que ocupe todo el ancho del grid */
+    text-align: center;
+    padding: 1rem;
+    color: var(--bs-gray-600);
+    background-color: transparent; /* Fondo transparente para integrarse mejor */
+    border-radius: var(--bs-border-radius);
+    border: 2px dashed var(--bs-border-color);
+    margin: 0.5rem 0;
+}
+
+.tasas-container .estado-vacio::before {
+    content: "\f1da"; /* Icono de Font Awesome para historial */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    display: block;
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-gray-400);
+}

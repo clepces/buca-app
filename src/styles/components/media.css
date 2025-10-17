@@ -1,0 +1,54 @@
+/* ==========================================================================
+   MEDIA QUERIES (Diseño Responsivo)
+   Este archivo contiene los estilos para adaptar el layout general de la
+   aplicación a diferentes tamaños de pantalla.
+
+   NOTA: Los estilos responsivos para componentes específicos (como header,
+   modal, pos) han sido movidos a sus respectivos archivos CSS para una
+   mejor organización y encapsulación.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   TABLET Y ESCRITORIOS PEQUEÑOS (hasta 1024px)
+-------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+    .calculator {
+        /* En lugar de 3 columnas, permite que ocupen más espacio y se ajusten solas */
+        flex-basis: calc(50% - 1rem);
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+   TABLET (hasta 768px)
+-------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .row {
+        /* Apila las columnas principales (calculadora y lista) una sobre otra */
+        flex-direction: column;
+    }
+
+    /* Hace que la tabla de productos sea desplazable horizontalmente en pantallas pequeñas 
+    #listaProductos table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        
+        /* Añade una máscara con un gradiente para indicar que hay más contenido 
+        -webkit-mask-image: linear-gradient(to right, black 95%, transparent 100%);
+        mask-image: linear-gradient(to right, black 95%, transparent 100%);
+    }*/
+}
+
+
+/* --------------------------------------------------------------------------
+   MÓVIL (hasta 480px)
+-------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+    .container {
+        /* padding: 0 0.5rem; */ /* Reduce el padding lateral en pantallas muy pequeñas */
+        /* margin: 0.5rem; */
+    }
+    /* ANÁLISIS: Se han eliminado las reglas para .stats-grid, .modal-footer, 
+       y otras que fueron movidas a sus archivos de componente correspondientes. */
+}

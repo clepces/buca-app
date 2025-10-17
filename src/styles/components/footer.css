@@ -1,0 +1,36 @@
+/* ==========================================================================
+   FOOTER COMPONENT
+   ========================================================================== */
+
+.footer {
+    padding: 1.5rem 1rem;
+    margin-top: auto;
+    background-color: var(--bs-card-bg);
+    border-top: 1px solid var(--bs-border-color);
+    text-align: center;
+    color: var(--bs-gray-600);
+    font-size: 0.9rem;
+    transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+.footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* PERMITE QUE EL TEXTO SE DIVIDA EN VARIAS LÍNEAS */
+}
+
+.footer a {
+    color: var(--primary-color);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.footer a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}

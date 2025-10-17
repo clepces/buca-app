@@ -1,0 +1,228 @@
+/* ==========================================================================
+   HEADER COMPONENT (VERSIÃ“N FINAL CON BREAKPOINTS ESTÃNDAR)
+   ========================================================================== */
+
+/* ... (Las secciones 1, 2 y 3 del header.css se mantienen igual) ... */
+
+/* SECCIONES 1, 2 y 3 (SIN CAMBIOS) */
+/* --------------------------------------
+   1. BARRA DE NAVEGACIÃ“N PRINCIPAL
+-------------------------------------- */
+.top-nav{
+    background-color:var(--primary-color);
+    color:var(--bs-white);
+    padding:.5rem 1rem;
+    position:sticky;
+    top:0;
+    z-index:1000;
+    box-shadow:var(--shadow-md)}
+.nav-container{
+    max-width:1400px;
+    margin:0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:1.5rem;
+    position:relative
+}
+/* --------------------------------------
+   2. BRAND Y TÃTULO
+-------------------------------------- */
+.nav-brand{
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+    color:var(--bs-white);
+    text-decoration:none;
+    flex-shrink:1;
+    min-width:0
+}
+
+.nav-brand i{
+    font-size:2rem
+}
+.nav-title-app{
+    display:flex;
+    flex-direction:column;
+    overflow:hidden
+}
+
+#nav-store-name{
+    font-size:1.1rem;font-weight:600
+}
+#nav-store-description{
+    font-size:.8rem;
+    color:var(--bs-gray-300);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:232px
+}
+
+/* --------------------------------------
+   3. ESTADÃSTICAS SUPERIORES
+-------------------------------------- */
+.nav-stats{
+    flex-grow:1;
+    display:flex;
+    justify-content:flex-end
+}
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(6,auto);
+    gap:1.5rem;
+    align-items:center
+}
+.stat-item{
+    display:flex;
+    flex-direction:column;
+    text-align:right
+}
+.stat-label{
+    font-size:.75rem;
+    opacity:.85;
+    display:flex;
+    align-items:center;
+    white-space:nowrap
+}
+.stat-value{
+    font-size:.95rem;
+    font-weight:600
+}
+.tasa-variacion{
+    font-weight:600;
+    margin-left:.35rem;
+    padding:.1rem .3rem;
+    border-radius:.25rem;
+    font-size:.7rem
+}
+.tasa-variacion::before{
+    font-family:'Font Awesome 5 Free';
+    font-weight:900;
+    margin-right:.25rem
+}
+
+.tasa-subida{background-color:#DFFFEA;color:#17C653}
+.tasa-subida::before{content:'\f062'}
+
+.tasa-bajada{background-color:#FFEEF3;color:#F8285A}
+.tasa-bajada::before{content:'\f063'}
+
+.tasa-neutral{background-color:#E5E7EB;color:#6B7280}
+.tasa-neutral::before{content:'\f061'}
+
+
+/* ==========================================================================
+   4. BARRA DE HERRAMIENTAS SECUNDARIA
+   ========================================================================== */
+
+/*
+    el css se movio a /components/mainnav.css
+*/
+
+
+/* ==========================================================================
+   5. DISEÃ‘O RESPONSIVO DEL HEADER
+   ========================================================================== */
+   
+.mobile-menu-toggle { 
+    display: none;
+    background: none;
+    border: none;
+    color: var(--bs-white);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1001;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Tablets y Escritorios PequeÃ±os (hasta 1024px) --- */
+@media (max-width: 1024px) {
+    .mobile-menu-toggle { 
+        display: inline-flex; 
+    }
+    
+    .nav-stats {
+        display: none;
+        position: absolute;
+        top: 120%;
+        left: 0px;
+        right: 0px;
+        width: 100%;
+        background-color: var(--primary-dark);
+        padding: 1rem;
+        box-shadow: var(--shadow-lg);
+        border-top: 2px solid var(--primary-light);
+        z-index: 999;
+        animation: slideUp 0.3s ease-out;
+    }
+    .nav-stats.active {
+        display: block;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+    .stat-item {
+        flex-direction: column;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.75rem;
+        border-radius: var(--bs-border-radius-sm);
+    }
+    .stat-label {
+        font-size: 0.7rem;
+    }
+    .stat-value {
+        font-size: 1.1rem;
+    }
+}
+
+/* --- Breakpoint Small (< 576px): Oculta el texto y activa las flechas --- */
+@media (max-width: 575.98px) {
+    .breadcrumb .nav-button span {
+        display: none;
+    }
+    .breadcrumb .nav-button {
+        width: 44px;
+        padding: 0;
+        justify-content: center;
+        flex-shrink: 0; /* Evita que los Ã­conos se encojan */
+    }
+
+    .toolbar-scroll-wrapper:hover .toolbar-scroll-arrow.visible {
+        opacity: 1;
+        pointer-events: all;
+    }
+}
+
+/* --- Pantallas muy pequeÃ±as --- */
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 375px) {
+    .nav-container {
+        gap: 0.5rem;
+    }
+    .nav-brand {
+        gap: 0.5rem;
+    }
+    #nav-store-description {
+        display: none;
+    }
+}
+
+
+
+.bcv-updater .input-group {
+    display: flex;
+    align-items: center; /* ¡Esta es la propiedad clave que alinea todo! */
+}

@@ -1,0 +1,67 @@
+/* ==========================================================================
+   PAGINATION COMPONENT
+   Estilos para la barra de navegación de la tabla de productos.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. CONTENEDOR PRINCIPAL
+-------------------------------------------------------------------------- */
+
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0; /* Se elimina el margen superior para que se pegue a la tabla */
+    padding: 0.75rem 1rem;
+    background-color: var(--bs-card-bg);
+    border-top: 1px solid var(--bs-border-color);
+    border-radius: 0 0 var(--bs-border-radius-lg) var(--bs-border-radius-lg); /* Bordes redondeados solo abajo */
+}
+
+/* --------------------------------------------------------------------------
+   2. SECCIÓN DE INFORMACIÓN (Texto y Selector de Items)
+-------------------------------------------------------------------------- */
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--bs-gray-600);
+    font-size: 0.9rem;
+}
+
+#items-per-page {
+    /* ANÁLISIS: Se aplican estilos consistentes con otros <select> */
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: var(--bs-border-radius-sm);
+    border: 1px solid var(--bs-border-color);
+    background-color: var(--bs-body-bg); /* Un fondo ligeramente diferente para destacar */
+}
+
+/* --------------------------------------------------------------------------
+   3. CONTROLES DE NAVEGACIÓN (Botones y Páginas)
+-------------------------------------------------------------------------- */
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-controls .btn-icon {
+    /* Los estilos base ya están en buttons.css, aquí solo ajustamos */
+    background-color: var(--bs-gray-200);
+    color: var(--bs-gray-700);
+}
+
+.pagination-controls .btn-icon:hover:not(:disabled) {
+    background-color: var(--bs-gray-300);
+    color: var(--bs-heading-color);
+}
+
+.pagination-pages {
+    margin: 0 0.5rem;
+    color: var(--bs-body-color);
+    font-weight: 500;
+}

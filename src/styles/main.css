@@ -1,0 +1,33 @@
+/* ======================================================
+// ARCHIVO: src/styles/main.css
+// Este es el punto de entrada para todos nuestros estilos.
+// ====================================================== */
+
+/* 1. Reseteo y Estilos Base */
+@import url('./reset.css');
+@import url('./base.css');
+
+/* 2. Componentes Fundamentales */
+@import url('./components/buttons.css');
+@import url('./components/forms.css');
+@import url('./components/modal.css');
+@import url('./components/toast.css');
+@import url('./components/loader.css');
+@import url('./components/login.css');
+
+/* 3. Componentes de Layout y Vistas */
+@import url('./components/header.css');
+@import url('./components/nav.css');
+@import url('./components/footer.css');
+@import url('./components/panel.css');
+@import url('./components/table.css');
+@import url('./components/pagination.css');
+@import url('./components/calculator.css');
+@import url('./components/pos.css');
+@import url('./components/tabs.css');
+@import url('./components/historial.css');
+
+/* 4. Otros y Media Queries */
+@import url('./components/message.css');
+@import url('./components/animaciones.css');
+@import url('./components/media.css');

@@ -1,0 +1,93 @@
+/* ==========================================================================
+   TOAST NOTIFICATIONS
+   Estilos para las notificaciones emergentes que informan al usuario.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. ESTILO GENERAL DEL TOAST
+-------------------------------------------------------------------------- */
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%); /* Centrado horizontalmente */
+    padding: 1rem 1.5rem;
+    border-radius: var(--bs-border-radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    font-weight: 500;
+    max-width: 90%;
+    pointer-events: none; /* Evita que el toast interfiera con los clics */
+    animation: toastSlideIn 0.4s ease-out forwards, toastSlideOut 0.4s 3s ease-in forwards;
+}
+
+/* ANÁLISIS: Se añade un icono a cada toast para mejorar la claridad */
+.toast::before {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+/* --------------------------------------------------------------------------
+   2. VARIANTES DE COLOR E ICONOS
+-------------------------------------------------------------------------- */
+.toast-success {
+    background-color: var(--bs-success);
+    color: var(--bs-white);
+}
+.toast-success::before {
+    content: '\f058'; /* check-circle */
+}
+
+.toast-error {
+    background-color: var(--error-color);
+    color: var(--bs-white);
+}
+.toast-error::before {
+    content: '\f071'; /* exclamation-triangle */
+}
+
+.toast-warning {
+    background-color: var(--warning-color);
+    color: var(--bs-white);
+}
+.toast-warning::before {
+    content: '\f06a'; /* exclamation-circle */
+}
+
+.toast-info {
+    background-color: var(--primary-color);
+    color: var(--bs-white);
+}
+.toast-info::before {
+    content: '\f05a'; /* info-circle */
+}
+
+
+/* --------------------------------------------------------------------------
+   3. ANIMACIONES
+-------------------------------------------------------------------------- */
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -100%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -100%);
+    }
+}

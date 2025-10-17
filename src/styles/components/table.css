@@ -1,0 +1,217 @@
+/* ==========================================================================
+   TABLE COMPONENT
+   Estilos para la tabla de productos principal.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. ESTRUCTURA PRINCIPAL DE LA TABLA
+-------------------------------------------------------------------------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bs-card-bg);
+    border-radius: var(--bs-border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--bs-border-color);
+}
+
+/* --------------------------------------------------------------------------
+   2. ENCABEZADO Y CUERPO (thead, tbody)
+-------------------------------------------------------------------------- */
+thead {
+    background-color: var(--bs-gray-50);
+}
+
+th {
+    color: var(--bs-gray-700);
+    padding: 1rem;
+    font-weight: 600;
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--bs-border-color);
+}
+
+tbody tr:hover {
+    background-color: var(--primary-light-hover);
+}
+
+/* --------------------------------------------------------------------------
+   3. ESTILOS DE CELDAS (td)
+-------------------------------------------------------------------------- */
+td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    font-size: 0.9375rem;
+    vertical-align: middle;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+td .product-name-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+td .product-name {
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    font-size: 0.95rem;
+}
+td .product-brand {
+    font-size: 0.8rem;
+    color: var(--bs-gray-600);
+}
+td .product-stock {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.descripcion-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    background-color: var(--bs-gray-200);
+    color: var(--bs-gray-700);
+    border-radius: 9999px;
+    font-weight: 500;
+}
+
+td.actions {
+    text-align: right;
+}
+.actions {
+    /* display: flex; */
+    gap: 0.5rem;
+    justify-content: flex-start;
+}
+
+/* --------------------------------------------------------------------------
+   4. CONTENEDOR DE BÚSQUEDA
+-------------------------------------------------------------------------- */
+.search-container {
+    margin-bottom: 1.5rem;
+}
+.search-group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+#buscar {
+    flex-grow: 1;
+}
+
+.search-highlight {
+    background-color: rgba(255, 234, 0, 0.15) !important;
+    border-left: 3px solid #ffd700;
+}
+
+/* --------------------------------------------------------------------------
+   5. CELDAS DE PRECIO Y TOOLTIPS
+-------------------------------------------------------------------------- */
+.price-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* justify-content: flex-end; */ /* Alinea el contenido a la derecha en móvil */
+}
+.price-main {
+    font-weight: 600;
+}
+.price-info-icon {
+    color: var(--bs-gray-500);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+.price-info-icon:hover {
+    color: var(--primary-color);
+}
+.price-tooltip.global {
+    display: none; /* Se mantiene oculto por defecto */
+    position: fixed; /* 'fixed' es mejor para que no se corte en los bordes */
+    background-color: var(--bs-gray-900);
+    color: var(--bs-white);
+    padding: 0.75rem;
+    border-radius: var(--bs-border-radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 10001; /* Z-index alto para que aparezca sobre todo */
+    width: 220px;
+    opacity: 0;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    pointer-events: none; /* Importante para que no interfiera */
+    transform: scale(0.95); /* Efecto de escala sutil */
+}
+.price-tooltip.global.visible {
+    display: block;
+    opacity: 1;
+    transform: scale(1);
+}
+.price-tooltip-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+}
+.price-tooltip-item span:first-child {
+    color: var(--bs-gray-400);
+}
+
+/* ==========================================================================
+   6. DISEÑO RESPONSIVO PARA LA TABLA (VISTA DE TARJETAS)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* Ocultamos la cabecera de la tabla en móvil */
+    #tab-productos thead {
+        display: none;
+    }
+
+    /* Cada fila (tr) se convierte en una tarjeta */
+    #tab-productos tr {
+        display: block;
+        margin: 0.5rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius);
+        padding: 0.5rem 1rem;
+    }
+
+    /* Cada celda (td) se apila verticalmente */
+    #tab-productos td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px dashed var(--bs-border-color); /* Borde punteado interno */
+        text-align: right;
+    }
+
+    /* Quitamos el borde inferior de la última celda de cada tarjeta */
+    #tab-productos tr td:last-child {
+        border-bottom: none;
+    }
+
+    /* Creamos las etiquetas (Producto, etc.) con un pseudo-elemento */
+    #tab-productos td::before {
+        content: attr(data-label);
+        font-weight: 500;
+        text-align: left;
+        color: var(--bs-gray-700);
+    }
+    
+    /* Le damos a la celda de acciones una etiqueta específica */
+    #tab-productos td.actions::before {
+        content: "Acciones";
+    }
+
+    /* Quitamos el hover de la fila en móvil */
+    tbody tr:hover {
+        background-color: var(--bs-card-bg);
+    }
+}

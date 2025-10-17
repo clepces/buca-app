@@ -1,0 +1,200 @@
+/* ==========================================================================
+   POINT OF SALE (POS) VIEW
+   Estilos para la vista de Caja, incluyendo la cuadrícula de productos y el
+   ticket de venta.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. LAYOUT PRINCIPAL
+-------------------------------------------------------------------------- */
+.pos-layout {
+    display: grid;
+    grid-template-columns: 1fr minmax(320px, 400px);
+    gap: 1.5rem;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+/* --------------------------------------------------------------------------
+   2. PANEL IZQUIERDO (Búsqueda y Cuadrícula de Productos)
+-------------------------------------------------------------------------- */
+.pos-products {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#pos-search {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.pos-product-grid {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. TARJETAS DE PRODUCTO (.pos-product-card)
+-------------------------------------------------------------------------- */
+.pos-product-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 0.85rem;
+    background-color: var(--bs-card-bg);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    overflow: hidden;
+}
+.pos-product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.pos-product-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -85%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 100%);
+    transform: skewX(-25deg);
+    transition: left 0.6s ease;
+}
+.pos-product-card:hover::before {
+    left: 120%;
+}
+
+.pos-product-details { flex-grow: 1; }
+.pos-product-name { font-weight: 600; font-size: 0.95rem; color: var(--bs-heading-color); margin-bottom: 0.2rem; line-height: 1.3; }
+.pos-product-brand { font-size: 0.8rem; color: var(--bs-gray-500); }
+.pos-product-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; }
+.pos-product-stock { font-size: 0.8rem; font-weight: 500; color: var(--bs-success); }
+.pos-product-card.out-of-stock .pos-product-stock { color: var(--error-color); }
+.pos-product-price { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); }
+.pos-product-card.out-of-stock { opacity: 0.6; background-color: var(--bs-gray-100); cursor: not-allowed; }
+
+
+/* --------------------------------------------------------------------------
+   4. PANEL DERECHO (Ticket de Venta)
+-------------------------------------------------------------------------- */
+.pos-ticket {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background-color: var(--bs-card-bg);
+    border-radius: var(--bs-border-radius);
+    border: 1px solid var(--bs-border-color);
+    padding: 1.25rem;
+}
+.pos-ticket h3 {
+    margin-bottom: 1rem;
+    text-align: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.pos-cart-items {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+.pos-cart-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed var(--bs-gray-200);
+}
+.pos-cart-item-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.pos-cart-item-info span { display: block; }
+.pos-cart-item-name { font-weight: 500; }
+.pos-cart-item-price { font-size: 0.9rem; font-weight: 500; }
+.pos-cart-item-controls { display: flex; align-items: center; gap: 0.5rem; }
+.pos-cart-item-controls button {
+    background-color: var(--bs-gray-200); color: var(--bs-gray-800); border: 1px solid var(--bs-gray-300);
+    width: 28px; height: 28px; padding: 0; border-radius: 50%; font-weight: 600; line-height: 1;
+}
+.pos-cart-item-controls button:hover { background-color: var(--bs-gray-300); }
+.pos-cart-item-controls .pos-cart-item-remove { background: none; border: none; color: var(--error-color); opacity: 0.7; }
+.pos-cart-item-controls .pos-cart-item-remove:hover { opacity: 1; background-color: transparent; }
+.pos-cart-item-quantity {
+    width: 50px; text-align: center; font-weight: 600;
+    border: 1px solid transparent; border-radius: var(--bs-border-radius-mini);
+    padding: 0.25rem; transition: all var(--transition-fast);
+}
+.pos-cart-item-quantity:focus {
+    outline: none; border-color: var(--primary-color); background-color: var(--bs-card-bg);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.pos-totals {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--bs-border-color);
+}
+.pos-total-item {
+    display: flex; justify-content: space-between; padding: 0.4rem 0;
+    font-size: 0.9rem; color: var(--bs-gray-700);
+}
+.pos-total-item span:last-child { font-weight: 500; color: var(--bs-heading-color); }
+.pos-total-item.grand-total {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: var(--primary-light-hover);
+    border-radius: var(--bs-border-radius-sm);
+}
+
+.pos-actions {
+    margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;
+}
+.pos-actions button { width: 100%; }
+.estado-vacio-mini { text-align: center; padding: 2rem 1rem; color: var(--bs-gray-500); }
+
+
+/* ==========================================================================
+   5. DISEÑO RESPONSIVO PARA LA VISTA POS
+   ========================================================================== */
+
+/* DESPUÉS - CÓDIGO CORREGIDO Y MEJORADO */
+@media (max-width: 992px) {
+    .pos-layout {
+        /* Hacemos que las columnas se apilen una sobre otra */
+        grid-template-columns: 1fr;
+    }
+    .pos-products {
+        /* Le damos una altura fija al grid de productos para que no ocupe toda la pantalla */
+        height: 50vh;
+    }
+    .pos-ticket {
+        /* El ticket ahora ocupará el espacio restante */
+        min-height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pos-product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 0.75rem;
+    }
+    .pos-ticket {
+        padding: 1rem;
+    }
+}
