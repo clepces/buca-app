@@ -1,6 +1,6 @@
-// ARCHIVO CORREGIDO Y FINAL: src/App.js
-
-import { registerRerender } from './store/actions.js';
+// ARCHIVO CORREGIDO: src/App.js
+import { state } from './store/state.js';
+import { registerRerender, setUser } from './store/actions.js';
 import { logout, tracedLoadUserData } from './services/auth.service.js';
 import { loadBusinessData } from './services/storage.service.js';
 import { initRouter } from './router/index.js';
@@ -10,6 +10,7 @@ import { Header } from './components/Header.js';
 import { MainNav } from './components/MainNav.js';
 import { Footer } from './components/Footer.js';
 import { LoaderComponent } from './components/Loader.js';
+import { Toast } from './components/Toast.js';
 import { delay } from './utils/retardo.js';
 import { can } from './services/permissions.service.js';
 import { PERMISSIONS } from './services/roles.config.js';
@@ -19,44 +20,66 @@ export default class App {
 
     constructor(rootElement, initialState, mainLoader) {
         this.root = rootElement;
-        this.state = initialState;
-        this.mainLoader = mainLoader; // Guardamos la referencia al loader inicial
-        this.currentViewCleanup = () => { };
+        this.state = initialState; // Estado local de la instancia App
+        this.mainLoader = mainLoader;
+        this.currentViewCleanup = () => {};
         this.boundHandleGlobalActions = this.handleGlobalActions.bind(this);
         this.isLoggingOut = false;
-        this.hasGlobalListener = false; // Track si el listener global está activo
+        this.hasGlobalListener = false;
         Logger.info('App: Instancia creada.');
         registerRerender(this.render.bind(this));
     }
 
     async handleAuthStateChange(user) {
         if (user) {
-            await delay(1500); // Espera a que termine la animación del botón "Bienvenido"
-            this.mainLoader.updateMessage('Verificando credenciales...');
-            if (!this.root.contains(this.mainLoader.element)) { this.root.innerHTML = ''; this.root.appendChild(this.mainLoader.element); }
+            if (!this.root.contains(this.mainLoader.element)) {
+                await delay(500);
+                this.mainLoader.updateMessage('Verificando sesión...');
+                this.root.innerHTML = '';
+                this.root.appendChild(this.mainLoader.element);
+            } else {
+                this.mainLoader.updateMessage('Verificando credenciales...');
+            }
             const sessionData = await tracedLoadUserData(user);
             if (sessionData) {
+                setUser({
+                    uid: sessionData.user.uid,
+                    email: sessionData.user.email,
+                    name: sessionData.user.name,
+                    businessId: sessionData.business.id === 'admin_view' ? null : sessionData.business.id,
+                    departmentId: sessionData.business.departmentId,
+                    role: sessionData.user.role
+                });
                 this.state.session.isLoggedIn = true;
-                this.state.session.user = sessionData.user;
-                this.state.session.business = sessionData.business;
-                if (sessionData.business.id === 'admin_view') {
-                    // --- FLUJO PARA EL SUPER ADMIN ---
+                this.state.session.user = {
+                    uid: state.user.uid,
+                    email: state.user.email,
+                    name: state.user.name,
+                    role: state.role
+                };
+                this.state.session.business = {
+                    id: state.businessId || 'admin_view',
+                    departmentId: state.departmentId
+                };
+                if (this.state.session.business.id === 'admin_view') {
                     this.mainLoader.updateMessage('Bienvenido, Administrador');
-                    this.state.products = []; // El admin no tiene productos.
+                    this.state.products = [];
                 } else {
-                    // --- FLUJO PARA CLIENTES NORMALES ---
                     this.mainLoader.updateMessage('Cargando datos del negocio...');
                     try {
-                        const businessData = await loadBusinessData(this.state);
-                        this.state.products = businessData.products || [];
+                        const businessData = await loadBusinessData(this.state); 
+                        this.state.products = (businessData && businessData.products) ? businessData.products : [];
                     } catch (error) {
-                        Logger.error('Error cargando datos del negocio:', error);
+                        Logger.error('Error cargando datos:', error);
                         this.state.products = [];
-                        // Continuar con la aplicación aunque falle la carga de productos
                     }
                 }
                 await delay(1500);
                 this.bootAuthenticatedApp();
+            } else {
+                Logger.warn('No se pudo cargar sesión. Mostrando login.');
+                await logout(); // Llama a logout si falla la carga
+                // showLogin() será llamado por onAuthStateChanged(null)
             }
         } else {
             if (this.isLoggingOut) {
@@ -64,7 +87,8 @@ export default class App {
                 if (loaderContainer) {
                     const loaderUI = {
                         updateMessage: (msg) => {
-                            loaderContainer.querySelector('#loader-message').textContent = msg;
+                            const el = loaderContainer.querySelector('#loader-message');
+                            if (el) el.textContent = msg;
                         }
                     };
                     loaderUI.updateMessage('¡Hasta pronto!');
@@ -76,6 +100,76 @@ export default class App {
         }
     }
 
+    bootAuthenticatedApp() {
+        Logger.info('App: arrancando aplicación autenticada.');
+        if (!this.hasGlobalListener) {
+            document.body.addEventListener('click', this.boundHandleGlobalActions, true);
+            this.hasGlobalListener = true;
+            Logger.info('Listener de acciones globales añadido.');
+        }
+
+        // --- INICIO DE LA LÓGICA CORREGIDA ---
+        
+        // 1. Definimos las rutas base
+        const dashboardPath = '#/';
+        const rootPath = '#/';
+        const currentHash = window.location.hash || '#/';
+
+        // 2. Verificamos si la ruta actual (en la URL) es válida y tenemos permiso
+        const currentRoute = routes.find(r => r.path === currentHash);
+        const isCurrentRouteValid = currentRoute && can(currentRoute.permission);
+
+        // 3. Buscamos la ruta "por defecto" (el Dashboard o el primer fallback)
+        let defaultRoutePath = null;
+        const dashboardRoute = routes.find(r => r.path === dashboardPath);
+        if (dashboardRoute && can(dashboardRoute.permission)) {
+            defaultRoutePath = dashboardPath;
+            Logger.info(`Usuario tiene permiso para Dashboard. Ruta por defecto: ${defaultRoutePath}`);
+        } else {
+            const fallbackRoute = routes.find(route => route.path !== rootPath && can(route.permission));
+            if (fallbackRoute) {
+                defaultRoutePath = fallbackRoute.path;
+                Logger.info(`Usuario NO puede ver Dashboard. Ruta alternativa por defecto: ${defaultRoutePath}`);
+            } else {
+                // Caso extremo: solo puede ver la raíz (que es el dashboard)
+                defaultRoutePath = rootPath;
+                Logger.warn(`Usuario solo tiene permiso para la ruta raíz '${rootPath}'. Usando como por defecto.`);
+            }
+        }
+
+        // 4. Decidimos si redirigir
+        let needsRedirect = false;
+        if (!isCurrentRouteValid) {
+            // La ruta actual NO es válida (ej. /#/foo) O no tenemos permiso.
+            // Redirigimos al path por defecto.
+            Logger.warn(`Ruta actual '${currentHash}' no es válida o no tiene permisos. Redirigiendo a la ruta por defecto.`);
+            needsRedirect = true;
+        } else if (currentHash === rootPath && defaultRoutePath !== rootPath) {
+             // Caso especial: Estamos en la raíz, pero nuestra ruta por defecto NO es la raíz
+             // (ej. un Cajero que entra a /#/ y debe ir a /#/pos)
+             Logger.info(`Ruta actual es raíz, pero la ruta por defecto es ${defaultRoutePath}. Redirigiendo.`);
+             needsRedirect = true;
+        }
+
+        if (needsRedirect) {
+            Logger.info(`Redirigiendo desde '${currentHash}' hacia la ruta objetivo: ${defaultRoutePath}`);
+            window.location.hash = defaultRoutePath;
+        } else {
+            // La ruta actual es válida y tenemos permisos (ej. /#/clients), no hacemos nada
+            Logger.info(`Ya estamos en la ruta correcta (${currentHash}). Renderizando layout e iniciando router.`);
+            this.renderLayout();
+            // initRouter(this.handleNavigation.bind(this)); // Esta línea aquí es redundante
+        }
+        
+        // --- FIN DE LA LÓGICA CORREGIDA ---
+
+        // Esta llamada SIEMPRE debe ejecutarse al final para que el router escuche
+        setTimeout(() => {
+            Logger.trace("Llamando a initRouter después de posible redirección.");
+            initRouter(this.handleNavigation.bind(this));
+        }, 0);
+    }
+
     async handleLogoutSequence() {
         if (this.isLoggingOut) return;
         Logger.info('Iniciando secuencia de cierre de sesión...');
@@ -85,31 +179,44 @@ export default class App {
             appLayout.classList.add('is-logging-out');
             await delay(500);
         }
-
         const loader = LoaderComponent();
         this.root.innerHTML = '';
         this.root.appendChild(loader.element);
         loader.updateMessage('Cerrando sesión de forma segura...');
-        await delay(2500);
-        await logout(); // Esto disparará el handleAuthStateChange
+        await delay(1500);
+        try {
+            await logout();
+        }
+        catch (error) {
+            Logger.error('Error durante logout:', error);
+            this.isLoggingOut = false;
+            this.showLogin();
+        }
     }
 
     handleGlobalActions(e) {
         const actionElement = e.target.closest('[data-action]');
         if (!actionElement) return;
-
         const action = actionElement.dataset.action;
+        const dropdown = document.getElementById('actions-menu-dropdown');
+        if (action !== 'toggle-actions-menu' && dropdown?.classList.contains('show')) {
+            dropdown.classList.remove('show');
+        }
         if (action === 'logout') {
             this.handleLogoutSequence();
         } else {
-            const dropdown = document.getElementById('actions-menu-dropdown');
-            if (action !== 'toggle-actions-menu' && dropdown?.classList.contains('show')) {
-                dropdown.classList.remove('show');
-            }
             switch (action) {
-                case 'open-config': Logger.info('Abrir configuración...'); break;
-                case 'toggle-actions-menu': dropdown?.classList.toggle('show'); break;
-                case 'toggle-theme': this.toggleTheme(); break;
+                case 'open-config':
+                    Logger.info('Abrir config...');
+                    break;
+                case 'toggle-actions-menu':
+                    dropdown?.classList.toggle('show');
+                    break;
+                case 'toggle-theme':
+                    this.toggleTheme();
+                    break;
+                default:
+                    Logger.warn(`Acción desconocida: ${action}`);
             }
         }
     }
@@ -124,77 +231,91 @@ export default class App {
                     <div class="container view-container" id="view-container"></div>
                 </main>
                 ${Footer(this.state)}
+                ${Toast()}
             </div>
         `;
-    }
-
-    render() {
-        const currentPath = window.location.hash || '#/';
-        this.renderLayout();
-        this.handleNavigation(currentPath);
-    }
-
-    bootAuthenticatedApp() {
-        Logger.info('App: arrancando aplicación autenticada.');
-        if (!this.hasGlobalListener) {
+        if (this.state.session.isLoggedIn && !this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
             this.hasGlobalListener = true;
         }
+    }
 
-        // --- LÓGICA DE REDIRECCIÓN MEJORADA ---
-        // Buscamos la primera ruta en nuestra nueva configuración a la que el usuario tiene acceso.
-        const defaultRoute = routes.find(route => can(route.permission));
-        
-        if (defaultRoute && window.location.hash !== defaultRoute.path) {
-            Logger.info(`Redirigiendo al usuario a su vista por defecto: ${defaultRoute.path}`);
-            window.location.hash = defaultRoute.path;
+    render() {
+        if (this.state.session.isLoggedIn) {
+            const currentPath = window.location.hash || '#/';
+            this.renderLayout();
+            this.handleNavigation(currentPath);
+        } else {
+            this.showLogin();
         }
-
-        this.renderLayout();
-        initRouter(this.handleNavigation.bind(this));
     }
 
     async handleNavigation(path) {
         const viewContainer = document.getElementById('view-container');
         if (!viewContainer) return;
-        if (typeof this.currentViewCleanup === 'function') this.currentViewCleanup();
-        
-        // --- ¡AQUÍ ESTÁ EL GUARDIA DE SEGURIDAD! ---
+        if (typeof this.currentViewCleanup === 'function') {
+            try {
+                this.currentViewCleanup();
+            } catch (e) {
+                Logger.error('Error cleanup:', e);
+            }
+            this.currentViewCleanup = () => {};
+        }
         const route = routes.find(r => r.path === path) || routes.find(r => r.path === '#/');
-
         if (!can(route.permission)) {
-            Logger.warn(`Acceso denegado a la ruta: ${path}. Redirigiendo al panel.`);
-            window.location.hash = '#/'; // Lo enviamos a la página de inicio segura
+            Logger.warn(`Acceso denegado a: ${path}. Redirigiendo.`);
+            const defaultRoute = routes.find(r => can(r.permission));
+            if (defaultRoute) {
+                window.location.hash = defaultRoute.path;
+            } else {
+                Logger.error('Sin ruta accesible.');
+                viewContainer.innerHTML = 'Sin acceso.';
+            }
             return;
         }
-        // --- FIN DEL GUARDIA ---
-
-        document.querySelectorAll('.nav-button').forEach(btn => {
-            btn.classList.toggle('active', btn.getAttribute('href') === path);
-        });
+        document.querySelectorAll('.nav-button').forEach(btn => btn.classList.toggle('active', btn.getAttribute('href') === path));
         viewContainer.classList.add('fade-out');
         await delay(150);
-
-        // Cargamos el componente de forma segura
-        const ViewComponent = await route.component();
-        this.currentViewCleanup = ViewComponent(viewContainer, this.state);
-        
-        viewContainer.classList.remove('fade-out');
+        try {
+            const ViewComponent = await route.component();
+            this.currentViewCleanup = ViewComponent(viewContainer, this.state);
+        } catch (loadError) {
+            Logger.error(`Error cargando vista ${path}:`, loadError);
+            viewContainer.innerHTML = `Error ${path}.`;
+            this.currentViewCleanup = () => {};
+        } finally {
+            viewContainer.classList.remove('fade-out');
+        }
     }
 
     showLogin() {
-        if (typeof this.currentViewCleanup === 'function') this.currentViewCleanup();
-        // Solo remover listener si existe
+        Logger.info('Mostrando pantalla de login...');
+        if (typeof this.currentViewCleanup === 'function') {
+            try {
+                this.currentViewCleanup();
+            } catch (e) {
+                Logger.error('Error cleanup (login):', e);
+            }
+            this.currentViewCleanup = () => {};
+        }
         if (this.hasGlobalListener) {
             document.body.removeEventListener('click', this.boundHandleGlobalActions, true);
             this.hasGlobalListener = false;
+            Logger.info('Listener global quitado.');
         }
         this.root.innerHTML = '';
-        LoginView(this.root, this.state);
+        try {
+            LoginView(this.root, this.state);
+        } catch (renderError) {
+            Logger.error('Error render Login:', renderError);
+            this.root.innerHTML = 'Error crítico login.';
+        }
     }
 
     toggleTheme() {
-        const newTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-bs-theme', newTheme);
+        const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-bs-theme', next);
+        Logger.info(`Tema: ${next}`);
     }
 }

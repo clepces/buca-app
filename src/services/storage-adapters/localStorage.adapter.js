@@ -1,4 +1,8 @@
-import { Logger } from '../logger.service.js';
+// services/storage-adapters/localStorage.adapter.js
+
+// --- ¡ERROR CORREGIDO! ---
+// Se eliminó: import { Logger } from '../logger.service.js';
+// -------------------------
 
 const DB_KEY = 'buc_local_storage_db_app_v3';
 
@@ -12,10 +16,10 @@ function saveDb(db) {
 
 export const localStorageAdapter = {
     init: async () => {
-        Logger.info('Adaptador LocalStorage inicializado.');
+        console.log('Adaptador LocalStorage inicializado.');
     },
-    getAllProducts: async () => getDb().products || [],
-    saveProduct: async (product) => {
+    getAllProducts: async (state) => getDb().products || [],
+    saveProduct: async (state, product) => {
         const db = getDb();
         if (!db.products) db.products = [];
         const index = db.products.findIndex(p => p.product_info.id === product.product_info.id);
@@ -27,41 +31,25 @@ export const localStorageAdapter = {
         saveDb(db);
         return product;
     },
-    deleteProduct: async (productId) => {
+    deleteProduct: async (state, productId) => {
         const db = getDb();
         if (!db.products) return;
         db.products = db.products.filter(p => p.product_info.id !== productId);
         saveDb(db);
     },
-    getSettings: async () => getDb().settings || null,
-    saveSettings: async (settings) => {
+    updateProduct: async (state, productId, data) => {
         const db = getDb();
-        db.settings = settings;
-        saveDb(db);
-    },
-    getUserByUsername: async (username) => {
-        const db = getDb();
-        if (!db.users) return null;
-        return db.users.find(u => u.username === username);
-    },
-    saveUser: async (user) => {
-        const db = getDb();
-        if (!db.users) db.users = [];
-        const index = db.users.findIndex(u => u.id === user.id);
+        if (!db.products) return;
+        const index = db.products.findIndex(p => p.id === productId);
         if (index > -1) {
-            db.users[index] = user;
-        } else {
-            user.id = Date.now();
-            db.users.push(user);
+            db.products[index] = { ...db.products[index], ...data };
         }
         saveDb(db);
-        return user;
     },
-    getAllUsers: async () => getDb().users || [],
-    getSession: async () => getDb().session || null,
-    saveSession: async (session) => {
+    getSettings: async (state) => getDb().settings || null,
+    saveSettings: async (state) => {
         const db = getDb();
-        db.session = session;
+        db.settings = state.settings;
         saveDb(db);
     },
 };

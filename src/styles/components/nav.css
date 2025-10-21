@@ -74,9 +74,9 @@
 .actions-menu-dropdown {
     display: none;
     position: absolute;
-    top: 130%;
-    right: -9px; /* Alineado a la derecha del contenedor de acciones */
-    width: 200px; /* Ancho fijo para consistencia */
+    top: calc(100% + 10px);
+    right: 0; /* Alineado a la derecha del contenedor de acciones */
+    width: 220px; /* Ancho fijo para consistencia */
     background-color: var(--bs-card-bg);
     border-radius: var(--bs-border-radius);
     box-shadow: var(--shadow-lg);

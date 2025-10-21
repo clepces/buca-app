@@ -1,4 +1,4 @@
-// ARCHIVO CORREGIDO Y FINAL: src/components/Login.js
+// src/components/Login.js
 
 import { login } from '../services/auth.service.js';
 import { showToast } from '../services/toast.service.js';

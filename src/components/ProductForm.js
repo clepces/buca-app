@@ -1,6 +1,6 @@
 import { calcularPrecioVenta, crearProducto } from '../services/calculation.service.js';
 import { validarCamposTexto, productoExiste } from '../services/validation.service.js';
-import { addProduct, updateProduct } from '../store/actions.js';
+import { addProductToState, updateProductInState } from '../store/actions.js';
 import { showToast } from '../services/toast.service.js';
 import { debounce } from '../utils/debounce.js';
 
@@ -205,7 +205,7 @@ export function ProductForm(state, productToEdit = null) {
                     percentage: ganancia / 100
                 }
             };
-            await updateProduct(state, productToEdit.id, updatedData);
+            await updateProductInState(state, productToEdit.id, updatedData);
             showToast(`Producto "${nombre}" actualizado.`, "success");
             document.querySelector('#edit-product-modal')?.remove();
         } else {
@@ -218,7 +218,7 @@ export function ProductForm(state, productToEdit = null) {
 
             const nuevoProducto = crearProducto(nombre, marca, categoria, "", costo, ganancia, totalUnidades, unidadesPorPaquete, paquetes, state.settings);
             if (nuevoProducto) {
-                await addProduct(state, nuevoProducto);
+                await addProductToState(state, nuevoProducto);
                 form.querySelectorAll('input, select').forEach(input => input.value = '');
                 resultsPanel.style.display = 'none';
             } else {

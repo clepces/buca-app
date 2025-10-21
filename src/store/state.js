@@ -1,68 +1,77 @@
+// store/state.js
 
-export function getInitialState() {
-    return {
-        products: [],
-        cart: [],
-        settings: {
-            store: {
-                store_name: 'Business Under Control',
-                store_description: 'Business Manager and Price Calculator',
-                store_keywords: ['tienda', 'inventario', 'precios'],
-                store_owner: '',
-                store_address: '',
-                store_geocode: '',
-                store_email: '',
-                store_telephone: '',
-                store_fax: ''
-            },
-            locations: {
-                country_id: 232, // Venezuela
-                language: 'es',
-                length_class_id: 1, // Centímetro
-                weight_class_id: 1, // Kilogramo
-            },
-            currencies: {
-                base: { code: "VES", symbol: "Bs." },
-                principal: { code: "USD", symbol: "$", rate: 175.06471 },
-                secundarias: [
-                    { code: "EUR", symbol: "€", rate: 205.38766697 }
-                ]
-            },
-            products: {
-                items_per_page: 10,
-                tax_rate: 16.0, // 16% IVA
-                calculation_method: 'markup',
-                display_prices_with_tax: false,
-                available_categories: ['Viveres', 'Limpieza', 'Bebidas']
-            },
-            users: {
-                online: true,
-                customer_activity: true,
-                max_login_attempts: 3
-            },
-            session: {
-                time: 30, // en minutos
-                warning_time: 60 // en segundos
-            },
-            security: {
-                lockout_time: 15, // en minutos
-                // password: Removido por seguridad - se maneja en Firebase Auth
-            },
-            appearance: {
-                theme: 'light'
-            }
-        },
-        history: {
-            history_tasa: [],
-            session_history: [],
-            activity_log: []
-        },
-        session: {
-            isLoggedIn: false,
-            user: null,         // <-- Aquí guardaremos los datos del usuario
-            business: null,     // <-- ¡NUEVO! Aquí guardaremos los datos del negocio
-            lockUntil: null,
-            loginAttempts: 0
-        }
-    };
-}
+/**
+ * Genera el estado inicial de la aplicación.
+ * Se usa para inicializar y para resetear (ej. al hacer logout).
+ */
+export const getInitialState = () => ({
+  // Estado de autenticación y sesión
+  isAuthenticated: false,
+  isLoading: false, // Controla el estado de carga global (ej. login)
+  user: null, // Almacenará { uid, email, name }
+  
+  // --- Cajones para la sesión ---
+  businessId: null,   // Almacenará el ID del negocio activo
+  departmentId: null, // Almacenará el ID del departamento del usuario
+  role: null,         // Almacenará el rol del usuario (ej. 'owner', 'seller')
+  // ------------------------------------
+
+  // Estructura de sesión (usada por App.js)
+  session: {
+    isLoggedIn: false,
+    user: null,
+    business: null
+  },
+
+  // Configuración global de la app (cargada al inicio)
+  settings: {
+    store: {
+      store_name: 'Mi Tienda',
+      store_description: 'Descripción de la tienda'
+    },
+    currencies: {
+      principal: {
+        symbol: '$',
+        rate: 1
+      },
+      base: {
+        symbol: 'Bs.'
+      }
+    },
+    products: {
+      available_categories: ['General', 'Alimentos', 'Bebidas', 'Limpieza'],
+      tax_rate: 16,
+      calculation_method: 'markup'
+    },
+    appConfig: null, // Viene de la colección 'app_config'
+    exchangeRates: null, // Viene de 'exchange_rates'
+    permissions: null, // Basado en el rol
+  },
+
+  // Datos del negocio (se cargan después del login)
+  products: [],
+  clients: [],
+  sales: [],
+  // ... otros almacenes de datos ...
+  
+  // Estado de la UI
+  ui: {
+    modal: {
+      isOpen: false,
+      content: null, // 'productForm', 'clientForm', etc.
+      props: {},
+    },
+    toast: {
+      isVisible: false,
+      message: '',
+      type: 'info', // 'info', 'success', 'error'
+    },
+  },
+});
+
+/**
+ * El estado global de la aplicación (NO reactivo).
+ * Es un simple objeto de JavaScript.
+ * NO MODIFICAR DIRECTAMENTE. Usar acciones o servicios.
+ */
+export const state = getInitialState();

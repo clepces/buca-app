@@ -1,42 +1,108 @@
-// import { openDB } from 'https://unpkg.com/idb@7.1.1/build/esm.js';
+// services/storage-adapters/indexedDb.adapter.js
 import { openDB } from 'idb';
-import { Logger } from '../logger.service.js';
 
-const DB_NAME = 'ManagerDeTiendaDB';
-const DB_VERSION = 2;
-const PRODUCTS_STORE = 'products';
-const SETTINGS_STORE = 'settings';
-const USERS_STORE = 'users';
+// --- ¡ERROR CORREGIDO! ---
+// Se eliminó: import { Logger } from '../logger.service.js';
+// Los adaptadores usarán console.log() para evitar dependencias circulares.
+// -------------------------
 
-let db;
+const DB_NAME = 'bucaAppDB';
+const DB_VERSION = 1;
+let db = null;
 
-async function init() {
-    if (db) return;
+async function openDBInternal() {
+    if (db) {
+        return db;
+    }
     db = await openDB(DB_NAME, DB_VERSION, {
-        upgrade(db, oldVersion) {
-            if (oldVersion < 1) {
-                db.createObjectStore(PRODUCTS_STORE, { keyPath: 'product_info.id' });
-                db.createObjectStore(SETTINGS_STORE, { keyPath: 'id' });
+        upgrade(dbInstance) {
+            console.log('[indexedDb] Actualizando la base de datos...');
+            if (!dbInstance.objectStoreNames.contains('products')) {
+                dbInstance.createObjectStore('products', { keyPath: 'id' });
             }
-            if (oldVersion < 2) {
-                const userStore = db.createObjectStore(USERS_STORE, { keyPath: 'id', autoIncrement: true });
-                userStore.createIndex('by_username', 'username', { unique: true });
+            if (!dbInstance.objectStoreNames.contains('settings')) {
+                dbInstance.createObjectStore('settings'); 
             }
+            // ... otros stores
         },
     });
-    Logger.info('Adaptador IndexedDB inicializado.');
+    console.log('[indexedDb] Base de datos abierta exitosamente');
+    return db;
 }
 
 export const indexedDbAdapter = {
-    init,
-    getAllProducts: async () => db.getAll(PRODUCTS_STORE),
-    saveProduct: async (product) => db.put(PRODUCTS_STORE, product),
-    deleteProduct: async (productId) => db.delete(PRODUCTS_STORE, productId),
-    getSettings: async () => db.get(SETTINGS_STORE, 'app_settings'),
-    saveSettings: async (settings) => db.put(SETTINGS_STORE, { id: 'app_settings', ...settings }),
-    getUserByUsername: async (username) => db.getFromIndex(USERS_STORE, 'by_username', username),
-    saveUser: async (user) => db.put(USERS_STORE, user),
-    getAllUsers: async () => db.getAll(USERS_STORE),
-    getSession: async () => db.get(SETTINGS_STORE, 'app_session'),
-    saveSession: async (session) => db.put(SETTINGS_STORE, { id: 'app_session', ...session }),
+    init: async () => {
+        try {
+            await openDBInternal();
+        } catch (error) {
+            console.error('[indexedDb] Error fatal al abrir la base de datos', error);
+        }
+    },
+    
+    getAllProducts: async (state) => {
+        try {
+            const db = await openDBInternal();
+            return await db.getAll('products');
+        } catch (error) {
+            console.error('[indexedDb] Error en getAllProducts', error);
+            return [];
+        }
+    },
+
+    saveProduct: async (state, product) => {
+        try {
+            const db = await openDBInternal();
+            return await db.put('products', product);
+        } catch (error) {
+            console.error('[indexedDb] Error en saveProduct', error);
+            throw error;
+        }
+    },
+    
+    deleteProduct: async (state, productId) => {
+        try {
+            const db = await openDBInternal();
+            return await db.delete('products', productId);
+        } catch (error) {
+            console.error('[indexedDb] Error en deleteProduct', error);
+            throw error;
+        }
+    },
+
+    updateProduct: async (state, productId, data) => {
+        try {
+            const db = await openDBInternal();
+            const tx = db.transaction('products', 'readwrite');
+            const store = tx.objectStore('products');
+            const product = await store.get(productId);
+            if (product) {
+                const updatedProduct = { ...product, ...data };
+                await store.put(updatedProduct);
+            }
+            await tx.done;
+        } catch (error) {
+            console.error('[indexedDb] Error en updateProduct', error);
+            throw error;
+        }
+    },
+
+    getSettings: async (state) => {
+        try {
+            const db = await openDBInternal();
+            return await db.get('settings', 'app_settings');
+        } catch (error) {
+            console.error('[indexedDb] Error en getSettings', error);
+            return null;
+        }
+    },
+
+    saveSettings: async (state) => {
+        try {
+            const db = await openDBInternal();
+            return await db.put('settings', state.settings, 'app_settings');
+        } catch (error) {
+            console.error('[indexedDb] Error en saveSettings', error);
+            throw error;
+        }
+    }
 };
