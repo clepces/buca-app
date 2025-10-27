@@ -1,7 +1,5 @@
-// ======================================================
-// ARCHIVO: src/components/ProductTable.js
-// ======================================================
-import { EmptyState } from './EmptyState.js'; // <-- Importamos el nuevo componente
+// src/components/ProductTable.js
+import { EmptyState } from './EmptyState.js';
 
 /**
  * Renderiza la tabla que muestra la lista de productos.
@@ -12,7 +10,6 @@ import { EmptyState } from './EmptyState.js'; // <-- Importamos el nuevo compone
 export function ProductTable(products, settings) {
     const simboloPrincipal = settings.currencies.principal.symbol;
 
-    // Si no hay productos, mostramos un mensaje amigable.
     if (!products || products.length === 0) {
         return EmptyState({
             icon: 'fa-box-open',
@@ -20,25 +17,35 @@ export function ProductTable(products, settings) {
         });
     }
 
-    // Si hay productos, construimos la tabla.
     return `
         <table>
             <thead>
                 <tr>
                     <th>Producto</th>
                     <th>Categoría</th>
-                    <th>Precio Mayor (${simboloPrincipal})</th>
+                    <th>Precio Paquete (${simboloPrincipal})</th>
                     <th>Precio Unitario (${simboloPrincipal})</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                ${products.map(product => `
-                    <tr data-product-id="${product.id}"> 
-                        <td data-label="Producto">${product.product_info.product_name}</td>
-                        <td data-label="Categoría">${product.product_info.product_category}</td>
-                        <td data-label="Precio Mayor">${simboloPrincipal}${product.product_price.venta_paquete.toFixed(2)}</td>
-                        <td data-label="Precio Unitario">${simboloPrincipal}${product.product_price.venta_unidad.toFixed(2)}</td>
+                ${products.map(product => {
+                    // --- ¡CAMBIOS AQUÍ! Usamos la nueva estructura ---
+                    const productName = product.name || 'N/A';
+                    // Asumimos que categoryId debe mapearse a un nombre de categoría en otro lugar
+                    // Por ahora, mostraremos el ID o 'N/A'
+                    const categoryDisplay = product.categoryId || 'N/A';
+                    const packagePrice = product.pricing?.packageSellPrice?.toFixed(2) || '0.00';
+                    const unitPrice = product.pricing?.unitSellPrice?.toFixed(2) || '0.00';
+                    const productId = product.id; // El ID ahora está en la raíz
+                    // --------------------------------------------------
+
+                    return `
+                    <tr data-product-id="${productId}">
+                        <td data-label="Producto">${productName}</td>
+                        <td data-label="Categoría">${categoryDisplay}</td>
+                        <td data-label="Precio Paquete">${simboloPrincipal}${packagePrice}</td>
+                        <td data-label="Precio Unitario">${simboloPrincipal}${unitPrice}</td>
                         <td data-label="Acciones" class="actions">
                             <div class="list-actions">
                                 <button class="btn-icon" data-action="abastecer" title="Abastecer Inventario"><i class="fas fa-plus-circle"></i></button>
@@ -47,7 +54,7 @@ export function ProductTable(products, settings) {
                             </div>
                         </td>
                     </tr>
-                `).join('')}
+                `}).join('')}
             </tbody>
         </table>
     `;

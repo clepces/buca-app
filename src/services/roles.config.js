@@ -62,7 +62,6 @@ export const rolesConfig = {
             PERMISSIONS.VIEW_CLIENTS,
             PERMISSIONS.CREATE_PRODUCT,
             PERMISSIONS.EDIT_PRODUCT,
-            PERMISSIONS.DELETE_PRODUCT,
         ]
     },
     [ROLES.CAJERO]: {

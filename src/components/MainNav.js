@@ -1,85 +1,108 @@
-// ARCHIVO CORREGIDO Y DEFINITIVO: src/components/MainNav.js
-
+// src/components/MainNav.js
 import { can } from '../services/permissions.service.js';
-import { PERMISSIONS } from '../services/roles.config.js';
+import { routes } from '../router/routes.js';
 import { MODULES } from '../services/modules.config.js';
+import { PERMISSIONS } from '../services/roles.config.js';
 
-export function MainNav(activeRoute = '#/', state) {
-    const routes = [
-        { path: '#/', icon: 'fa-chart-pie', label: 'Panel', module: MODULES.CORE, permission: PERMISSIONS.VIEW_DASHBOARD },
-        { path: '#/products', icon: 'fa-box', label: 'Productos', module: MODULES.SGA_SCM, permission: PERMISSIONS.VIEW_PRODUCTS },
-        { path: '#/pos', icon: 'fa-cash-register', label: 'Caja', module: MODULES.POS, permission: PERMISSIONS.VIEW_POS },
-        { path: '#/inventory', icon: 'fa-warehouse', label: 'Inventario', module: MODULES.SGA_SCM, permission: PERMISSIONS.VIEW_INVENTORY },
-        { path: '#/clients', icon: 'fa-users', label: 'Clientes', module: MODULES.CRM, permission: PERMISSIONS.VIEW_CLIENTS },
-    ];
-
-    // --- LÓGICA DE FILTRADO SIMPLIFICADA Y CORREGIDA ---
-    
-    const isSuperAdmin = state.session.business?.id === 'admin_view';
-    
-    const availableRoutes = routes.filter(route => {
-        const userHasPermission = can(route.permission);
-        
-        // Super Admin: Ve todos los módulos a los que tiene permisos
-        if (isSuperAdmin) {
-            return userHasPermission;
-        }
-        
-        // Usuarios normales: Solo ven los módulos según sus permisos
-        // El módulo CORE (Panel) siempre se muestra si tienen permiso
-        if (route.module === MODULES.CORE) {
-            return userHasPermission;
-        }
-        
-        // Para otros módulos, solo verificar permisos
-        return userHasPermission;
-    });
-    
-    // --- FIN DE LA LÓGICA REFACTORIZADA ---
+export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE) {
 
     const userName = state.session.user?.name || 'Usuario';
     const userEmail = state.session.user?.email || 'email@dominio.com';
 
+    // --- 1. Obtener Rutas del Menú Principal ---
+    const mainRoutes = routes.filter(route =>
+        route.isMainModule && can(route.permission)
+    );
+
+    // --- 2. Preparar Datos para el Menú Contextual (SI APLICA) ---
+    let sectionTitle = '';
+    let sectionPath = '#/'; // Default seguro
+    let mainRouteOfContext = null;
+    let contextSubRoutes = []; // Renombrado para claridad
+    let showContextualMenu = currentContext !== MODULES.CORE; // Bandera clara
+
+    if (showContextualMenu) {
+        contextSubRoutes = routes.filter(route =>
+            route.context === currentContext && can(route.permission) && !route.isMainModule
+        );
+        mainRouteOfContext = routes.find(r => r.context === currentContext && r.isMainModule);
+
+        if (mainRouteOfContext) {
+             sectionTitle = mainRouteOfContext.label;
+             sectionPath = mainRouteOfContext.path;
+        } else {
+             // Fallback si no se encuentra la ruta principal (no debería pasar)
+             sectionTitle = 'Sección'; // Título genérico
+             sectionPath = '#/'; // Vuelve al inicio como seguridad
+             console.warn(`[MainNav] No se encontró ruta principal para el contexto: ${currentContext}`);
+        }
+    }
+
+    // --- 3. Construir HTML del Menú Contextual (SI APLICA) ---
+    // Solo se construye si showContextualMenu es true
+    const contextualMenuHTML = showContextualMenu ? `
+        <li class="breadcrumb-item">
+            <a href="#/" class="nav-button back-button" data-route="#/">
+                <i class="bi bi-arrow-left"></i>
+                <span>Volver</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item section-title-item">
+            <!-- {/* Usamos las variables definidas arriba, ahora sabemos que existen en este punto */} -->
+            <a href="${sectionPath}" class="nav-button section-title-link ${activeRoute === sectionPath ? 'active' : ''}" data-route="${sectionPath}">
+                 <i class="bi ${mainRouteOfContext?.icon || 'bi-folder-fill'} me-1"></i>
+                <span>${sectionTitle}</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item separator">|</li>
+        ${contextSubRoutes.map(route => `
+            <li class="breadcrumb-item">
+                <a href="${route.path}" class="nav-button contextual-nav-button ${activeRoute === route.path ? 'active' : ''}" data-route="${route.path}">
+                    <i class="bi ${route.icon || 'bi-record-fill'}"></i>
+                    <span>${route.label}</span>
+                </a>
+            </li>
+        `).join('')}
+    ` : ''; // Si no es contextual, el string queda vacío
+
+    // --- 4. Lógica del Tema (sin cambios) ---
+    const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+    const themeIconClass = currentTheme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill';
+
+    // --- 5. Renderizado Final ---
     return `
         <div class="toolbar-container">
             <div class="toolbar-scroll-wrapper">
-                <ul class="breadcrumb">
-                    ${availableRoutes.map(route => `
+                <!-- {/* Menú Principal: Se muestra si NO es contextual */} -->
+                <ul class="breadcrumb main-nav-menu ${!showContextualMenu ? 'visible' : 'hidden'}">
+                    ${mainRoutes.map(route => `
                         <li class="breadcrumb-item">
                             <a href="${route.path}" class="nav-button ${activeRoute === route.path ? 'active' : ''}" data-route="${route.path}">
-                                <i class="fas ${route.icon}"></i>
+                                <i class="bi ${route.icon}"></i>
                                 <span>${route.label}</span>
                             </a>
                         </li>
                     `).join('')}
                 </ul>
+
+                <!-- {/* Menú Contextual: Se muestra si SI es contextual */} -->
+                <ul class="breadcrumb contextual-nav-menu ${showContextualMenu ? 'visible' : 'hidden'}">
+                    ${contextualMenuHTML} <!-- {/* <-- Insertamos el string (vacío o construido) */} -->
+                </ul>
             </div>
+            <!-- {/* Acciones Fijas (sin cambios) */} -->
             <div class="toolbar-separador"></div>
             <div class="toolbar-actions">
-                <button class="nav-button" data-action="toggle-theme">
-                    <i class="fas fa-moon"></i> <span>Tema</span>
+                 <button class="nav-button" data-action="toggle-theme" title="Cambiar Tema">
+                    <i class="bi ${themeIconClass}"></i>
                 </button>
-                <button id="actions-menu-button" class="nav-button" data-action="toggle-actions-menu">
-                    <i class="fas fa-ellipsis-v"></i>
+                <button id="actions-menu-button" class="nav-button" data-action="toggle-actions-menu" title="Más opciones">
+                    <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <div id="actions-menu-dropdown" class="actions-menu-dropdown">
-                    <div class="action-item-header">
-                        <i class="fas fa-user-circle"></i>
-                        <div class="user-info">
-                            <span class="user-name">${userName}</span>
-                            <span class="user-email">${userEmail}</span>
-                        </div>
-                    </div>
-                    <hr>
-                    ${can(PERMISSIONS.EDIT_SETTINGS) ? `
-                    <button class="action-item" data-action="open-config">
-                        <i class="fas fa-cog"></i> <span>Configuración</span>
-                    </button>
-                    <hr>
-                    ` : ''}
-                    <button class="action-item danger" data-action="logout">
-                        <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
-                    </button>
+                   <div class="action-item-header"> <i class="bi bi-person-circle"></i> <div class="user-info"> <span class="user-name">${userName}</span> <span class="user-email">${userEmail}</span> </div> </div> <hr>
+                    ${can(PERMISSIONS.EDIT_SETTINGS) ? `<button class="action-item" data-action="open-config"> <i class="bi bi-gear-fill"></i> <span>Configuración</span> </button> <hr>` : ''}
+                    <button class="action-item danger" data-action="logout"> <i class="bi bi-box-arrow-right"></i> <span>Cerrar Sesión</span> </button>
                 </div>
             </div>
         </div>

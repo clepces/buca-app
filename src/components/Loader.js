@@ -37,7 +37,7 @@ export function LoaderComponent() {
             this.updateMessage(message);
             const logoWrapper = this.element.querySelector('.buca-logo-animation');
             if (logoWrapper) {
-                logoWrapper.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--error-color);"></i>';
+                logoWrapper.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 8rem; color: var(--error-color);"></i>';
             }
         }
     };

@@ -8,7 +8,7 @@
    1. ESTILOS GENERALES DEL MODAL (Contenedor y Fondo)
 -------------------------------------------------------------------------- */
 .modal {
-    display: none;
+    display: none; /* Oculto por defecto */
     position: fixed;
     top: 0;
     left: 0;
@@ -17,23 +17,23 @@
     background-color: rgba(7, 20, 55, 0.7);
     z-index: 10000;
     backdrop-filter: blur(5px);
-    padding: 1rem;
+    padding: 1rem; /* Mantiene un espacio alrededor */
     justify-content: center;
-    align-items: flex-start;
+    align-items: center; /* Centra el .modal-content verticalmente */
 }
 
 .modal-content {
     background-color: var(--bs-body-bg);
-    margin: 1rem auto;
+    margin: auto; /* Centra horizontalmente, auto verticalmente con align-items: center */
     border-radius: var(--bs-border-radius-lg);
     box-shadow: var(--shadow-lg);
     width: 100%; /* El ancho se controla con max-width */
-    max-width: 800px;
-    max-height: 95vh; /* Un poco más de altura máxima */
+    max-width: 960px; /* Ancho máximo */
+    max-height: 95vh; /* Altura máxima para dejar espacio arriba/abajo */
     display: flex;
     flex-direction: column;
-    animation: slideUp 0.4s ease-out;
-    overflow: hidden; 
+    animation: scaleInUp 0.3s ease-out forwards; /* Nueva animación */
+    overflow: hidden; /* Importante para que los bordes redondeados funcionen */
 
 }
 
@@ -76,23 +76,31 @@
 }
 
 .modal-body {
-    padding: 1.5rem;
+    padding: 0rem 1.5rem 0rem 1.5rem;
     flex-grow: 1; /* Ocupa el espacio disponible */
     display: flex;
     overflow-y: auto; /* Scroll interno si el contenido es muy largo */
+    /* Añadimos la clase para scrollbars personalizados */
+    /* Necesitas asegurarte de que base.css o similar tenga la definición de .custom-scrollbar */
+    /* class="modal-body custom-scrollbar" (Añadir en Modal.js si quieres) */
 }
 
 .modal-footer {
     padding: 1rem 1.5rem;
     border-top: 1px solid var(--bs-border-color);
     display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    background-color: var(--bs-gray-50);
-    border-radius: 0 0 var(--bs-border-radius-lg) var(--bs-border-radius-lg);
+    justify-content: flex-end; /* Alinea botones a la derecha */
+    gap: 0.75rem; /* Espacio entre botones */
+    background-color: var(--bs-gray-50); /* Fondo ligeramente distinto */
+    border-radius: 0 0 var(--bs-border-radius-lg) var(--bs-border-radius-lg); /* Bordes inferiores redondeados */
     flex-shrink: 0; /* Evita que el footer se encoja */
 }
 
+/* Tema oscuro para el footer */
+[data-bs-theme="dark"] .modal-footer {
+    background-color: var(--bs-body-bg); /* O un color ligeramente más claro que el body */
+    border-top-color: var(--bs-border-color);
+}
 
 /* --------------------------------------------------------------------------
    3. ESTILOS ESPECÍFICOS: MODAL DE CONFIGURACIÓN
@@ -285,14 +293,14 @@
 
 
 .form-section {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px dashed var(--bs-border-color);
+    /* margin-bottom: 1.5rem; */
+    /* padding-bottom: 1.5rem; */
+    /* border-bottom: 1px dashed var(--bs-border-color); */
 }
 .form-section:last-child {
     /*border-bottom: none;*/
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
+    margin-bottom: 0.1rem;
+    padding-bottom: 0.1rem;
 }
 .form-section-title {
     display: block;
@@ -438,4 +446,64 @@
         height: 100%;
         border-radius: 0;
     }
+}
+
+/* Mejoras para tema oscuro en modales */
+[data-bs-theme="dark"] .modal-content {
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .modal-header {
+    border-bottom-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .modal-footer {
+    background-color: var(--bs-gray-800);
+    border-top-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .config-tab {
+    color: var(--bs-gray-300);
+}
+
+[data-bs-theme="dark"] .config-tab:hover {
+    background-color: var(--primary-light);
+    color: var(--bs-white);
+}
+
+[data-bs-theme="dark"] .config-tab.active {
+    background-color: var(--primary-color);
+    color: var(--bs-white);
+}
+
+[data-bs-theme="dark"] .product-info-summary {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .summary-card {
+    background-color: var(--bs-gray-700);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .summary-card-header {
+    border-bottom-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .summary-card-body span {
+    color: var(--bs-gray-400);
+}
+
+[data-bs-theme="dark"] .purchase-history-item {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .history-item-row span {
+    color: var(--bs-gray-400);
+}
+
+[data-bs-theme="dark"] .history-item-row strong {
+    color: var(--bs-gray-200);
 }

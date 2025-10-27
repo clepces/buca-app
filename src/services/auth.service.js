@@ -1,16 +1,11 @@
 // services/auth.service.js
 
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged 
-} from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase-config'; // Importa tus instancias de FB
 import { setLoading, setUser, clearUser } from '../store/actions';
 import { logActivity } from './logger.service'; // Usamos la función logActivity
-import { handleError } from './error.service';
+import { handleError, getFriendlyErrorMessage } from './error.service';
 import { traceExecution } from '../utils/traceExecution';
 import { state } from '../store/state.js';
 /**
@@ -118,20 +113,6 @@ export const loginEmailPassword = traceExecution('auth.service', 'loginEmailPass
   }
 });
 
-// Helper para obtener mensajes amigables (alternativa a exportar desde error.service)
-function getFriendlyErrorMessage(errorCode) {
-    switch (errorCode) {
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential': return 'Correo o contraseña incorrectos.';
-        case 'auth/invalid-email': return 'El formato del correo no es válido.';
-        case 'AUTH_USER_CONTEXT_NOT_FOUND': return 'Error al cargar el perfil de usuario.';
-        // ... otros casos ...
-        default: return 'Ocurrió un error inesperado.';
-    }
-}
-
-
 /**
  * --- ¡FUNCIÓN MODIFICADA! ---
  * Cierra la sesión del usuario.
@@ -226,87 +207,72 @@ export const login = loginEmailPassword;
 
 
 /**
- * --- FUNCIÓN CENTRAL DE CONTEXTO (SIN CAMBIOS RESPECTO A LA ÚLTIMA VERSIÓN) ---
+ * --- FUNCIÓN CENTRAL DE CONTEXTO (CORREGIDA PARA LEER jobTitle) ---
  * Realiza los pasos 2 y 3: Buscar en user_directory y luego en el perfil del negocio/super_admin.
  * @param {string} uid - El UID del usuario de Firebase Auth
  * @param {string} email - El email del usuario de Firebase Auth (opcional, para fallback)
  * @returns {object | null} - El objeto sessionData completo o lanza un error si falla.
  */
 const fetchUserSessionContext = async (uid, email) => {
-  
-  // --- PASO 2: Obtener el documento del directorio ---
+
   const userDirRef = doc(db, 'user_directory', uid);
   const userDirSnap = await getDoc(userDirRef);
 
   if (userDirSnap.exists()) {
     const userDirData = userDirSnap.data();
 
-    // --- LÓGICA PARA DISTINGUIR ROLES ---
-    // CASO A: Es un Super Admin (identificado por el rol en el directorio)
     if (userDirData.role === 'super_admin') {
       const superAdminRef = doc(db, 'super_admins', uid);
       const superAdminSnap = await getDoc(superAdminRef);
-      
-      let adminName = 'Super Admin'; // Nombre por defecto
+      let adminName = 'Super Admin';
       if (superAdminSnap.exists()) {
-        // Manejamos el posible espacio en "name "
         adminName = superAdminSnap.data()['name '] || superAdminSnap.data().name || 'Super Admin';
       } else {
-          // Advertencia: El super admin está en el directorio pero no en la colección super_admins
-          console.warn(`Super Admin con UID ${uid} encontrado en user_directory pero no en super_admins collection.`);
+          console.warn(`Super Admin con UID ${uid} no encontrado en super_admins.`);
       }
-
-      return {
-        uid: uid,
-        email: email, // Usamos el email de Firebase Auth
-        name: adminName,
-        businessId: null, // super_admin no tiene businessId
-        departmentId: null, // super_admin no tiene departmentId
-        role: 'super_admin', // Rol global
-      };
+      return { uid, email, name: adminName, businessId: null, departmentId: null, role: 'super_admin' };
     }
 
-    // CASO B: Es un usuario regular, DEBE tener un businessId
     const { businessId } = userDirData;
-    if (!businessId) {
-      // Si no es super_admin y no tiene businessId, es un error de configuración
-      throw new Error('AUTH_NO_BUSINESS_ID');
-    }
+    if (!businessId) throw new Error('AUTH_NO_BUSINESS_ID');
 
-    // --- PASO 3: Obtener Perfil del Negocio ---
+    // --- PASO 3: Obtener Perfil del Negocio (LEYENDO jobTitle) ---
     const userProfileRef = doc(db, 'businesses', businessId, 'users', uid);
     const userProfileSnap = await getDoc(userProfileRef);
 
-    if (!userProfileSnap.exists()) {
-      // El usuario está en el directorio y tiene businessId, pero no existe en la subcolección users del negocio
-      throw new Error('AUTH_USER_PROFILE_NOT_FOUND');
-    }
-    
-    // Asumimos que el perfil del usuario en el negocio tiene 'name', 'role', y 'departmentId'
+    if (!userProfileSnap.exists()) throw new Error('AUTH_USER_PROFILE_NOT_FOUND');
+
     const userProfileData = userProfileSnap.data();
-    const { name, role, departmentId } = userProfileData;
+    // --- ¡CAMBIO AQUÍ! Leemos 'name', 'jobTitle', 'departmentIds' ---
+    const { name, jobTitle, departmentIds } = userProfileData;
 
-    // Verificación adicional (opcional pero recomendada)
-    if (!name || !role) {
-        console.warn(`Perfil de usuario ${uid} en negocio ${businessId} incompleto. Falta name o role.`);
-        // Podrías lanzar un error o usar valores por defecto
+    // Verificación y Mapeo de Rol
+    if (!name || !jobTitle) {
+        // La advertencia original ahora es más precisa
+        console.warn(`Perfil de usuario ${uid} en negocio ${businessId} incompleto. Falta name o jobTitle.`);
+        // Puedes decidir si lanzar un error o continuar con valores por defecto
     }
 
+    // --- ¡CAMBIO AQUÍ! Mapeamos jobTitle a role ---
+    let userRole = 'user'; // Rol por defecto si jobTitle no existe o no coincide
+    if (jobTitle === 'Propietario') {
+      userRole = 'admin';
+    } else if (jobTitle === 'Cajero') {
+      userRole = 'cajero';
+    } else if (jobTitle === 'Empleado') { // Añadimos mapeo para 'Empleado' si lo usas
+      userRole = 'user';
+    }
 
-    // ¡Contexto completo de usuario regular encontrado!
     return {
       uid: uid,
-      email: email, // Usamos el email de Firebase Auth
-      name: name || email, // Usamos email como fallback si no hay nombre
+      email: email,
+      name: name || email, // Usamos email como fallback
       businessId: businessId,
-      departmentId: departmentId || null, // Usamos null si no hay departmentId
-      role: role || 'user', // Usamos 'user' como rol por defecto si no existe
+      departmentId: (departmentIds && departmentIds.length > 0) ? departmentIds[0] : null, // Tomamos el primero o null
+      role: userRole, // Usamos el rol mapeado
     };
-    
+
   } else {
-    // El usuario está en Firebase Auth pero NO en user_directory.
-    // Podría ser un usuario recién creado que aún no se ha añadido al directorio,
-    // o un error. Por ahora, lo tratamos como error.
     throw new Error('AUTH_USER_NOT_IN_DIRECTORY');
   }
 };

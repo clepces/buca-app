@@ -3,19 +3,23 @@
 // ======================================================
 import { sanitizeHTML } from '../utils/sanitize.js';
 
-/**
- * EXPLICACIÓN:
- * Este es nuestro primer componente. Es una simple función que recibe datos (el estado)
- * y devuelve un string de HTML. No modifica nada, solo presenta la información.
- * Esto lo hace predecible y fácil de probar.
- */
-
 export function Header(state) {
-    // Extraemos la información que necesitamos del estado para que el código sea más legible.
-    const storeName = sanitizeHTML(state.settings.store.store_name || 'Mi Tienda');
-    const storeDescription = sanitizeHTML(state.settings.store.store_description || 'Descripción...');
-    
-    // Aquí irían los cálculos de las estadísticas, por ahora usamos valores de ejemplo.
+    // Leemos la nueva config global cargada desde Firebase
+    const appConfig = state.settings.appConfig;
+
+    // Extraemos la información del NUEVO formato (con fallbacks al formato antiguo/default)
+    const storeName = sanitizeHTML(
+        appConfig?.system?.metadata?.appNameSimplify || // <-- "B.U.C.A"
+        state.settings.store.store_name || 
+        'B.U.C.A'
+    );
+    const storeDescription = sanitizeHTML(
+        appConfig?.system?.metadata?.appName || // <-- "Business Under Control Access"
+        state.settings.store.store_description || 
+        'Descripción...'
+    );
+
+    // El resto de la lógica se mantiene
     const totalProductos = state.products.length;
     const tasaBcv = state.settings.currencies.principal.rate;
     const simboloPrincipal = state.settings.currencies.principal.symbol;

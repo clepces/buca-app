@@ -44,7 +44,7 @@ export const handleError = (error, context = 'unknown') => {
  * @param {string} errorCode - El error.message o error.code
  * @returns {string} - Un mensaje amigable.
  */
-function getFriendlyErrorMessage(errorCode) {
+export function getFriendlyErrorMessage(errorCode) {
   // Mensajes de Autenticación
   switch (errorCode) {
     case 'auth/user-not-found':

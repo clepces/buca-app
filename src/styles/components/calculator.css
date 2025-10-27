@@ -1,242 +1,82 @@
 /* ==========================================================================
-   CALCULATOR COMPONENT
-   Estilos para los paneles de la calculadora en la vista principal.
+   PRODUCT FORM & SUMMARY STYLES
    ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   1. CONTENEDOR PRINCIPAL DEL PANEL (.calculator)
--------------------------------------------------------------------------- */
+/* --- Layout General --- */
+.product-form-wrapper { width: 100%; }
+.form-grid-layout, .summary-grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+.form-column-left, .form-column-right, .summary-column-left, .summary-column-right { display: flex; flex-direction: column; gap: 1.5rem; }
 
-.calculator {
-    flex: 1; /* Permite que los paneles crezcan y ocupen el espacio disponible */
-    min-width: 300px; /* Ancho mínimo antes de que se apilen */
-    background: var(--bs-card-bg); /* Usamos la variable de fondo de tarjeta */
-    border-radius: var(--bs-border-radius-lg);
-    padding: 1.5rem;
-    border: 1px solid var(--bs-border-color);
-    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-}
-.calculator-title i {
-    font-size: 1.2em; /* Hacemos el icono proporcional al texto */
-}
+/* --- Secciones --- */
+.form-section, .summary-section { margin-bottom: 0rem; padding-bottom: 1.5rem; }
+.form-section { padding-bottom: 0; margin-bottom: 0; }
+.summary-section { border-bottom: 1px dashed var(--bs-border-color); }
+.summary-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
 
-.calculator:hover {
-    transform: translateY(-3px); /* Un efecto hover ligeramente más pronunciado */
-    box-shadow: var(--shadow-lg);
+.form-section h3, .summary-section h3 {
+    font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;
+    color: var(--primary-color); display: flex; align-items: center;
+    gap: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--bs-border-color);
 }
 
-.calculator-title {
-    text-align: center;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    font-size: 1.25rem; /* Ajustamos el tamaño para consistencia */
-    margin-bottom: 1.5rem;
-}
+.form-group { margin-bottom: 1.25rem; }
+.form-column-right .form-section:first-of-type .form-group:last-of-type { margin-bottom: 0; }
 
-/* --------------------------------------------------------------------------
-   2. SECCIONES INTERNAS
--------------------------------------------------------------------------- */
+/* --- Placeholders Futuros --- */
+.future-section { opacity: 0.6; }
+.future-section h3 { color: var(--bs-gray-600); border-bottom-style: dashed; }
+.future-section input:disabled, .future-section select:disabled { cursor: not-allowed; background-color: var(--bs-gray-100); }
+[data-bs-theme="dark"] .future-section input:disabled, [data-bs-theme="dark"] .future-section select:disabled { background-color: rgba(75, 85, 99, 0.3); }
 
-.calculator section {
-    background-color: var(--bs-gray-50);
-    border-radius: var(--bs-border-radius); /* Radio de borde más estándar */
-    padding: 1.25rem;
-    border: 1px solid var(--bs-border-color);
-    transition: border-color var(--transition-normal);
-}
+/* --- Vista Resumen --- */
+.product-summary-view { animation: fadeIn 0.3s ease; padding: 1rem 0; }
+.btn-back-to-edit { font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--primary-color); text-decoration: none; font-weight: 500; background: none; border: none; padding: 0; cursor: pointer; }
+.btn-back-to-edit:hover { text-decoration: underline; }
 
-.calculator section:not(:last-child) {
-    margin-bottom: 1.5rem;
-}
+/* Info Básica en Resumen */
+.summary-basic-info .info-item { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; font-size: 0.95rem; line-height: 1.4; align-items: flex-start; /* Alinea arriba */ }
+.summary-basic-info .info-item span:first-child { color: var(--bs-gray-600); text-align: left; flex-shrink: 0; min-width: 80px; /* Ancho mínimo para etiquetas */ }
+.summary-basic-info .info-item strong, .summary-basic-info .info-item em { font-weight: 600; color: var(--bs-heading-color); text-align: right; word-break: break-word; flex-grow: 1; /* Permite que el valor ocupe espacio */ }
+.summary-basic-info .info-item em { font-style: italic; color: var(--bs-gray-700); }
+.summary-basic-info .description-item em { text-align: right; }
 
-.calculator section:hover {
-    border-color: var(--primary-light);
-}
+/* Resumen de Compra */
+.summary-purchase-info { position: relative; background-color: var(--bs-gray-50); padding: 1.25rem; /* Más padding */ border-radius: var(--bs-border-radius); border: 1px solid var(--bs-border-color); }
+[data-bs-theme="dark"] .summary-purchase-info { background-color: rgba(75, 85, 99, 0.2); }
+.summary-purchase-info div.purchase-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; /* Más espacio */ font-size: 0.95rem; }
+.summary-purchase-info div.purchase-item span:first-child { color: var(--bs-gray-600); }
+.summary-purchase-info div.purchase-item strong span { color: var(--bs-heading-color); font-weight: 600; }
+.summary-purchase-info .total-cost { font-size: 1.15rem; /* Más grande */ margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--bs-border-color); display: flex; justify-content: space-between; align-items: center; }
+.summary-purchase-info .total-cost strong span { font-size: 1.3rem; color: var(--bs-heading-color); font-weight: 700; }
 
-.calculator section h3 {
-    font-size: 1.1rem;
-    margin-bottom: 1.25rem; /* Más espacio debajo del título de sección */
-    color: var(--bs-gray-700);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+/* Tarjetas de Precios */
+.summary-prices-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
+.summary-price-card { background-color: var(--bs-card-bg); border: 1px solid var(--bs-border-color); border-radius: var(--bs-border-radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); transition: all var(--transition-normal); display: flex; flex-direction: column; }
+.summary-price-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); border-color: var(--primary-light); }
+.summary-price-card .card-header { background-color: var(--bs-gray-50); padding: 0.75rem 1.25rem; font-weight: 600; font-size: 0.95rem; border-bottom: 1px solid var(--bs-border-color); text-align: center; color: var(--bs-heading-color); }
+[data-bs-theme="dark"] .summary-price-card .card-header { background-color: var(--bs-gray-800); color: var(--bs-gray-200); }
+.summary-price-card .card-body { padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; flex-grow: 1; }
+.summary-price-card .price-main { font-size: 2.25rem; font-weight: 700; color: var(--primary-color); line-height: 1.1; cursor: pointer; margin-bottom: 0.35rem; transition: color var(--transition-fast); }
+.summary-price-card .price-main:hover { color: var(--primary-dark); }
+.summary-price-card .price-secondary { font-size: 1.1rem; color: var(--bs-gray-600); cursor: pointer; transition: color var(--transition-fast); }
+.summary-price-card .price-secondary:hover { color: var(--bs-gray-800); }
+[data-bs-theme="dark"] .summary-price-card .price-secondary { color: var(--bs-gray-400); }
+[data-bs-theme="dark"] .summary-price-card .price-secondary:hover { color: var(--bs-gray-200); }
+.summary-price-card small.price-details { 
+    font-size: 0.85rem; color: var(--bs-gray-600); margin-top: 0rem; line-height: 1.4; width: 100%; } /* Clase específica para detalles */
+[data-bs-theme="dark"] .summary-price-card small.price-details { color: var(--bs-gray-400); }
+.currency-toggle:hover { text-decoration: none; filter: brightness(1.1); }
+.override-price-group { margin-top: 1.25rem; max-width: 160px; width: 100%; }
+.override-price-group .input-group-text { font-size: 0.8rem; padding: 0.35rem 0.6rem; }
+.override-price-group input { font-size: 1rem; text-align: center; font-weight: 600; }
 
-.calculator section h3 i {
-    color: var(--primary-color);
-    width: 1.25rem;
-    text-align: center;
-}
+/* Botones del Footer */
+.modal-footer button.me-auto { margin-right: auto; }
 
-/* --------------------------------------------------------------------------
-   3. ELEMENTOS DE FORMULARIO ESPECÍFICOS
--------------------------------------------------------------------------- */
-
-.tasa-input-group {
-    display: flex;
-    align-items: stretch;
-
-}
-
-.tasa-input-group input {
-    flex: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-right: none;
-}
-
-.tasa-input-group button {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border: 1px solid var(--primary-color);
-    padding: 0 1rem; /* Usamos padding horizontal en lugar de fijo */
-    flex-shrink: 0;  /* Evita que el botón se encoja */
-}
-
-.tasa-input-group input:focus, 
-.tasa-input-group input:focus + button {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    z-index: 2; /* Asegura que el borde del botón se vea sobre otros elementos */
-}
-
-/* --------------------------------------------------------------------------
-   4. SECCIÓN DE RESULTADOS (.resultados-v2)
--------------------------------------------------------------------------- */
-
-.resultados-v2 {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.resultado-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px dashed var(--bs-gray-200);
-}
-
-.resultado-item:last-child {
-    border-bottom: none;
-}
-
-.resultado-item .label {
-    font-size: 0.9rem;
-    color: var(--bs-gray-700);
-}
-
-.resultado-item .value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--bs-heading-color); /* Usamos el color de encabezado para más contraste */
-}
-
-.resultado-item.total .value {
-    font-size: 1.3rem; /* Hacemos el total más grande */
-    color: var(--primary-color);
-}
-
-.resultado-item.unitario .value {
-    font-size: 1.1rem; /* Hacemos el unitario un poco más pequeño que el total */
-    font-weight: 700;
-    color: var(--secondary-color);
-}
-
-.calcular-y-save {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem; /* Un poco más de espacio */
-    margin-top: 1.5rem;
-}
-
-/* ANÁLISIS: Se han eliminado las reglas para la clase obsoleta ".resultados" */
-/* DENTRO DE: 2.9.4/css/components/calculator.css */
-
-/* ==========================================================================
-   5. DISEÑO RESPONSIVO PARA LA CALCULADORA (NUEVO)
-   ========================================================================== */
-
+/* Responsividad */
+@media (max-width: 992px) { .form-grid-layout { grid-template-columns: 1fr; gap: 1.5rem; } }
+@media (max-width: 768px) { .summary-grid-layout { grid-template-columns: 1fr; } }
 @media (max-width: 480px) {
-    .calculator {
-        min-width: 0;
-    }
-}
-
-/* [NUEVO] Estilos mejorados para el Panel de Resultados */
-.results-panel {
-    margin-top: 1.5rem;
-    padding: 1.5rem;
-    background-color: var(--bs-gray-100);
-    border-radius: var(--bs-border-radius-lg);
-    border: 1px solid var(--bs-border-color);
-    display: none; /* Se mantiene oculto hasta el cálculo */
-}
-
-.results-panel h4 {
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--bs-border-color);
-}
-
-.results-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.results-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.9rem;
-    border-bottom: 1px solid var(--bs-border-color-translucent);
-}
-
-.results-table tr:last-child td {
-    border-bottom: none;
-}
-
-.results-table .label {
-    color: var(--bs-gray-600);
-}
-
-.results-table .value {
-    font-weight: 600;
-    text-align: right;
-}
-
-.results-table .total-row td {
-    font-size: 1rem;
-    font-weight: bold;
-    color: var(--bs-heading-color);
-}
-
-/* ARCHIVO: src/styles/components/calculator.css (AÑADIR AL FINAL) */
-
-.form-grid-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-}
-
-.form-column-left, .form-column-right {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-@media (max-width: 992px) {
-    .form-grid-layout {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
+    .summary-prices-grid { grid-template-columns: 1fr; }
+    .form-grid-layout { gap: 1rem; }
 }

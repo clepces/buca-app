@@ -1,11 +1,4 @@
-/* ======================================================
-// ARCHIVO: src/styles/components/nav.css (o similar)
-// Busca las reglas para el menú de acciones y ajústalas
-// ====================================================== */
-
-/* ==========================================================================
-    BARRA DE HERRAMIENTAS
-   ========================================================================== */
+/* src/styles/components/nav.css */
 
 .toolbar-container {
     background: var(--bs-card-bg);
@@ -19,6 +12,7 @@
     box-shadow: var(--shadow-sm);
     overflow: visible;
 }
+
 .toolbar-scroll-wrapper {
     flex-grow: 1;
     position: relative;
@@ -34,11 +28,13 @@
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    flex-wrap: nowrap; /* <-- AÃ‘ADE ESTA LÃNEA */
+    flex-wrap: nowrap;
 }
+
 .breadcrumb::-webkit-scrollbar {
     display: none;
 }
+
 .breadcrumb-item {
     white-space: nowrap;
 }
@@ -53,15 +49,18 @@
     height: 40px;
     gap: 0.5rem;
 }
+
 .nav-button.active, .nav-button:hover {
     background-color: var(--primary-color);
 }
+
 .nav-button span, .nav-button i  {
     color: var(--bs-heading-color);
 }
-.nav-button.active span, 
-.nav-button.active i, 
-.nav-button:hover span, 
+
+.nav-button.active span,
+.nav-button.active i,
+.nav-button:hover span,
 .nav-button:hover i {
     color: var(--bs-white);
 }
@@ -69,14 +68,16 @@
 .toolbar-actions {
     position: relative;
     flex-shrink: 0;
+    display: flex; /* Añadido para alinear botones */
+    gap: 8px; /* Espacio entre botones */
 }
 
 .actions-menu-dropdown {
     display: none;
     position: absolute;
     top: calc(100% + 10px);
-    right: 0; /* Alineado a la derecha del contenedor de acciones */
-    width: 220px; /* Ancho fijo para consistencia */
+    right: 0;
+    width: 220px;
     background-color: var(--bs-card-bg);
     border-radius: var(--bs-border-radius);
     box-shadow: var(--shadow-lg);
@@ -85,9 +86,11 @@
     padding: 0.5rem;
     animation: fadeIn 0.2s ease-out;
 }
+
 .actions-menu-dropdown.show {
     display: block;
 }
+
 .actions-menu-dropdown hr {
     border: none;
     border-top: 1px solid var(--bs-border-color);
@@ -95,7 +98,6 @@
 }
 
 .action-item {
-    /* Estilos para los items del menú */
     display: flex;
     align-items: center;
     width: 100%;
@@ -107,18 +109,19 @@
     cursor: pointer;
     font-size: 0.9em;
 }
+
 .action-item:hover {
     background-color: var(--primary-color);
     color: var(--bs-white);
 }
+
 .action-item.danger:hover {
     background-color: var(--error-color);
     color: var(--bs-white);
 }
-.toolbar-actions {
-    display: flex;
-    gap: 8px; /* Espacio entre los botones */
-    position: relative; /* Importante para el posicionamiento del dropdown */
+
+.toolbar-separador { /* Mantenemos el separador si es necesario */
+    /* Estilos del separador si existen */
 }
 
 .toolbar-scroll-arrow {
@@ -138,22 +141,26 @@
     pointer-events: none;
     transition: all 0.2s ease-in-out;
 }
+
 .toolbar-scroll-arrow:hover {
-    background-color: var(--primary-color); /* Fondo azul */
-    color: var(--bs-white);             /* Ãcono blanco */
+    background-color: var(--primary-color);
+    color: var(--bs-white);
 }
-.toolbar-scroll-arrow.visible { 
-    opacity: 1; 
-    pointer-events: all; 
+
+.toolbar-scroll-arrow.visible {
+    opacity: 1;
+    pointer-events: all;
 }
 
 #scroll-toolbar-left { left: 8px; }
 #scroll-toolbar-right { right: 8px; }
-#scroll-toolbar-left:hover { 
-    transform: translateY(-50%) scale(1.1) translateX(-3px); 
+
+#scroll-toolbar-left:hover {
+    transform: translateY(-50%) scale(1.1) translateX(-3px);
 }
-#scroll-toolbar-right:hover { 
-    transform: translateY(-50%) scale(1.1) translateX(3px); 
+
+#scroll-toolbar-right:hover {
+    transform: translateY(-50%) scale(1.1) translateX(3px);
 }
 
 .action-item-header {
@@ -163,7 +170,7 @@
     padding: 8px 12px;
 }
 
-.action-item-header .fa-user-circle {
+.action-item-header i.bi-person-circle { /* Ajustado para Bootstrap Icons */
     font-size: 2.2em;
     color: var(--bs-gray-400);
 }
@@ -171,12 +178,10 @@
 .user-info {
     display: flex;
     flex-direction: column;
-    /* ¡NUEVO! Evita que el contenedor se encoja y permite el ellipsis */
-    min-width: 0; 
+    min-width: 0;
 }
 
 .user-name, .user-email {
-    /* ¡NUEVO! Trunca el texto si es muy largo */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -192,3 +197,157 @@
     font-size: 0.8em;
     color: var(--bs-gray-600);
 }
+
+/* --- Estilos para Menús Contextuales --- */
+
+.main-nav-menu,
+.contextual-nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out, visibility 0.3s;
+    position: relative;
+}
+
+.main-nav-menu.hidden,
+.contextual-nav-menu.hidden {
+    opacity: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.main-nav-menu.visible,
+.contextual-nav-menu.visible {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    visibility: visible;
+    position: relative;
+}
+
+.contextual-nav-menu .back-button {
+    background-color: var(--bs-gray-200);
+    color: var(--bs-gray-800);
+    padding: 0 0.75rem;
+}
+
+.contextual-nav-menu .back-button:hover {
+    background-color: var(--bs-gray-300);
+}
+
+.contextual-nav-menu .back-button i,
+.contextual-nav-menu .back-button span {
+     color: var(--bs-gray-800);
+}
+
+.contextual-nav-menu .back-button:hover i,
+.contextual-nav-menu .back-button:hover span {
+     color: var(--bs-heading-color);
+}
+
+/* --- INICIO MODIFICACIÓN: Estilos para el enlace del título de sección --- */
+.contextual-nav-menu .section-title-item {
+    /* Mantiene algo de espacio si es necesario, pero el botón ya tiene padding */
+}
+
+.contextual-nav-menu .section-title-link {
+    font-weight: 600; /* Lo hacemos negrita */
+    color: var(--bs-heading-color); /* Color de título por defecto */
+    background-color: transparent; /* Sin fondo por defecto */
+    padding: 0 0.75rem; /* Ajuste padding */
+}
+
+/* Hover y Active similar a otros botones, pero sin cambiar tanto el fondo */
+.contextual-nav-menu .section-title-link:hover {
+    background-color: var(--primary-light-hover); /* Fondo muy sutil al pasar el ratón */
+    color: var(--primary-color); /* Color primario al pasar el ratón */
+}
+.contextual-nav-menu .section-title-link.active {
+     background-color: var(--primary-light-hover);
+     color: var(--primary-color);
+     font-weight: 700; /* Un poco más de peso si está activo */
+}
+
+/* Sobrescribimos el color blanco para hover/active que heredaría de .nav-button */
+.contextual-nav-menu .section-title-link:hover span,
+.contextual-nav-menu .section-title-link:hover i,
+.contextual-nav-menu .section-title-link.active span,
+.contextual-nav-menu .section-title-link.active i {
+    color: var(--primary-color);
+}
+/* --- FIN MODIFICACIÓN --- */
+
+.contextual-nav-menu .separator {
+    color: var(--bs-gray-400);
+    font-weight: bold;
+    align-self: center;
+    padding: 0 0.25rem;
+}
+
+.contextual-nav-button {
+    /* Estilos específicos si son necesarios */
+}
+
+/* src/styles/components/nav.css */
+
+/* ... (Estilos anteriores) ... */
+
+/* --- INICIO MODIFICACIÓN CORREGIDA: Mejorar contraste en Dark Mode --- */
+
+/* Aplica a TODOS los nav-button (principales y contextuales) por defecto en dark mode */
+[data-bs-theme="dark"] .nav-button span,
+[data-bs-theme="dark"] .nav-button i {
+    color: var(--bs-gray-300); /* Color base más claro para dark mode */
+}
+
+/* Hover/Active: Mantiene el blanco para MEJOR contraste al seleccionar/pasar el ratón */
+[data-bs-theme="dark"] .nav-button:hover span,
+[data-bs-theme="dark"] .nav-button:hover i,
+[data-bs-theme="dark"] .nav-button.active span,
+[data-bs-theme="dark"] .nav-button.active i {
+    color: var(--bs-white); /* Blanco brillante para hover/active */
+}
+
+/* Ajustes específicos para el botón Volver y Título de Sección en dark mode */
+[data-bs-theme="dark"] .contextual-nav-menu .back-button {
+    background-color: var(--bs-gray-700);
+    /* El color del span/i ya se hereda de la regla general de arriba (--bs-gray-300) */
+}
+[data-bs-theme="dark"] .contextual-nav-menu .back-button:hover {
+    background-color: var(--bs-gray-600);
+    /* El color del span/i ya se cambia a blanco por la regla general de hover */
+}
+
+[data-bs-theme="dark"] .contextual-nav-menu .section-title-link {
+    color: var(--bs-gray-100); /* Título un poco más brillante */
+    /* Icono y span heredan este color */
+}
+[data-bs-theme="dark"] .contextual-nav-menu .section-title-link:hover {
+    background-color: var(--primary-light-hover);
+    color: var(--primary-light); /* Color primario claro al pasar ratón */
+}
+[data-bs-theme="dark"] .contextual-nav-menu .section-title-link.active {
+     background-color: var(--primary-light-hover);
+     color: var(--primary-light); /* Color primario claro si está activo */
+}
+/* Asegura que el icono/span del título también cambien en hover/active */
+[data-bs-theme="dark"] .contextual-nav-menu .section-title-link:hover span,
+[data-bs-theme="dark"] .contextual-nav-menu .section-title-link:hover i,
+[data-bs-theme="dark"] .contextual-nav-menu .section-title-link.active span,
+[data-bs-theme="dark"] .contextual-nav-menu .section-title-link.active i {
+    color: var(--primary-light);
+}
+
+
+/* Ajuste para el separador en dark mode */
+[data-bs-theme="dark"] .contextual-nav-menu .separator {
+    color: var(--bs-gray-600);
+}
+/* --- FIN MODIFICACIÓN CORREGIDA --- */

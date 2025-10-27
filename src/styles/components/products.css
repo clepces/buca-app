@@ -1,0 +1,12 @@
+.view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap; /* Para que el botón se mueva abajo en pantallas pequeñas */
+    gap: 1rem;
+}
+
+.view-header .view-title {
+    margin-bottom: 0; /* Quitamos margen inferior al título cuando está en el header */
+}

@@ -1,31 +1,29 @@
-/* ==========================================================================
-   PANEL VIEW
-   Estilos para el Panel de Control, incluyendo las tarjetas de estadísticas
-   y los placeholders para gráficos.
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   1. GRID PRINCIPAL DEL PANEL
--------------------------------------------------------------------------- */
+/* src/styles/components/panel.css */
 .panel-grid {
     display: grid;
-    /* ANÁLISIS: auto-fit es excelente para la responsividad. Llena el espacio
-       con tantas columnas como quepan, con un mínimo de 280px. */
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
 }
 
-/* --------------------------------------------------------------------------
-   2. TARJETAS DE ESTADÍSTICAS (.stat-card)
--------------------------------------------------------------------------- */
+/* --- INICIO MODIFICACIÓN: Estilos Dashboard Super Admin --- */
+/* Estilo para el nuevo párrafo de bienvenida (si se quiere destacar más) */
+.view-header .lead { /* Bootstrap 'lead' class */
+    font-size: 1.1rem; /* Un poco más grande */
+    font-weight: 400;
+    /* color: var(--bs-gray-700); */ /* Puedes ajustar el color si es necesario */
+}
+[data-bs-theme="dark"] .view-header .lead {
+    /* color: var(--bs-gray-400); */ /* Ajuste para modo oscuro */
+}
+/* Estructura mejorada para StatCard */
 .stat-card {
     background-color: var(--bs-card-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius-lg);
-    padding: 1.5rem;
+    padding: 1.25rem; /* Ajuste de padding general */
     display: flex;
-    align-items: center;
-    gap: 1.25rem;
+    flex-direction: column;
+    justify-content: space-between;
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
@@ -35,47 +33,127 @@
     box-shadow: var(--shadow-lg);
     border-color: var(--primary-light);
 }
+
+.stat-card-main {
+    display: flex;
+    /* align-items: center; */ /* Quitamos esto para alinear icono arriba */
+    align-items: flex-start; /* Alinea icono y texto arriba */
+    gap: 1rem; /* Espacio entre icono e info */
+    margin-bottom: 1rem;
+}
+
 .stat-card-icon {
     flex-shrink: 0;
-    width: 60px;
-    height: 60px;
-    border-radius: var(--bs-border-radius); /* Coherencia con otros radios */
+    width: 48px; /* Ligeramente más pequeño */
+    height: 48px;
+    border-radius: var(--bs-border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--bs-white);
+    /* Fondo se define por clase específica */
 }
 .stat-card-icon i {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
 }
 
-/* Colores específicos para cada tarjeta */
-.stat-card.productos .stat-card-icon { background-color: #0ea5e9; } /* Azul cielo */
-.stat-card.inversion .stat-card-icon { background-color: #eab308; } /* Amarillo/Oro */
-.stat-card.stock .stat-card-icon    { background-color: #22c55e; } /* Verde */
-.stat-card.ganancia .stat-card-icon { background-color: #db2777; } /* Fucsia */
+/* Colores específicos */
+.stat-card-companies .stat-card-icon { background-color: var(--bs-blue); }
+.stat-card-active-companies .stat-card-icon { background-color: var(--bs-blue); }
+.stat-card-subscribers .stat-card-icon { background-color: var(--bs-green); }
+.stat-card-earnings .stat-card-icon { background-color: var(--bs-purple); }
+
 
 .stat-card-info {
     display: flex;
     flex-direction: column;
+    flex-grow: 1; /* Ocupa espacio restante */
+    min-width: 0; /* Para evitar desbordamiento */
 }
+
+/* Contenedor para título y cambio % */
+.stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem; /* Espacio antes del valor */
+}
+
 .stat-card-title {
-    font-size: 0.9rem;
+    font-size: 0.85rem; /* Más pequeño */
     font-weight: 500;
     color: var(--bs-gray-600);
-    margin-bottom: 0.25rem;
+    margin: 0; /* Quitamos margen inferior */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .stat-card-value {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--bs-heading-color);
     line-height: 1.2;
+    /* El valor ahora está solo */
+}
+
+.stat-card-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.75rem; /* Más pequeño */
+    font-weight: 600;
+    padding: 0.15rem 0.4rem; /* Más ajustado */
+    border-radius: var(--bs-border-radius-mini);
+    flex-shrink: 0; /* Evita que se encoja */
+}
+.stat-card-change i { font-size: 1em; }
+
+.stat-card-change.positive {
+    background-color: rgba(23, 198, 83, 0.1);
+    color: var(--bs-success);
+}
+.stat-card-change.negative {
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--error-color);
+}
+
+/* Quitamos el footer, el gráfico va directo */
+/* .stat-card-footer { ... } */
+
+.stat-card-mini-graph {
+    width: 100%; /* Ocupa todo el ancho */
+    height: 40px; /* Un poco más alto */
+    margin-top: 0.75rem; /* Espacio después del valor */
+    /* background-color: var(--bs-gray-100); */ /* Quitamos fondo gris */
+    /* border-radius: var(--bs-border-radius-mini); */
+    display: flex; /* Para centrar el SVG si es necesario */
+    align-items: flex-end; /* Alinea barras abajo */
+}
+[data-bs-theme="dark"] .stat-card-mini-graph {
+    /* background-color: rgba(75, 85, 99, 0.3); */ /* Quitamos fondo gris */
 }
 
 
-/* --------------------------------------------------------------------------
-   3. PLACEHOLDERS PARA GRÁFICOS
--------------------------------------------------------------------------- */
+/* Estilos para el SVG placeholder */
+.stat-card-mini-graph svg {
+    width: 100%;
+    height: 100%;
+}
+.stat-card-mini-graph .graph-bar {
+    fill: var(--bs-gray-300); /* Color base barras */
+    transition: fill 0.2s;
+}
+.stat-card:hover .graph-bar {
+    fill: var(--primary-light); /* Color barras al hacer hover en tarjeta */
+}
+
+[data-bs-theme="dark"] .stat-card-mini-graph .graph-bar {
+    fill: var(--bs-gray-700);
+}
+[data-bs-theme="dark"] .stat-card:hover .graph-bar {
+    fill: var(--primary-light);
+}
+
 .chart-placeholder {
     background-color: var(--bs-card-bg);
     border: 2px dashed var(--bs-border-color);
@@ -91,7 +169,6 @@
     background-color: var(--bs-gray-50);
 }
 
-/* En pantallas más grandes, los placeholders ocupan dos columnas */
 @media (min-width: 992px) {
     .chart-placeholder {
         grid-column: span 2;
@@ -125,18 +202,15 @@
     border-radius: var(--bs-border-radius-lg);
     height: 100%;
 }
-
 .empty-state-icon {
     font-size: 4rem;
     margin-bottom: 1rem;
 }
-
 .empty-state-message {
     font-size: 1.2rem;
     font-weight: 500;
 }
 
-/* Estilos para el Panel de Resultados de la Calculadora */
 .results-panel {
     margin-top: 1.5rem;
     padding: 1rem;
@@ -144,25 +218,269 @@
     border-radius: var(--bs-border-radius);
     border: 1px solid var(--bs-border-color);
 }
-
 .results-panel h4 {
     margin: 0 0 1rem 0;
     font-size: 1rem;
     font-weight: 600;
     color: var(--primary-color);
 }
-
 .result-item {
     display: flex;
     justify-content: space-between;
     font-size: 0.9rem;
     padding: 0.5rem 0;
 }
-
 .result-item + .result-item {
     border-top: 1px solid var(--bs-border-color);
 }
-
 .result-item strong {
     font-weight: 600;
+}
+
+.stat-card-icon i.bi {
+    font-size: 2rem;
+    line-height: 1;
+}
+.stat-card-value.negative {
+    color: var(--error-color);
+}
+.stat-card-value.negative::before {
+    content: "";
+    margin-right: 0.1em;
+}
+.stat-card-value .btn {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.6rem;
+    vertical-align: middle;
+}
+.stat-card-value .btn i {
+    font-size: 0.9em;
+}
+.stat-card-value i.bi {
+    font-size: 1.5rem;
+    vertical-align: text-bottom;
+}
+
+.view-header.align-items-start { }
+.view-header .h5 {
+    font-weight: 500;
+    color: var(--bs-heading-color);
+}
+.view-header .text-muted strong {
+    font-weight: 600;
+}
+.view-header .badge {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   7. ESTILOS PARA DASHBOARD MEJORADO
+   ========================================================================== */
+
+.dashboard-header {
+    margin-bottom: 2rem;
+}
+
+.dashboard-subtitle {
+    color: var(--bs-gray-600);
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+.dashboard-actions {
+    margin-top: 2rem;
+}
+
+.quick-action-card {
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all var(--transition-normal);
+}
+
+.quick-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+}
+
+.quick-action-card h4 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+.quick-action-card h4 i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.quick-action-card p {
+    color: var(--bs-gray-600);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.dashboard-info {
+    margin-top: 2rem;
+}
+
+.info-card {
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.5rem;
+}
+
+.info-card h4 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+.info-card h4 i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 500;
+    color: var(--bs-gray-600);
+    font-size: 0.9rem;
+}
+
+.info-value {
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    font-size: 0.9rem;
+}
+
+.status-active {
+    color: var(--bs-success) !important;
+}
+
+.dashboard-analytics {
+    margin-top: 2rem;
+}
+
+.analytics-card {
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.analytics-card h4 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+.analytics-card h4 i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.analytics-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.analytics-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--bs-gray-50);
+    border-radius: var(--bs-border-radius);
+    border: 1px solid var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .analytics-item {
+    background-color: var(--bs-gray-800);
+}
+
+.analytics-label {
+    font-weight: 500;
+    color: var(--bs-gray-600);
+    font-size: 0.9rem;
+}
+
+.analytics-value {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.analytics-value.positive {
+    color: var(--bs-success);
+}
+
+.analytics-value.negative {
+    color: var(--error-color);
+}
+
+.analytics-value.neutral {
+    color: var(--bs-gray-600);
+}
+
+/* Responsive para las nuevas tarjetas */
+@media (max-width: 768px) {
+    .dashboard-actions .row {
+        flex-direction: column;
+    }
+    
+    .dashboard-actions .col-md-3,
+    .dashboard-actions .col-md-4,
+    .dashboard-actions .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .analytics-grid {
+        gap: 0.75rem;
+    }
+    
+    .analytics-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
 }

@@ -27,41 +27,82 @@ export function closeModal() {
 }
 
 /**
- * --- ¡FUNCIÓN AÑADIDA! ---
- * Muestra un modal de confirmación genérico.
+ * --- ¡FUNCIÓN MEJORADA! ---
+ * Muestra un modal de confirmación genérico pero personalizable.
  * @param {string} title - El título del modal.
- * @param {string} message - El mensaje en HTML.
- * @param {function} onConfirm - Callback que se ejecuta si el usuario presiona "Sí".
+ * @param {string} messageHTML - El mensaje principal (puede ser HTML).
+ * @param {function} onConfirm - Callback si el usuario presiona "Confirmar".
+ * @param {object} [options={}] - Opciones de personalización.
+ * @param {string} [options.icon='bi bi-exclamation-triangle-fill text-warning'] - Clase de icono para el título.
+ * @param {string} [options.confirmText='Sí, continuar'] - Texto del botón de confirmación.
+ * @param {string} [options.cancelText='Cancelar'] - Texto del botón de cancelación.
+ * @param {string} [options.confirmButtonClass='btn-primary'] - Clase CSS para el botón de confirmación.
+ * @param {string} [options.cancelButtonClass='btn-secondary'] - Clase CSS para el botón de cancelación.
+ * @param {string} [options.confirmIcon='bi bi-check-lg'] - Icono para el botón de confirmación.
+ * @param {string} [options.cancelIcon='bi bi-x-lg'] - Icono para el botón de cancelación.
+ * @param {string} [options.modalId='confirmation-modal'] - ID para el elemento modal.
  */
-export function showConfirmationModal(title, message, onConfirm) {
-    const content = document.createElement('div');
-    content.innerHTML = `<p>${message}</p>`;
+export function showConfirmationModal(title, messageHTML, onConfirm, options = {}) {
+    // Valores por defecto para las opciones
+    const defaults = {
+        icon: 'bi bi-exclamation-triangle-fill text-warning',
+        confirmText: 'Sí, continuar',
+        cancelText: 'Cancelar',
+        confirmButtonClass: 'btn-primary',
+        cancelButtonClass: 'btn-secondary',
+        confirmIcon: 'bi bi-check-lg',
+        cancelIcon: 'bi bi-x-lg',
+        modalId: 'confirmation-modal'
+    };
+    const config = { ...defaults, ...options }; // Combina defaults con opciones pasadas
 
+    // Contenido del modal
+    const content = document.createElement('div');
+    // --- INICIO MODIFICACIÓN: Permitir HTML en el mensaje ---
+    content.innerHTML = `<p style="font-size: 1.1rem; line-height: 1.6; color: var(--bs-gray-700);">${messageHTML}</p>`; // Estilo inline simple para el párrafo
+    if (document.documentElement.getAttribute('data-bs-theme') === 'dark') {
+         content.querySelector('p').style.color = 'var(--bs-gray-300)'; // Ajuste para tema oscuro
+    }
+    // --- FIN MODIFICACIÓN ---
+
+    // Botones del footer
     const confirmButton = document.createElement('button');
-    confirmButton.className = 'btn-danger';
-    confirmButton.innerHTML = '<i class="fas fa-check"></i> Sí, continuar';
+    confirmButton.className = config.confirmButtonClass; // Clase configurable
+    confirmButton.innerHTML = `<i class="${config.confirmIcon} me-1"></i> ${config.confirmText}`; // Icono y texto configurables
 
     const cancelButton = document.createElement('button');
-    cancelButton.className = 'btn-secondary';
-    cancelButton.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+    cancelButton.className = config.cancelButtonClass; // Clase configurable
+    cancelButton.innerHTML = `<i class="${config.cancelIcon} me-1"></i> ${config.cancelText}`; // Icono y texto configurables
 
-    const footer = document.createElement('div');
-    footer.className = 'modal-footer';
-    footer.append(cancelButton, confirmButton);
+    // Contenedor del footer (se pasa directamente)
+    const footerContainer = document.createElement('div');
+    // No necesita la clase 'modal-footer' aquí, Modal.js la añade
+    footerContainer.append(cancelButton, confirmButton);
 
     const modal = Modal({
-        title: `<i class="fas fa-exclamation-triangle"></i> ${title}`,
+        // --- INICIO MODIFICACIÓN: Icono configurable en título ---
+        title: `<i class="${config.icon} me-2"></i> ${title}`,
+        // --- FIN MODIFICACIÓN ---
         contentElement: content,
-        footerElement: footer,
-        id: 'confirmation-modal'
+        // footerElement: footer, // Modal.js ahora usa #modal-footer-container
+        id: config.modalId // ID configurable
     });
+
+    // Añadimos los botones al contenedor del footer que Modal.js espera
+    const modalFooterTarget = modal.querySelector('#modal-footer-container');
+    if (modalFooterTarget) {
+         modalFooterTarget.append(cancelButton, confirmButton);
+    } else {
+         console.error("No se encontró #modal-footer-container en el modal de confirmación.");
+    }
+
 
     const closeModalFunc = () => modal.remove();
 
     cancelButton.addEventListener('click', closeModalFunc);
     confirmButton.addEventListener('click', () => {
-        onConfirm();
-        closeModalFunc();
+        onConfirm(); // Ejecuta la acción de confirmación
+        closeModalFunc(); // Cierra el modal
     });
 
     // Añadimos el modal al body

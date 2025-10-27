@@ -142,8 +142,10 @@ export async function updateProductInState(appState, productId, updatedData) {
  * Elimina un producto del estado por su ID.
  * @param {string} productId - El ID del producto a eliminar.
  */
-export function deleteProduct(productId) {
-  state.products = state.products.filter(p => p.id !== productId);
+export async function deleteProduct(appState, productId) { // Cambia la firma si es necesario
+    appState.products = appState.products.filter(p => p.id !== productId);
+    // Aquí iría la lógica para eliminar de Firebase/IndexedDB
+    triggerRerender(); // Asegura que la UI se actualice
 }
 
 // ... (Aquí irían el resto de tus acciones: setClients, addClient, etc.) ...

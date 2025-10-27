@@ -114,3 +114,67 @@
 #app-layout.is-logging-out {
     animation: fadeOut 0.5s ease-out forwards;
 }
+
+/* Mejoras adicionales para animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Transiciones suaves para elementos interactivos */
+.stat-card,
+.quick-action-card,
+.analytics-card,
+.info-card {
+    transition: all var(--transition-normal);
+}
+
+.stat-card:hover,
+.quick-action-card:hover,
+.analytics-card:hover,
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Animación para botones */
+button,
+.btn,
+.nav-button {
+    transition: all var(--transition-fast);
+}
+
+button:hover,
+.btn:hover,
+.nav-button:hover {
+    transform: translateY(-1px);
+}
+
+/* Animación para iconos */
+i {
+    transition: transform var(--transition-fast);
+}
+
+button:hover i,
+.btn:hover i,
+.nav-button:hover i {
+    transform: scale(1.1);
+}
+
+/* Mejoras para tema oscuro */
+[data-bs-theme="dark"] .stat-card:hover,
+[data-bs-theme="dark"] .quick-action-card:hover,
+[data-bs-theme="dark"] .analytics-card:hover,
+[data-bs-theme="dark"] .info-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}

@@ -15,6 +15,7 @@ import { delay } from './utils/retardo.js';
 import { can } from './services/permissions.service.js';
 import { PERMISSIONS } from './services/roles.config.js';
 import { routes } from './router/routes.js';
+import { MODULES } from './services/modules.config.js'; // Asegúrate que MODULES esté importado
 
 export default class App {
 
@@ -223,11 +224,15 @@ export default class App {
 
     renderLayout() {
         const currentPath = window.location.hash || '#/';
+        // --- INICIO MODIFICACIÓN ---
+        // Pasamos state.ui.navContext y state completo a MainNav
+        const mainNavHTML = MainNav(currentPath, state, state.ui.navContext); // <-- Genera el HTML correcto        // --- FIN MODIFICACIÓN ---
+        
         this.root.innerHTML = `
-            <div id="app-layout">
+            <div class="page-wrapper"  id="app-layout" >
                 ${Header(this.state)}
-                <main class="main-content">
-                    ${MainNav(currentPath, this.state)}
+                <main class="content">
+                    ${mainNavHTML}
                     <div class="container view-container" id="view-container"></div>
                 </main>
                 ${Footer(this.state)}
@@ -252,39 +257,77 @@ export default class App {
 
     async handleNavigation(path) {
         const viewContainer = document.getElementById('view-container');
-        if (!viewContainer) return;
+        if (!viewContainer) {
+             Logger.error("Contenedor de vista no encontrado (#view-container).");
+             return;
+        }
+
+        // --- Limpieza de la vista anterior ---
         if (typeof this.currentViewCleanup === 'function') {
-            try {
-                this.currentViewCleanup();
-            } catch (e) {
-                Logger.error('Error cleanup:', e);
-            }
+            try { this.currentViewCleanup(); }
+            catch (e) { Logger.error('Error en cleanup de vista:', e); }
             this.currentViewCleanup = () => {};
         }
-        const route = routes.find(r => r.path === path) || routes.find(r => r.path === '#/');
+
+        // --- Encontrar la ruta y verificar permisos ---
+        const route = routes.find(r => r.path === path);
+        const defaultRoute = routes.find(r => r.path === '#/'); // Ruta del dashboard como fallback
+
+        if (!route) {
+             Logger.warn(`Ruta no encontrada: ${path}. Redirigiendo a Dashboard.`);
+             window.location.hash = '#/'; // Redirige si la ruta no existe
+             return; // La redirección disparará handleNavigation de nuevo
+        }
+
         if (!can(route.permission)) {
-            Logger.warn(`Acceso denegado a: ${path}. Redirigiendo.`);
-            const defaultRoute = routes.find(r => can(r.permission));
-            if (defaultRoute) {
-                window.location.hash = defaultRoute.path;
-            } else {
-                Logger.error('Sin ruta accesible.');
-                viewContainer.innerHTML = 'Sin acceso.';
-            }
-            return;
+            Logger.warn(`Acceso denigado a: ${path}. Redirigiendo a ruta por defecto.`);
+            // Busca la primera ruta principal a la que tenga acceso
+            const accessibleRoute = routes.find(r => r.isMainModule && can(r.permission)) || defaultRoute;
+            window.location.hash = accessibleRoute.path;
+            return; // La redirección disparará handleNavigation de nuevo
         }
-        document.querySelectorAll('.nav-button').forEach(btn => btn.classList.toggle('active', btn.getAttribute('href') === path));
-        viewContainer.classList.add('fade-out');
-        await delay(150);
+
+        // --- INICIO MODIFICACIÓN: Actualizar contexto de navegación ---
+        // Asegúrate que route exista antes de acceder a route.context
+        // Y usa MODULES.CORE como fallback correcto.
+        const newNavContext = route?.context || MODULES.CORE;
+        // --- FIN MODIFICACIÓN ---
+        if (state.ui.navContext !== newNavContext) {
+             state.ui.navContext = newNavContext;
+             // Forzamos el re-renderizado del layout para actualizar MainNav
+             this.renderLayout();
+             // Esperamos un instante para que el DOM se actualice ANTES de cargar la vista
+             await delay(10);
+        } else {
+            // Si el contexto no cambió, solo actualizamos el botón activo en MainNav
+            document.querySelectorAll('.nav-button, .contextual-nav-button').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('href') === path);
+            });
+        }
+        // Re-seleccionamos viewContainer por si renderLayout() lo recreó
+        const updatedViewContainer = document.getElementById('view-container');
+        if (!updatedViewContainer) {
+             Logger.error("Contenedor de vista desaparecido después de renderLayout().");
+             return;
+        }
+        // --- FIN MODIFICACIÓN ---
+
+
+        // --- Cargar y renderizar la vista ---
+        updatedViewContainer.classList.add('fade-out'); // Inicia animación de salida
+        await delay(150); // Espera que termine la animación
+
         try {
+            // Importa dinámicamente el componente de la vista
             const ViewComponent = await route.component();
-            this.currentViewCleanup = ViewComponent(viewContainer, this.state);
+            // Llama a la función del componente para renderizar y obtener la función de limpieza
+            this.currentViewCleanup = ViewComponent(updatedViewContainer, this.state);
         } catch (loadError) {
-            Logger.error(`Error cargando vista ${path}:`, loadError);
-            viewContainer.innerHTML = `Error ${path}.`;
-            this.currentViewCleanup = () => {};
+            Logger.error(`Error cargando componente para la vista ${path}:`, loadError);
+            updatedViewContainer.innerHTML = `<p>Error al cargar la vista ${path}.</p>`; // Mensaje de error
+            this.currentViewCleanup = () => {}; // No hay nada que limpiar
         } finally {
-            viewContainer.classList.remove('fade-out');
+            updatedViewContainer.classList.remove('fade-out'); // Quita la clase para la animación de entrada
         }
     }
 
@@ -316,6 +359,20 @@ export default class App {
         const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
         const next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-bs-theme', next);
-        Logger.info(`Tema: ${next}`);
+        Logger.info(`Tema cambiado a: ${next}`);
+
+        // Solo re-renderizar la navegación sin afectar la vista actual
+        this.updateNavigation();
+    }
+
+    updateNavigation() {
+        const currentPath = window.location.hash || '#/';
+        const mainNavHTML = MainNav(currentPath, state, state.ui.navContext);
+        
+        // Actualizar solo la navegación sin recrear todo el layout
+        const toolbarContainer = this.root.querySelector('.toolbar-container');
+        if (toolbarContainer) {
+            toolbarContainer.outerHTML = mainNavHTML;
+        }
     }
 }

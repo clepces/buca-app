@@ -1,4 +1,5 @@
 // store/state.js
+import { MODULES } from '../services/modules.config.js'; // importar MODULES!
 
 /**
  * Genera el estado inicial de la aplicación.
@@ -56,6 +57,7 @@ export const getInitialState = () => ({
   
   // Estado de la UI
   ui: {
+    navContext: MODULES.CORE, // Antes era main', 'inventory', 'pos', 'clients', etc.
     modal: {
       isOpen: false,
       content: null, // 'productForm', 'clientForm', etc.

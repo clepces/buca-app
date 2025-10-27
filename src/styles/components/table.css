@@ -215,3 +215,31 @@ td.actions {
         background-color: var(--bs-card-bg);
     }
 }
+
+/* Mejoras para tema oscuro en tablas */
+[data-bs-theme="dark"] thead {
+    background-color: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] th {
+    color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] tbody tr:hover {
+    background-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .descripcion-badge {
+    background-color: var(--bs-gray-700);
+    color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] .price-tooltip.global {
+    background-color: var(--bs-gray-900);
+    color: var(--bs-white);
+}
+
+[data-bs-theme="dark"] .search-highlight {
+    background-color: rgba(255, 234, 0, 0.25) !important;
+    border-left-color: #ffd700;
+}

@@ -1,5 +1,6 @@
 // services/storage.service.js
-
+import { db } from '../firebase-config.js';
+import { collection, doc, getDoc } from 'firebase/firestore';
 import { getInitialState } from '../store/state.js';
 import { indexedDbAdapter } from './storage-adapters/indexedDb.adapter.js';
 import { firebaseAdapter } from './storage-adapters/firebase.adapter.js';
@@ -23,7 +24,6 @@ export async function initializeStorage(providerName = 'firebase') {
     await activeAdapter.init();
 }
 
-// 'loadState' ahora solo carga la estructura base de la app.
 export async function loadState() {
     if (!activeAdapter) throw new Error("Storage service not initialized.");
 
@@ -34,7 +34,43 @@ export async function loadState() {
     return state;
 }
 
-// ¡NUEVA FUNCIÓN! Esto se llamará DESPUÉS de que el usuario inicie sesión.
+export async function loadGlobalConfig() {
+    try {
+        const configCollectionRef = collection(db, 'app_config');
+        const docNames = [
+            'system', 
+            'featureFlags', 
+            'plans', 
+            'definitions', 
+            'templates', 
+            'defaultBusinessSettings'
+        ];
+
+        const configPromises = docNames.map(async (docName) => {
+            const docRef = doc(configCollectionRef, docName);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) {
+                Logger.warn(`Documento de config no encontrado: 'app_config/${docName}'`);
+                return { [docName]: null };
+            }
+            return { [docName]: docSnap.data() };
+        });
+
+        const configArray = await Promise.all(configPromises);
+        
+        // Combina el array de objetos (ej. [{system: ...}, {plans: ...}]) en uno solo
+        const globalConfig = configArray.reduce((acc, current) => ({ ...acc, ...current }), {});
+
+        Logger.info('✅ Configuración global cargada.');
+        return globalConfig;
+
+    } catch (error) {
+        Logger.error('Error Crítico al cargar la configuración global:', error);
+        // Lanzamos el error para que main.js pueda manejarlo
+        throw new Error(`CONFIG_LOAD_FAILED: ${error.message}`);
+    }
+}
+
 export async function loadBusinessData(state) {
     if (!activeAdapter || !state.session.business) throw new Error("User is not associated with a business.");
     
