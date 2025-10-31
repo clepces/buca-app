@@ -8,19 +8,39 @@ export const ROLES = {
 };
 
 export const PERMISSIONS = {
-    // Permisos de Acciones
-    USE_POS: 'pos:use',
-    CREATE_PRODUCT: 'product:create',
-    EDIT_PRODUCT: 'product:edit',
-    DELETE_PRODUCT: 'product:delete',
-    EDIT_SETTINGS: 'settings:edit',
+    // --- Vistas Generales ---
+    VIEW_DASHBOARD: 'view:dashboard', // Permiso para ver el panel principal (cualquier rol)
 
-    // Permisos para ver Vistas
-    VIEW_DASHBOARD: 'view:dashboard',
-    VIEW_PRODUCTS: 'view:products',
+    // --- Productos (Inventario) ---
+    VIEW_INVENTORY_MODULE: 'view:inventory_module', // Ver el módulo de Inventario (incluye resumen y sub-vistas)
+    VIEW_PRODUCTS: 'view:products',         // Ver la lista de productos
+    CREATE_PRODUCT: 'product:create',       // Crear un nuevo producto
+    EDIT_PRODUCT: 'product:edit',         // Editar un producto existente
+    DELETE_PRODUCT: 'product:delete',       // Eliminar un producto
+
+    // --- Punto de Venta (POS) ---
+    VIEW_POS_MODULE: 'view:pos_module',       // Ver el módulo de Punto de Venta
     VIEW_POS: 'view:pos',
-    VIEW_INVENTORY: 'view:inventory',
+    USE_POS: 'pos:use',                 // Realizar ventas/transacciones en el POS
+
+    // --- Clientes (CRM) ---
+    VIEW_CLIENTS_MODULE: 'view:clients_module',   // Ver el módulo de Clientes
     VIEW_CLIENTS: 'view:clients',
+    // TODO: Añadir permisos CREATE_CLIENT, EDIT_CLIENT, etc. si es necesario
+
+    // --- Empresas (Super Admin) --- NUEVO ---
+    VIEW_COMPANIES_MODULE: 'view:companies_module', // Ver el módulo de Empresas (Super Admin)
+    VIEW_COMPANIES: 'view:companies',       // Ver la lista de empresas
+    CREATE_COMPANY: 'company:create',       // Crear una nueva empresa
+    EDIT_COMPANY: 'company:edit',         // Editar una empresa
+    DELETE_COMPANY: 'company:delete',       // Eliminar una empresa
+    MANAGE_COMPANY_USERS: 'company:manage_users', // Gestionar usuarios de una empresa
+    MANAGE_COMPANY_PLAN: 'company:manage_plan',   // Cambiar el plan/suscripción
+
+    // --- Configuración ---
+    EDIT_SETTINGS_BUSINESS: 'settings:edit_business', // Editar configuración DEL NEGOCIO (Admin)
+    EDIT_SETTINGS_SYSTEM: 'settings:edit_system',   // Editar configuración DEL SISTEMA (Super Admin)
+    
 };
 
 export const rolesConfig = {
@@ -28,48 +48,52 @@ export const rolesConfig = {
         // Super Admin tiene acceso a todo
         permissions: [
             PERMISSIONS.VIEW_DASHBOARD,
+            // Empresas
+            PERMISSIONS.VIEW_COMPANIES_MODULE,
+            PERMISSIONS.VIEW_COMPANIES,
+            PERMISSIONS.CREATE_COMPANY,
+            PERMISSIONS.EDIT_COMPANY,
+            PERMISSIONS.DELETE_COMPANY,
+            PERMISSIONS.MANAGE_COMPANY_USERS,
+            PERMISSIONS.MANAGE_COMPANY_PLAN,
+            // Sistema
+            PERMISSIONS.EDIT_SETTINGS_SYSTEM,
+            // Puede ver todo lo demás también (opcional, pero común)
+            PERMISSIONS.VIEW_INVENTORY_MODULE,
             PERMISSIONS.VIEW_PRODUCTS,
-            PERMISSIONS.VIEW_POS,
-            PERMISSIONS.VIEW_INVENTORY,
-            PERMISSIONS.VIEW_CLIENTS,
-            PERMISSIONS.USE_POS,
-            PERMISSIONS.CREATE_PRODUCT,
-            PERMISSIONS.EDIT_PRODUCT,
-            PERMISSIONS.DELETE_PRODUCT,
-            PERMISSIONS.EDIT_SETTINGS,
+            PERMISSIONS.VIEW_POS_MODULE,
+            PERMISSIONS.VIEW_CLIENTS_MODULE,
         ]
     },
     [ROLES.ADMIN]: {
         // Admin del negocio tiene acceso a todo excepto configuraciones del sistema
         permissions: [
             PERMISSIONS.VIEW_DASHBOARD,
+            PERMISSIONS.VIEW_INVENTORY_MODULE,
             PERMISSIONS.VIEW_PRODUCTS,
-            PERMISSIONS.VIEW_POS,
-            PERMISSIONS.VIEW_INVENTORY,
-            PERMISSIONS.VIEW_CLIENTS,
-            PERMISSIONS.USE_POS,
             PERMISSIONS.CREATE_PRODUCT,
             PERMISSIONS.EDIT_PRODUCT,
             PERMISSIONS.DELETE_PRODUCT,
-            PERMISSIONS.EDIT_SETTINGS,
+            PERMISSIONS.VIEW_POS_MODULE,
+            PERMISSIONS.USE_POS,
+            PERMISSIONS.VIEW_CLIENTS_MODULE,
+            PERMISSIONS.EDIT_SETTINGS_BUSINESS, // <- Cambio aquí
         ]
     },
     [ROLES.USER]: {
         permissions: [
             PERMISSIONS.VIEW_DASHBOARD,
-            PERMISSIONS.VIEW_PRODUCTS,
-            PERMISSIONS.VIEW_INVENTORY,
-            PERMISSIONS.VIEW_CLIENTS,
-            PERMISSIONS.CREATE_PRODUCT,
-            PERMISSIONS.EDIT_PRODUCT,
+            PERMISSIONS.VIEW_INVENTORY_MODULE,
+            PERMISSIONS.VIEW_PRODUCTS
         ]
     },
     [ROLES.CAJERO]: {
         permissions: [
-            // El cajero puede ver el panel y la vista de caja.
-            PERMISSIONS.VIEW_DASHBOARD, 
-            PERMISSIONS.VIEW_POS,
+            PERMISSIONS.VIEW_DASHBOARD,
+            PERMISSIONS.VIEW_POS_MODULE,
             PERMISSIONS.USE_POS,
+            // Podría tener acceso limitado a Clientes para buscarlos
+             PERMISSIONS.VIEW_CLIENTS_MODULE,
         ]
     }
 };

@@ -6,6 +6,7 @@
 /* 1. Reseteo y Estilos Base */
 @import url('./reset.css');
 @import url('./base.css');
+@import url('https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css');
 
 /* 2. Componentes Fundamentales */
 @import url('./components/buttons.css');

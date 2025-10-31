@@ -1,24 +1,16 @@
-/* ==========================================================================
-   TABLE COMPONENT
-   Estilos para la tabla de productos principal.
-   ========================================================================== */
+.table-container-wrapper {
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
 
-/* --------------------------------------------------------------------------
-   1. ESTRUCTURA PRINCIPAL DE LA TABLA
--------------------------------------------------------------------------- */
 table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--bs-card-bg);
-    border-radius: var(--bs-border-radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    border: 1px solid var(--bs-border-color);
 }
 
-/* --------------------------------------------------------------------------
-   2. ENCABEZADO Y CUERPO (thead, tbody)
--------------------------------------------------------------------------- */
 thead {
     background-color: var(--bs-gray-50);
 }
@@ -32,15 +24,22 @@ th {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-bottom: 2px solid var(--bs-border-color);
+    white-space: nowrap;
+}
+
+th .form-check-input {
+    margin-top: -2px;
 }
 
 tbody tr:hover {
     background-color: var(--primary-light-hover);
 }
 
-/* --------------------------------------------------------------------------
-   3. ESTILOS DE CELDAS (td)
--------------------------------------------------------------------------- */
+tbody tr.selected {
+    background-color: var(--primary-light-hover);
+    box-shadow: inset 3px 0 0 0 var(--primary-color);
+}
+
 td {
     padding: 1rem;
     border-bottom: 1px solid var(--bs-border-color);
@@ -52,20 +51,41 @@ tbody tr:last-child td {
     border-bottom: none;
 }
 
+td a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+td a:hover {
+    text-decoration: underline;
+}
+
+td.actions {
+    text-align: left;
+}
+.list-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-start;
+}
+
 td .product-name-brand {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
 }
+
 td .product-name {
     font-weight: 600;
     color: var(--bs-heading-color);
     font-size: 0.95rem;
 }
+
 td .product-brand {
     font-size: 0.8rem;
     color: var(--bs-gray-600);
 }
+
 td .product-stock {
     font-size: 0.8rem;
     font-weight: 500;
@@ -74,38 +94,58 @@ td .product-stock {
     display: block;
 }
 
-.descripcion-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    background-color: var(--bs-gray-200);
-    color: var(--bs-gray-700);
-    border-radius: 9999px;
-    font-weight: 500;
-}
-
-td.actions {
-    text-align: right;
-}
-.actions {
-    /* display: flex; */
-    gap: 0.5rem;
-    justify-content: flex-start;
-}
-
-/* --------------------------------------------------------------------------
-   4. CONTENEDOR DE BÚSQUEDA
--------------------------------------------------------------------------- */
-.search-container {
-    margin-bottom: 1.5rem;
-}
-.search-group {
+.table-filters {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
     gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
 }
 
-#buscar {
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 250px;
     flex-grow: 1;
+}
+
+@media (min-width: 768px) {
+    .search-container {
+        flex-grow: 0;
+        max-width: 350px;
+    }
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.85rem;
+    color: var(--bs-gray-500);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.search-container input.form-control {
+    padding-left: 2.5rem;
+    height: 40px;
+}
+
+.table-filters select.form-control {
+    height: 40px;
+    padding-right: 2rem;
+}
+
+.badge-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+}
+
+.badge-with-icon i {
+    font-size: 0.9em;
 }
 
 .search-highlight {
@@ -113,110 +153,91 @@ td.actions {
     border-left: 3px solid #ffd700;
 }
 
-/* --------------------------------------------------------------------------
-   5. CELDAS DE PRECIO Y TOOLTIPS
--------------------------------------------------------------------------- */
 .price-cell {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    /* justify-content: flex-end; */ /* Alinea el contenido a la derecha en móvil */
 }
+
 .price-main {
     font-weight: 600;
 }
+
 .price-info-icon {
     color: var(--bs-gray-500);
     cursor: pointer;
     transition: color var(--transition-fast);
 }
+
 .price-info-icon:hover {
     color: var(--primary-color);
 }
-.price-tooltip.global {
-    display: none; /* Se mantiene oculto por defecto */
-    position: fixed; /* 'fixed' es mejor para que no se corte en los bordes */
-    background-color: var(--bs-gray-900);
-    color: var(--bs-white);
-    padding: 0.75rem;
-    border-radius: var(--bs-border-radius);
-    box-shadow: var(--shadow-lg);
-    z-index: 10001; /* Z-index alto para que aparezca sobre todo */
-    width: 220px;
-    opacity: 0;
-    transition: opacity var(--transition-fast), transform var(--transition-fast);
-    pointer-events: none; /* Importante para que no interfiera */
-    transform: scale(0.95); /* Efecto de escala sutil */
-}
-.price-tooltip.global.visible {
-    display: block;
-    opacity: 1;
-    transform: scale(1);
-}
-.price-tooltip-item {
+
+.bg-primary-subtle { background-color: #cfe2ff !important; }
+.text-primary-emphasis { color: #052c65 !important; }
+.bg-info-subtle { background-color: #cff4fc !important; }
+.text-info-emphasis { color: #032830 !important; }
+.bg-warning-subtle { background-color: #fff3cd !important; }
+.text-warning-emphasis { color: #664d03 !important; }
+.bg-success-subtle { background-color: #d1e7dd !important; }
+.text-success-emphasis { color: #0a3622 !impor
+tant; }
+.bg-danger-subtle { background-color: #f8d7da !important; }
+.text-danger-emphasis { color: #58151c !important; }
+.bg-dark-subtle { background-color: #ced4da !important; }
+.text-dark-emphasis { color: #000 !important; }
+
+.company-name-cell {
     display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    padding: 0.25rem 0;
-}
-.price-tooltip-item span:first-child {
-    color: var(--bs-gray-400);
+    align-items: center;
+    gap: 0.75rem;
 }
 
-/* ==========================================================================
-   6. DISEÑO RESPONSIVO PARA LA TABLA (VISTA DE TARJETAS)
-   ========================================================================== */
-
-@media (max-width: 768px) {
-    /* Ocultamos la cabecera de la tabla en móvil */
-    #tab-productos thead {
-        display: none;
-    }
-
-    /* Cada fila (tr) se convierte en una tarjeta */
-    #tab-productos tr {
-        display: block;
-        margin: 0.5rem;
-        border: 1px solid var(--bs-border-color);
-        border-radius: var(--bs-border-radius);
-        padding: 0.5rem 1rem;
-    }
-
-    /* Cada celda (td) se apila verticalmente */
-    #tab-productos td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px dashed var(--bs-border-color); /* Borde punteado interno */
-        text-align: right;
-    }
-
-    /* Quitamos el borde inferior de la última celda de cada tarjeta */
-    #tab-productos tr td:last-child {
-        border-bottom: none;
-    }
-
-    /* Creamos las etiquetas (Producto, etc.) con un pseudo-elemento */
-    #tab-productos td::before {
-        content: attr(data-label);
-        font-weight: 500;
-        text-align: left;
-        color: var(--bs-gray-700);
-    }
-    
-    /* Le damos a la celda de acciones una etiqueta específica */
-    #tab-productos td.actions::before {
-        content: "Acciones";
-    }
-
-    /* Quitamos el hover de la fila en móvil */
-    tbody tr:hover {
-        background-color: var(--bs-card-bg);
-    }
+.company-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bs-gray-200);
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    border: 2px solid var(--bs-card-bg);
+    box-shadow: 0 0 0 2px var(--bs-border-color);
 }
 
-/* Mejoras para tema oscuro en tablas */
+.company-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.company-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.company-name {
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    font-size: 0.95rem;
+}
+
+.company-domain {
+    font-size: 0.8rem;
+    color: var(--bs-gray-600);
+}
+
+.btn-icon-sm {
+    width: 32px;
+    height: 32px;
+    padding: 0.5rem;
+}
+
+.btn-icon-sm i {
+    font-size: 0.9rem;
+}
+
 [data-bs-theme="dark"] thead {
     background-color: var(--bs-gray-800);
 }
@@ -229,17 +250,77 @@ td.actions {
     background-color: var(--bs-gray-700);
 }
 
-[data-bs-theme="dark"] .descripcion-badge {
+[data-bs-theme="dark"] tbody tr.selected {
     background-color: var(--bs-gray-700);
-    color: var(--bs-gray-200);
-}
-
-[data-bs-theme="dark"] .price-tooltip.global {
-    background-color: var(--bs-gray-900);
-    color: var(--bs-white);
 }
 
 [data-bs-theme="dark"] .search-highlight {
     background-color: rgba(255, 234, 0, 0.25) !important;
     border-left-color: #ffd700;
 }
+
+[data-bs-theme="dark"] .bg-primary-subtle { background-color: #031633 !important; }
+[data-bs-theme="dark"] .text-primary-emphasis { color: #adc5ff !important; }
+[data-bs-theme="dark"] .bg-info-subtle { background-color: #032830 !important; }
+[data-bs-theme="dark"] .text-info-emphasis { color: #9eeaf9 !important; }
+[data-bs-theme="dark"] .bg-warning-subtle { background-color: #332701 !important; }
+[data-bs-theme="dark"] .text-warning-emphasis { color: #ffda6a !important; }
+[data-bs-theme="dark"] .bg-success-subtle { background-color: #051b11 !important; }
+[data-bs-theme="dark"] .text-success-emphasis { color: #75b798 !important; }
+[data-bs-theme="dark"] .bg-danger-subtle { background-color: #2c0b0e !important; }
+[data-bs-theme="dark"] .text-danger-emphasis { color: #ea868f !important; }
+[data-bs-theme="dark"] .bg-dark-subtle { background-color: #1a1a1a !important; }
+[data-bs-theme="dark"] .text-dark-emphasis { color: #fff !important; }
+
+/* --- INICIO DE LA CORRECCIÓN --- */
+/* Solo apila los filtros en pantallas MÓVILES (768px), no en tablets. */
+@media (max-width: 768px) {
+    .table-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-container {
+        max-width: none;
+        width: 100%;
+    }
+    .table-filters .d-flex {
+        flex-direction: column;
+        width: 100%;
+        margin-left: 0 !important; /* Resetea el margen en móvil */
+    }
+    .table-filters select.form-control {
+        min-width: 100%;
+    }
+
+    table thead {
+        display: none;
+    }
+    table tr {
+        display: block;
+        margin-bottom: 0.75rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius);
+        padding: 0.5rem 1rem;
+    }
+    table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px dashed var(--bs-border-color);
+        text-align: right;
+    }
+    table tr td:last-child {
+        border-bottom: none;
+    }
+    table td::before {
+        content: attr(data-label);
+        font-weight: 500;
+        text-align: left;
+        color: var(--bs-gray-700);
+    }
+    tbody tr:hover {
+        background-color: var(--bs-card-bg);
+    }
+}
+/* --- FIN DE LA CORRECCIÓN --- */

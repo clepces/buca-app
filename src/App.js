@@ -15,7 +15,7 @@ import { delay } from './utils/retardo.js';
 import { can } from './services/permissions.service.js';
 import { PERMISSIONS } from './services/roles.config.js';
 import { routes } from './router/routes.js';
-import { MODULES } from './services/modules.config.js'; // Asegúrate que MODULES esté importado
+import { MODULES } from './services/modules.config.js';
 
 export default class App {
 
@@ -51,28 +51,18 @@ export default class App {
                     departmentId: sessionData.business.departmentId,
                     role: sessionData.user.role
                 });
-                this.state.session.isLoggedIn = true;
-                this.state.session.user = {
-                    uid: state.user.uid,
-                    email: state.user.email,
-                    name: state.user.name,
-                    role: state.role
-                };
-                this.state.session.business = {
-                    id: state.businessId || 'admin_view',
-                    departmentId: state.departmentId
-                };
-                if (this.state.session.business.id === 'admin_view') {
+                // setUser ya actualiza state.session, no necesitamos duplicar
+                if (state.session.business.id === 'admin_view') {
                     this.mainLoader.updateMessage('Bienvenido, Administrador');
-                    this.state.products = [];
+                    state.products = [];
                 } else {
                     this.mainLoader.updateMessage('Cargando datos del negocio...');
                     try {
-                        const businessData = await loadBusinessData(this.state); 
-                        this.state.products = (businessData && businessData.products) ? businessData.products : [];
+                        const businessData = await loadBusinessData(state); 
+                        state.products = (businessData && businessData.products) ? businessData.products : [];
                     } catch (error) {
                         Logger.error('Error cargando datos:', error);
-                        this.state.products = [];
+                        state.products = [];
                     }
                 }
                 await delay(1500);

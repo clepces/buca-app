@@ -1,266 +1,13 @@
-/* src/styles/components/panel.css */
-.panel-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
+/* ==========================================================================
+   ARCHIVO: src/styles/components/panel.css
+   LIMPIO Y CON StatCard MEJORADO
+   ========================================================================== */
 
-/* --- INICIO MODIFICACIÓN: Estilos Dashboard Super Admin --- */
-/* Estilo para el nuevo párrafo de bienvenida (si se quiere destacar más) */
-.view-header .lead { /* Bootstrap 'lead' class */
-    font-size: 1.1rem; /* Un poco más grande */
+/* --- 1. Headers y Títulos --- */
+.view-header .lead {
+    font-size: 1.1rem;
     font-weight: 400;
-    /* color: var(--bs-gray-700); */ /* Puedes ajustar el color si es necesario */
 }
-[data-bs-theme="dark"] .view-header .lead {
-    /* color: var(--bs-gray-400); */ /* Ajuste para modo oscuro */
-}
-/* Estructura mejorada para StatCard */
-.stat-card {
-    background-color: var(--bs-card-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-lg);
-    padding: 1.25rem; /* Ajuste de padding general */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: all var(--transition-normal);
-    position: relative;
-    overflow: hidden;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary-light);
-}
-
-.stat-card-main {
-    display: flex;
-    /* align-items: center; */ /* Quitamos esto para alinear icono arriba */
-    align-items: flex-start; /* Alinea icono y texto arriba */
-    gap: 1rem; /* Espacio entre icono e info */
-    margin-bottom: 1rem;
-}
-
-.stat-card-icon {
-    flex-shrink: 0;
-    width: 48px; /* Ligeramente más pequeño */
-    height: 48px;
-    border-radius: var(--bs-border-radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--bs-white);
-    /* Fondo se define por clase específica */
-}
-.stat-card-icon i {
-    font-size: 1.5rem;
-}
-
-/* Colores específicos */
-.stat-card-companies .stat-card-icon { background-color: var(--bs-blue); }
-.stat-card-active-companies .stat-card-icon { background-color: var(--bs-blue); }
-.stat-card-subscribers .stat-card-icon { background-color: var(--bs-green); }
-.stat-card-earnings .stat-card-icon { background-color: var(--bs-purple); }
-
-
-.stat-card-info {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1; /* Ocupa espacio restante */
-    min-width: 0; /* Para evitar desbordamiento */
-}
-
-/* Contenedor para título y cambio % */
-.stat-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.35rem; /* Espacio antes del valor */
-}
-
-.stat-card-title {
-    font-size: 0.85rem; /* Más pequeño */
-    font-weight: 500;
-    color: var(--bs-gray-600);
-    margin: 0; /* Quitamos margen inferior */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.stat-card-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--bs-heading-color);
-    line-height: 1.2;
-    /* El valor ahora está solo */
-}
-
-.stat-card-change {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.2rem;
-    font-size: 0.75rem; /* Más pequeño */
-    font-weight: 600;
-    padding: 0.15rem 0.4rem; /* Más ajustado */
-    border-radius: var(--bs-border-radius-mini);
-    flex-shrink: 0; /* Evita que se encoja */
-}
-.stat-card-change i { font-size: 1em; }
-
-.stat-card-change.positive {
-    background-color: rgba(23, 198, 83, 0.1);
-    color: var(--bs-success);
-}
-.stat-card-change.negative {
-    background-color: rgba(220, 38, 38, 0.1);
-    color: var(--error-color);
-}
-
-/* Quitamos el footer, el gráfico va directo */
-/* .stat-card-footer { ... } */
-
-.stat-card-mini-graph {
-    width: 100%; /* Ocupa todo el ancho */
-    height: 40px; /* Un poco más alto */
-    margin-top: 0.75rem; /* Espacio después del valor */
-    /* background-color: var(--bs-gray-100); */ /* Quitamos fondo gris */
-    /* border-radius: var(--bs-border-radius-mini); */
-    display: flex; /* Para centrar el SVG si es necesario */
-    align-items: flex-end; /* Alinea barras abajo */
-}
-[data-bs-theme="dark"] .stat-card-mini-graph {
-    /* background-color: rgba(75, 85, 99, 0.3); */ /* Quitamos fondo gris */
-}
-
-
-/* Estilos para el SVG placeholder */
-.stat-card-mini-graph svg {
-    width: 100%;
-    height: 100%;
-}
-.stat-card-mini-graph .graph-bar {
-    fill: var(--bs-gray-300); /* Color base barras */
-    transition: fill 0.2s;
-}
-.stat-card:hover .graph-bar {
-    fill: var(--primary-light); /* Color barras al hacer hover en tarjeta */
-}
-
-[data-bs-theme="dark"] .stat-card-mini-graph .graph-bar {
-    fill: var(--bs-gray-700);
-}
-[data-bs-theme="dark"] .stat-card:hover .graph-bar {
-    fill: var(--primary-light);
-}
-
-.chart-placeholder {
-    background-color: var(--bs-card-bg);
-    border: 2px dashed var(--bs-border-color);
-    border-radius: var(--bs-border-radius-lg);
-    padding: 2rem;
-    text-align: center;
-    color: var(--bs-gray-600);
-    grid-column: span 1;
-    transition: all var(--transition-normal);
-}
-.chart-placeholder:hover {
-    border-color: var(--primary-light);
-    background-color: var(--bs-gray-50);
-}
-
-@media (min-width: 992px) {
-    .chart-placeholder {
-        grid-column: span 2;
-    }
-}
-
-.chart-placeholder h3 {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: var(--bs-heading-color);
-    margin-bottom: 1rem;
-}
-.chart-placeholder small {
-    display: block;
-    margin-top: 1.5rem;
-    font-style: italic;
-    color: var(--bs-gray-500);
-}
-
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    text-align: center;
-    color: var(--bs-gray-500);
-    border: 2px dashed var(--bs-border-color);
-    border-radius: var(--bs-border-radius-lg);
-    height: 100%;
-}
-.empty-state-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-}
-.empty-state-message {
-    font-size: 1.2rem;
-    font-weight: 500;
-}
-
-.results-panel {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background-color: var(--bs-gray-100);
-    border-radius: var(--bs-border-radius);
-    border: 1px solid var(--bs-border-color);
-}
-.results-panel h4 {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--primary-color);
-}
-.result-item {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    padding: 0.5rem 0;
-}
-.result-item + .result-item {
-    border-top: 1px solid var(--bs-border-color);
-}
-.result-item strong {
-    font-weight: 600;
-}
-
-.stat-card-icon i.bi {
-    font-size: 2rem;
-    line-height: 1;
-}
-.stat-card-value.negative {
-    color: var(--error-color);
-}
-.stat-card-value.negative::before {
-    content: "";
-    margin-right: 0.1em;
-}
-.stat-card-value .btn {
-    font-size: 0.9rem;
-    padding: 0.3rem 0.6rem;
-    vertical-align: middle;
-}
-.stat-card-value .btn i {
-    font-size: 0.9em;
-}
-.stat-card-value i.bi {
-    font-size: 1.5rem;
-    vertical-align: text-bottom;
-}
-
 .view-header.align-items-start { }
 .view-header .h5 {
     font-weight: 500;
@@ -273,40 +20,275 @@
     font-size: 0.85rem;
     font-weight: 500;
 }
-
-/* ==========================================================================
-   7. ESTILOS PARA DASHBOARD MEJORADO
-   ========================================================================== */
-
 .dashboard-header {
     margin-bottom: 2rem;
 }
-
 .dashboard-subtitle {
     color: var(--bs-gray-600);
     font-size: 1rem;
     margin-bottom: 0;
 }
-
-.dashboard-actions {
-    margin-top: 2rem;
+.section-title {
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 0.5rem;
 }
 
-.quick-action-card {
+/* --- 2. Contenedores y Rejillas (Grids) --- */
+.panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+.dashboard-grid-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+.dashboard-grid-3-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.h-100 {
+    height: 100%;
+}
+
+/* --- 3. StatCard (MEJORADO) --- */
+.stat-card {
     background-color: var(--bs-card-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius-lg);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+
+/* Contenedor principal: Icono | Info | Gráfico */
+.stat-card-main {
+    display: flex; /* CAMBIO: Usamos Flexbox en lugar de Grid */
+    align-items: center;
+    gap: 1rem;
+    flex-grow: 1;
+    overflow: hidden; /* Evita que el contenido interno se desborde */
+}
+
+.stat-card-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--bs-border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-white);
+}
+
+.stat-card-icon i {
+    font-size: 1.5rem;
+}
+.stat-card-icon i.bi {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+/* Info: Título y Valor (apilados) */
+.stat-card-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1; /* CAMBIO: Permite que esta sección crezca */
+    flex-shrink: 1; /* CAMBIO: Permite que esta sección se encoja */
+    min-width: 0; /* CAMBIO: Esencial para que flex-shrink funcione correctamente */
+    overflow: hidden; /* Evita desbordamiento interno si el título es muy largo */
+}
+
+.stat-card-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--bs-gray-600);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    margin-bottom: 0.15rem;
+}
+
+.stat-card-value {
+    font-size: 1.7rem; /* CAMBIO: Ligeramente más pequeño */
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    line-height: 1.2;
+    white-space: nowrap; /* Evita que el número se parta en dos líneas */
+    overflow: hidden; /* Oculta si es demasiado largo */
+    text-overflow: ellipsis; /* Añade "..." si se oculta */
+}
+
+/* (Las reglas .negative, .btn, i.bi se mantienen igual) */
+.stat-card-value.negative { color: var(--error-color); }
+.stat-card-value.negative::before { content: ""; margin-right: 0.1em; }
+.stat-card-value .btn { font-size: 0.9rem; padding: 0.3rem 0.6rem; vertical-align: middle; }
+.stat-card-value .btn i { font-size: 0.9em; }
+.stat-card-value i.bi { font-size: 1.5rem; vertical-align: text-bottom; }
+
+/* Gráfico (ahora a la derecha y flexible) */
+.stat-card-mini-graph {
+    flex-shrink: 0; /* CAMBIO: No queremos que el gráfico se encoja */
+    width: 80px; /* CAMBIO: Ancho fijo más pequeño */
+    height: 40px;
+    display: flex;
+    align-items: flex-end;
+    margin-left: auto; /* Empuja el gráfico a la derecha */
+}
+.stat-card-mini-graph svg {
+    width: 100%;
+    height: 100%;
+}
+.stat-card-mini-graph .graph-bar {
+    fill: var(--bs-gray-300);
+    transition: fill 0.2s;
+}
+.stat-card:hover .graph-bar {
+    fill: var(--primary-light);
+}
+
+/* Footer de la tarjeta (para el change %) */
+.stat-card-footer {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--bs-border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-card-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--bs-border-radius-mini);
+    flex-shrink: 0;
+}
+.stat-card-change i { font-size: 1em; }
+
+.stat-card-change.positive {
+    background-color: rgba(23, 198, 83, 0.1);
+    color: var(--bs-success);
+}
+.stat-card-change.negative {
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--error-color);
+}
+
+.stat-card-footer-text {
+    font-size: 0.75rem;
+    color: var(--bs-gray-600);
+}
+
+/* Colores de Iconos de StatCard */
+.stat-card-companies .stat-card-icon { background-color: var(--bs-blue); }
+.stat-card-active-companies .stat-card-icon { background-color: var(--bs-blue); }
+.stat-card-subscribers .stat-card-icon { background-color: var(--bs-green); }
+.stat-card-earnings .stat-card-icon { background-color: var(--bs-purple); }
+.stat-card.productos .stat-card-icon {
+    background-color: var(--primary-color);
+}
+.stat-card.inversion .stat-card-icon {
+    background-color: var(--bs-success);
+}
+.stat-card.stock .stat-card-icon {
+    background-color: var(--bs-orange);
+}
+.stat-card.ganancia .stat-card-icon {
+    background-color: var(--bs-purple);
+}
+
+.stat-card-total-companies .stat-card-icon {
+    background-color: var(--bs-blue);
+}
+.stat-card-inactive-companies .stat-card-icon {
+    background-color: var(--bs-gray-700);
+    color: var(--bs-white);
+}
+[data-bs-theme="light"] .stat-card-inactive-companies .stat-card-icon {
+    background-color: var(--bs-gray-300);
+    color: var(--bs-gray-800);
+}
+.stat-card-location .stat-card-icon {
+    background-color: var(--bs-teal);
+    color: var(--bs-white);
+}
+[data-bs-theme="light"] .stat-card-location .stat-card-icon {
+    background-color: #cffafe; /* Light teal */
+    color: #06b6d4; /* Dark teal */
+}
+/* --- 4. Tarjetas Generales (Gráficos, Listas) --- */
+.dashboard-card {
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+}
+.dashboard-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.dashboard-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.dashboard-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin: 0;
+}
+
+.dashboard-card-body {
+    padding: 1.25rem;
+}
+
+.quick-action-card {
+    background: #fff;
+    border-radius: 12px;
     padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid #eaeaea;
+    transition: all 0.3s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
-    transition: all var(--transition-normal);
 }
-
 .quick-action-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-light);
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .quick-action-card h4 {
@@ -330,8 +312,15 @@
     flex-grow: 1;
 }
 
-.dashboard-info {
-    margin-top: 2rem;
+.action-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .info-card {
@@ -385,19 +374,12 @@
     font-size: 0.9rem;
 }
 
-.status-active {
-    color: var(--bs-success) !important;
-}
-
-.dashboard-analytics {
-    margin-top: 2rem;
-}
-
 .analytics-card {
-    background-color: var(--bs-card-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-lg);
+    background: #fff;
+    border-radius: 12px;
     padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid #eaeaea;
     height: 100%;
 }
 
@@ -422,22 +404,23 @@
 }
 
 .analytics-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem;
     background-color: var(--bs-gray-50);
     border-radius: var(--bs-border-radius);
     border: 1px solid var(--bs-border-color);
 }
 
-[data-bs-theme="dark"] .analytics-item {
-    background-color: var(--bs-gray-800);
+.analytics-item:last-child {
+    border-bottom: none;
 }
 
 .analytics-label {
     font-weight: 500;
-    color: var(--bs-gray-600);
+    color: #555;
     font-size: 0.9rem;
 }
 
@@ -447,18 +430,311 @@
 }
 
 .analytics-value.positive {
-    color: var(--bs-success);
+    color: #28a745;
 }
 
 .analytics-value.negative {
-    color: var(--error-color);
+    color: #dc3545;
 }
 
 .analytics-value.neutral {
     color: var(--bs-gray-600);
 }
 
-/* Responsive para las nuevas tarjetas */
+/* --- 5. Listas del Dashboard --- */
+.dashboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.dashboard-list-item:not(:last-child) {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.list-item-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background-color: var(--bs-gray-200);
+    color: var(--bs-gray-600);
+    font-weight: 600;
+}
+
+.list-avatar-1 { background-color: #e0f2fe; color: #0ea5e9; }
+.list-avatar-2 { background-color: #fef3c7; color: #f59e0b; }
+.list-avatar-3 { background-color: #fee2e2; color: #ef4444; }
+.list-avatar-4 { background-color: #dcfce7; color: #22c55e; }
+.list-avatar-5 { background-color: #ede9fe; color: #8b5cf6; }
+.list-avatar-6 { background-color: #cffafe; color: #06b6d4; }
+.list-avatar-7 { background-color: #fce7f3; color: #ec4899; }
+.list-avatar-8 { background-color: #ffedd5; color: #f97316; }
+.list-avatar-9 { background-color: #dbeafe; color: #3b82f6; }
+
+
+.list-item-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.list-item-title, .list-item-subtitle {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.list-item-title {
+    font-weight: 500;
+    color: var(--bs-heading-color);
+    font-size: 0.9rem;
+}
+.list-item-subtitle {
+    font-size: 0.8rem;
+    color: var(--bs-gray-600);
+}
+
+.list-item-value {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.list-item-value.is-action .list-item-title {
+    color: var(--primary-color);
+    cursor: pointer;
+    font-weight: 600;
+}
+.list-item-value.is-action .list-item-title:hover {
+    text-decoration: underline;
+}
+
+.view-all-link {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+.view-all-link:hover {
+    text-decoration: underline;
+}
+
+/* --- 6. Placeholders y Estados Vacíos --- */
+.chart-placeholder {
+    background-color: var(--bs-card-bg);
+    border: 2px dashed var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 2rem;
+    text-align: center;
+    color: var(--bs-gray-600);
+    grid-column: span 1;
+    transition: all var(--transition-normal);
+    width: 100%;
+    min-height: 100px;
+}
+.chart-placeholder:hover {
+    border-color: var(--primary-light);
+    background-color: var(--bs-gray-50);
+}
+
+.chart-placeholder h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--bs-heading-color);
+    margin-bottom: 1rem;
+}
+.chart-placeholder small {
+    display: block;
+    margin-top: 1.5rem;
+    font-style: italic;
+    color: var(--bs-gray-500);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    color: var(--bs-gray-500);
+    border: 2px dashed var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    height: 100%;
+}
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+.empty-state-message {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+/* --- 7. Componentes Misceláneos --- */
+.results-panel {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--bs-gray-100);
+    border-radius: var(--bs-border-radius);
+    border: 1px solid var(--bs-border-color);
+}
+.results-panel h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+}
+.result-item + .result-item {
+    border-top: 1px solid var(--bs-border-color);
+}
+.result-item strong {
+    font-weight: 600;
+}
+
+.dashboard-actions {
+    margin-top: 2rem;
+}
+
+.dashboard-info {
+    margin-top: 2rem;
+}
+
+.dashboard-analytics {
+    margin-top: 2rem;
+}
+
+.status-active {
+    color: var(--bs-success) !important;
+}
+
+.badge.bg-success-subtle, .badge.bg-primary-subtle, .badge.bg-light-subtle {
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* --- 8. Selector de Fechas (flatpickr) --- */
+.dashboard-date-picker {
+    display: flex;
+    align-items: center;
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 0.35rem 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.dashboard-date-picker i {
+    color: var(--bs-gray-600);
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+}
+
+.dashboard-date-picker input {
+    font-family: var(--bs-font-sans-serif);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--bs-heading-color);
+    background-color: transparent;
+    border: none;
+    padding: 0.25rem;
+    width: 190px;
+}
+
+.dashboard-date-picker input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* --- 9. Tema Oscuro (Dark Mode) --- */
+[data-bs-theme="dark"] .view-header .lead {
+
+}
+
+[data-bs-theme="dark"] .stat-card-mini-graph {
+}
+
+[data-bs-theme="dark"] .stat-card-mini-graph .graph-bar {
+    fill: var(--bs-gray-700);
+}
+[data-bs-theme="dark"] .stat-card:hover .graph-bar {
+    fill: var(--primary-light);
+}
+
+[data-bs-theme="dark"] .analytics-item {
+    background-color: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .apexcharts-xaxis-label,
+[data-bs-theme="dark"] .apexcharts-yaxis-label {
+    fill: var(--bs-gray-500) !important;
+}
+
+[data-bs-theme="dark"] .apexcharts-legend-text {
+    color: var(--bs-gray-300) !important;
+}
+
+[data-bs-theme="dark"] .list-item-avatar {
+    background-color: var(--bs-gray-700);
+    color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] .list-avatar-1 { background-color: #1e3a8a; color: #7dd3fc; }
+[data-bs-theme="dark"] .list-avatar-2 { background-color: #78350f; color: #fde68a; }
+[data-bs-theme="dark"] .list-avatar-3 { background-color: #7f1d1d; color: #fecaca; }
+[data-bs-theme="dark"] .list-avatar-4 { background-color: #14532d; color: #bbf7d0; }
+[data-bs-theme="dark"] .list-avatar-5 { background-color: #4c1d95; color: #ddd6fe; }
+
+[data-bs-theme="dark"] .dashboard-date-picker input {
+    color: var(--bs-heading-color);
+}
+
+[data-bs-theme="dark"] .flatpickr-calendar {
+    background: var(--bs-card-bg);
+    border-color: var(--bs-border-color);
+}
+[data-bs-theme="dark"] .flatpickr-months .flatpickr-month,
+[data-bs-theme="dark"] .flatpickr-weekdays,
+[data-bs-theme="dark"] .flatpickr-day,
+[data-bs-theme="dark"] .flatpickr-time input {
+    color: var(--bs-heading-color);
+}
+[data-bs-theme="dark"] .flatpickr-day:hover {
+    background: var(--bs-gray-700);
+}
+[data-bs-theme="dark"] .flatpickr-day.selected {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* --- 10. Consultas de Medios (Responsive) --- */
+@media (min-width: 992px) {
+    .chart-placeholder {
+        grid-column: span 2;
+    }
+    .dashboard-grid-main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: flex-start;
+    }
+}
+
 @media (max-width: 768px) {
     .dashboard-actions .row {
         flex-direction: column;
@@ -482,5 +758,29 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
+    }
+    
+    .panel-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-action-card, .analytics-card {
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-grid-3-col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .dashboard-grid-3-col {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .dashboard-grid-3-col {
+        grid-template-columns: repeat(3, 1fr);
     }
 }

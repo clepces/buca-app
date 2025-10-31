@@ -19,9 +19,9 @@ export function validarCamposNumericos(costo, ganancia, unidades) {
 
 export function productoExiste(nombre, marca, productos, idExcluir = null) {
     return productos.some(p =>
-        p.product_info.product_name.toLowerCase() === nombre.toLowerCase() &&
-        p.product_info.product_brand.toLowerCase() === marca.toLowerCase() &&
-        p.product_info.id !== idExcluir
+        p.name.toLowerCase() === nombre.toLowerCase() &&
+        p.brand.toLowerCase() === marca.toLowerCase() &&
+        p.id !== idExcluir
     );
 }
 

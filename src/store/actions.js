@@ -50,6 +50,21 @@ export function setUser(sessionData) {
   state.departmentId = sessionData.departmentId;
   state.role = sessionData.role;
   
+  // --- CORRECCIÓN CRÍTICA: Actualizar también state.session ---
+  state.session = {
+    isLoggedIn: true,
+    user: {
+      uid: sessionData.uid,
+      email: sessionData.email,
+      name: sessionData.name,
+      role: sessionData.role
+    },
+    business: {
+      id: sessionData.businessId,
+      departmentId: sessionData.departmentId
+    }
+  };
+  
   // Cargar permisos del usuario
   loadUserPermissions([sessionData.role]);
 }
@@ -69,6 +84,9 @@ export function clearUser() {
   state.businessId = initialState.businessId; // null
   state.departmentId = initialState.departmentId; // null
   state.role = initialState.role; // null
+
+  // --- CORRECCIÓN CRÍTICA: Limpiar también state.session ---
+  state.session = initialState.session; // { isLoggedIn: false, user: null, business: null }
 
   // NOTA: También reseteamos los datos que dependen del negocio
   state.products = initialState.products; // []

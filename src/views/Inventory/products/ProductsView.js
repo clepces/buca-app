@@ -113,7 +113,7 @@ export function ProductsView(element, state) {
                              Logger.trace(`[ProductsView] Confirmada eliminación de ${productId}`);
                              // NOTA: Asumiendo que deleteProduct ahora recibe solo el ID
                              // Si deleteProduct necesita el state, pásalo: await deleteProduct(globalState, productId);
-                             await deleteProduct(productId); // Asegúrate que deleteProduct esté bien importado y funcione así
+                             await deleteProduct(globalState, productId); // Pasar el estado global
                              triggerRerender(); // Actualiza la tabla
                          },
                          { // Opciones de personalización

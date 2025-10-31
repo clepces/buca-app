@@ -19,17 +19,17 @@ export function LoginComponent(state) {
             </div>
             <form id="login-form" class="login-form">
                 <div class="form-group">
-                    <label for="login-username">Usuario</label>
+                    <label for="login-email">Email</label>
                     <div class="input-wrapper">
-                        <i class="fas fa-user input-icon"></i>
-                        <input type="text" id="login-username" name="username" placeholder="Tu usuario" required>
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="login-email" name="email" placeholder="tu@email.com" autocomplete="email">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="login-password">Contraseña</label>
                     <div class="input-wrapper">
                         <i class="fas fa-key input-icon"></i>
-                        <input type="password" id="login-password" name="password" placeholder="••••••••••" required>
+                        <input type="password" id="login-password" name="password" placeholder="••••••••••" autocomplete="current-password">
                     </div>
                 </div>
                 <button type="submit" id="btn-login-submit" class="btn-login">
@@ -61,9 +61,9 @@ export function LoginComponent(state) {
         submitButton.className = 'btn-login';
         await setButtonText('Accediendo...', 'fas fa-spinner animate-spin');
 
-        const username = element.querySelector('#login-username').value;
+        const email = element.querySelector('#login-email').value;
         const password = element.querySelector('#login-password').value;
-        const result = await login(username, password);
+        const result = await login(email, password);
 
         if (result.success) {
             await setButtonText('Acceso Válido', 'fas fa-check-circle', 'success');

@@ -1,18 +1,9 @@
-// src/components/StatCard.js
+// ======================================================
+// ARCHIVO: src/components/StatCard.js
+// VERSIÓN 3.0: Corrige el parpadeo del mini-gráfico (SVG estático)
+// ======================================================
 
-/**
- * Renderiza una tarjeta de estadística para el panel de control.
- * @param {object} props - Propiedades para la tarjeta.
- * @param {string} props.title - El título de la tarjeta.
- * @param {string|number} props.value - El valor a mostrar (puede ser HTML).
- * @param {string} props.icon - La clase del icono de Bootstrap Icons.
- * @param {string} props.className - Clase CSS adicional para estilizar.
- * @param {boolean} [props.isNegative=false] - Si el valor principal es negativo.
- * @param {object} [props.change] - Info sobre cambio porcentual { value: '+5%', type: 'positive'|'negative' }.
- * @param {boolean} [props.miniGraph=false] - Si mostrar un placeholder para mini gráfico.
- * @returns {string} El string de HTML para la tarjeta.
- */
-export function StatCard({ title, value, icon, className = '', isNegative = false, change = null, miniGraph = false }) {
+export function StatCard({ title, value, icon, className = '', isNegative = false, change = null, miniGraph = false, description = '' }) {
     const valueClass = isNegative ? 'negative' : '';
 
     const changeHTML = change ? `
@@ -22,47 +13,52 @@ export function StatCard({ title, value, icon, className = '', isNegative = fals
         </span>
     ` : '';
 
-    // --- INICIO MODIFICACIÓN: SVG Placeholder ---
-    // Placeholder simple de gráfico de barras SVG
-    const generateBarHeight = () => 40 - (Math.random() * 20 + 5); // Alturas entre 15 y 35
+    const descriptionHTML = description ? `
+        <div class="stat-card-footer">
+            <span class="stat-card-footer-text">${description}</span>
+        </div>
+    ` : (change ? `
+        <div class="stat-card-footer">
+            ${changeHTML}
+            <span class="stat-card-footer-text">desde el último mes</span> 
+        </div>
+    ` : '');
+
+    // --- INICIO DE LA CORRECCIÓN: SVG con valores estáticos ---
+    // Usamos alturas fijas en lugar de Math.random() para evitar el parpadeo
     const miniGraphSVG = `
         <svg viewBox="0 0 100 40" preserveAspectRatio="none">
-            <rect class="graph-bar" x="5" y="${40 - generateBarHeight()}" width="12" height="${generateBarHeight()}"></rect>
-            <rect class="graph-bar" x="25" y="${40 - generateBarHeight()}" width="12" height="${generateBarHeight()}"></rect>
-            <rect class="graph-bar" x="45" y="${40 - generateBarHeight()}" width="12" height="${generateBarHeight()}"></rect>
-            <rect class="graph-bar" x="65" y="${40 - generateBarHeight()}" width="12" height="${generateBarHeight()}"></rect>
-            <rect class="graph-bar" x="85" y="${40 - generateBarHeight()}" width="12" height="${generateBarHeight()}"></rect>
+            <rect class="graph-bar" x="5" y="20" width="12" height="20"></rect>
+            <rect class="graph-bar" x="25" y="10" width="12" height="30"></rect>
+            <rect class="graph-bar" x="45" y="15" width="12" height="25"></rect>
+            <rect class="graph-bar" x="65" y="5" width="12" height="35"></rect>
+            <rect class="graph-bar" x="85" y="25" width="12" height="15"></rect>
         </svg>
     `;
+    // --- FIN DE LA CORRECCIÓN ---
 
     const miniGraphHTML = miniGraph ? `
         <div class="stat-card-mini-graph">
             ${miniGraphSVG}
         </div>
     ` : '';
-    // --- FIN MODIFICACIÓN ---
 
-
-    // --- INICIO MODIFICACIÓN: Nueva Estructura HTML ---
     return `
         <div class="stat-card ${className}">
             <div class="stat-card-main">
-                 <div class="stat-card-icon">
+                <div class="stat-card-icon">
                     <i class="bi ${icon}"></i>
                 </div>
+                
                 <div class="stat-card-info">
-                    <!-- {/* Header: Título y Cambio % */} -->
-                    <div class="stat-card-header">
-                         <span class="stat-card-title">${title}</span>
-                         ${changeHTML} <!-- {/* Cambio % va aquí ahora */} -->
-                    </div>
-                    <!-- {/* Valor principal */} -->
+                    <span class="stat-card-title">${title}</span>
                     <span class="stat-card-value ${valueClass}">${value}</span>
                 </div>
+                
+                ${miniGraphHTML}
             </div>
-            <!-- {/* Gráfico (si existe) va directamente después de .stat-card-main */} -->
-            ${miniGraphHTML}
+            
+            ${descriptionHTML}
         </div>
     `;
-    // --- FIN MODIFICACIÓN ---
 }

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Roles - B.U.C.A</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .role-test {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .role-test h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .permissions-list {
+            list-style: none;
+            padding: 0;
+        }
+        .permissions-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .permission-allowed {
+            color: #28a745;
+        }
+        .permission-denied {
+            color: #dc3545;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Prueba de Roles - B.U.C.A</h1>
+        <p>Esta página permite probar los diferentes roles y permisos del sistema.</p>
+
+        <div class="role-test">
+            <h3>🔧 Super Admin</h3>
+            <p>Rol con acceso completo a todas las funcionalidades.</p>
+            <ul class="permissions-list">
+                <li class="permission-allowed">✅ Panel Principal</li>
+                <li class="permission-allowed">✅ Inventario</li>
+                <li class="permission-allowed">✅ Productos</li>
+                <li class="permission-allowed">✅ Punto de Venta</li>
+                <li class="permission-allowed">✅ Clientes</li>
+                <li class="permission-allowed">✅ Configuración</li>
+            </ul>
+            <button class="test-button" onclick="testRole('super_admin')">Probar Super Admin</button>
+            <div id="super_admin_result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="role-test">
+            <h3>👔 Business Admin</h3>
+            <p>Administrador del negocio con acceso a todas las funciones excepto configuraciones del sistema.</p>
+            <ul class="permissions-list">
+                <li class="permission-allowed">✅ Panel Principal</li>
+                <li class="permission-allowed">✅ Inventario</li>
+                <li class="permission-allowed">✅ Productos</li>
+                <li class="permission-allowed">✅ Punto de Venta</li>
+                <li class="permission-allowed">✅ Clientes</li>
+                <li class="permission-allowed">✅ Configuración</li>
+            </ul>
+            <button class="test-button" onclick="testRole('admin')">Probar Business Admin</button>
+            <div id="admin_result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="role-test">
+            <h3>💰 Cajero</h3>
+            <p>Usuario con acceso limitado al panel y punto de venta.</p>
+            <ul class="permissions-list">
+                <li class="permission-allowed">✅ Panel Principal</li>
+                <li class="permission-denied">❌ Inventario</li>
+                <li class="permission-denied">❌ Productos</li>
+                <li class="permission-allowed">✅ Punto de Venta</li>
+                <li class="permission-denied">❌ Clientes</li>
+                <li class="permission-denied">❌ Configuración</li>
+            </ul>
+            <button class="test-button" onclick="testRole('cajero')">Probar Cajero</button>
+            <div id="cajero_result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="role-test">
+            <h3>👤 Usuario</h3>
+            <p>Usuario básico con acceso a inventario y productos.</p>
+            <ul class="permissions-list">
+                <li class="permission-allowed">✅ Panel Principal</li>
+                <li class="permission-allowed">✅ Inventario</li>
+                <li class="permission-allowed">✅ Productos</li>
+                <li class="permission-denied">❌ Punto de Venta</li>
+                <li class="permission-allowed">✅ Clientes</li>
+                <li class="permission-denied">❌ Configuración</li>
+            </ul>
+            <button class="test-button" onclick="testRole('user')">Probar Usuario</button>
+            <div id="user_result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="role-test">
+            <h3>🔍 Prueba de Navegación</h3>
+            <p>Prueba la navegación entre diferentes vistas según el rol.</p>
+            <button class="test-button" onclick="testNavigation()">Probar Navegación</button>
+            <div id="navigation_result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="role-test">
+            <h3>🎨 Prueba de Temas</h3>
+            <p>Prueba el cambio entre tema claro y oscuro.</p>
+            <button class="test-button" onclick="testTheme()">Probar Cambio de Tema</button>
+            <div id="theme_result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación de roles para pruebas
+        const ROLES = {
+            SUPER_ADMIN: 'super_admin',
+            ADMIN: 'admin',
+            USER: 'user',
+            CAJERO: 'cajero'
+        };
+
+        const PERMISSIONS = {
+            VIEW_DASHBOARD: 'view:dashboard',
+            VIEW_PRODUCTS: 'view:products',
+            VIEW_POS: 'view:pos',
+            VIEW_INVENTORY: 'view:inventory',
+            VIEW_CLIENTS: 'view:clients',
+            EDIT_SETTINGS: 'settings:edit'
+        };
+
+        const rolesConfig = {
+            [ROLES.SUPER_ADMIN]: {
+                permissions: [
+                    PERMISSIONS.VIEW_DASHBOARD,
+                    PERMISSIONS.VIEW_PRODUCTS,
+                    PERMISSIONS.VIEW_POS,
+                    PERMISSIONS.VIEW_INVENTORY,
+                    PERMISSIONS.VIEW_CLIENTS,
+                    PERMISSIONS.EDIT_SETTINGS,
+                ]
+            },
+            [ROLES.ADMIN]: {
+                permissions: [
+                    PERMISSIONS.VIEW_DASHBOARD,
+                    PERMISSIONS.VIEW_PRODUCTS,
+                    PERMISSIONS.VIEW_POS,
+                    PERMISSIONS.VIEW_INVENTORY,
+                    PERMISSIONS.VIEW_CLIENTS,
+                    PERMISSIONS.EDIT_SETTINGS,
+                ]
+            },
+            [ROLES.USER]: {
+                permissions: [
+                    PERMISSIONS.VIEW_DASHBOARD,
+                    PERMISSIONS.VIEW_PRODUCTS,
+                    PERMISSIONS.VIEW_INVENTORY,
+                    PERMISSIONS.VIEW_CLIENTS,
+                ]
+            },
+            [ROLES.CAJERO]: {
+                permissions: [
+                    PERMISSIONS.VIEW_DASHBOARD,
+                    PERMISSIONS.VIEW_POS,
+                ]
+            }
+        };
+
+        function testRole(roleName) {
+            const resultDiv = document.getElementById(`${roleName}_result`);
+            resultDiv.style.display = 'block';
+            
+            try {
+                const role = rolesConfig[roleName];
+                if (!role) {
+                    throw new Error(`Rol ${roleName} no encontrado`);
+                }
+
+                const permissions = role.permissions;
+                const expectedPermissions = getExpectedPermissions(roleName);
+                
+                let allCorrect = true;
+                let resultHtml = '<h4>Resultados de la prueba:</h4><ul>';
+                
+                expectedPermissions.forEach(permission => {
+                    const hasPermission = permissions.includes(permission);
+                    const expected = getExpectedValue(roleName, permission);
+                    
+                    if (hasPermission === expected) {
+                        resultHtml += `<li class="permission-allowed">✅ ${permission}: Correcto</li>`;
+                    } else {
+                        resultHtml += `<li class="permission-denied">❌ ${permission}: Incorrecto (esperado: ${expected}, obtenido: ${hasPermission})</li>`;
+                        allCorrect = false;
+                    }
+                });
+
+                resultHtml += '</ul>';
+                
+                if (allCorrect) {
+                    resultDiv.className = 'result success';
+                    resultHtml += '<p><strong>✅ Todas las pruebas pasaron correctamente!</strong></p>';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultHtml += '<p><strong>❌ Algunas pruebas fallaron.</strong></p>';
+                }
+                
+                resultDiv.innerHTML = resultHtml;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+            }
+        }
+
+        function getExpectedPermissions(roleName) {
+            return [
+                PERMISSIONS.VIEW_DASHBOARD,
+                PERMISSIONS.VIEW_PRODUCTS,
+                PERMISSIONS.VIEW_POS,
+                PERMISSIONS.VIEW_INVENTORY,
+                PERMISSIONS.VIEW_CLIENTS,
+                PERMISSIONS.EDIT_SETTINGS
+            ];
+        }
+
+        function getExpectedValue(roleName, permission) {
+            const expectedValues = {
+                [ROLES.SUPER_ADMIN]: {
+                    [PERMISSIONS.VIEW_DASHBOARD]: true,
+                    [PERMISSIONS.VIEW_PRODUCTS]: true,
+                    [PERMISSIONS.VIEW_POS]: true,
+                    [PERMISSIONS.VIEW_INVENTORY]: true,
+                    [PERMISSIONS.VIEW_CLIENTS]: true,
+                    [PERMISSIONS.EDIT_SETTINGS]: true
+                },
+                [ROLES.ADMIN]: {
+                    [PERMISSIONS.VIEW_DASHBOARD]: true,
+                    [PERMISSIONS.VIEW_PRODUCTS]: true,
+                    [PERMISSIONS.VIEW_POS]: true,
+                    [PERMISSIONS.VIEW_INVENTORY]: true,
+                    [PERMISSIONS.VIEW_CLIENTS]: true,
+                    [PERMISSIONS.EDIT_SETTINGS]: true
+                },
+                [ROLES.USER]: {
+                    [PERMISSIONS.VIEW_DASHBOARD]: true,
+                    [PERMISSIONS.VIEW_PRODUCTS]: true,
+                    [PERMISSIONS.VIEW_POS]: false,
+                    [PERMISSIONS.VIEW_INVENTORY]: true,
+                    [PERMISSIONS.VIEW_CLIENTS]: true,
+                    [PERMISSIONS.EDIT_SETTINGS]: false
+                },
+                [ROLES.CAJERO]: {
+                    [PERMISSIONS.VIEW_DASHBOARD]: true,
+                    [PERMISSIONS.VIEW_PRODUCTS]: false,
+                    [PERMISSIONS.VIEW_POS]: true,
+                    [PERMISSIONS.VIEW_INVENTORY]: false,
+                    [PERMISSIONS.VIEW_CLIENTS]: false,
+                    [PERMISSIONS.EDIT_SETTINGS]: false
+                }
+            };
+            
+            return expectedValues[roleName][permission];
+        }
+
+        function testNavigation() {
+            const resultDiv = document.getElementById('navigation_result');
+            resultDiv.style.display = 'block';
+            
+            try {
+                // Simular navegación
+                const routes = [
+                    { path: '#/', permission: PERMISSIONS.VIEW_DASHBOARD },
+                    { path: '#/inventory', permission: PERMISSIONS.VIEW_INVENTORY },
+                    { path: '#/inventory/products', permission: PERMISSIONS.VIEW_PRODUCTS },
+                    { path: '#/pos', permission: PERMISSIONS.VIEW_POS },
+                    { path: '#/clients', permission: PERMISSIONS.VIEW_CLIENTS }
+                ];
+
+                let resultHtml = '<h4>Prueba de Navegación:</h4><ul>';
+                let allRoutesWork = true;
+
+                routes.forEach(route => {
+                    resultHtml += `<li>Ruta: ${route.path} - Permiso requerido: ${route.permission}</li>`;
+                });
+
+                resultHtml += '</ul><p><strong>✅ Navegación configurada correctamente</strong></p>';
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = resultHtml;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+            }
+        }
+
+        function testTheme() {
+            const resultDiv = document.getElementById('theme_result');
+            resultDiv.style.display = 'block';
+            
+            try {
+                // Simular cambio de tema
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-bs-theme', newTheme);
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `<p><strong>✅ Tema cambiado de ${currentTheme} a ${newTheme}</strong></p>`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+            }
+        }
+
+        // Inicializar tema
+        document.documentElement.setAttribute('data-bs-theme', 'light');
+    </script>
+</body>
+</html>

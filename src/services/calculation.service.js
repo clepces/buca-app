@@ -77,9 +77,9 @@ export function calcularTotalesCarrito(cart, allProducts, settings) {
     const ivaRate = settings.products.tax_rate;
     let subtotal = 0;
     cart.forEach(item => {
-        const product = allProducts.find(p => p.product_info.id === item.id);
+        const product = allProducts.find(p => p.id === item.id);
         if (product) {
-            subtotal += product.product_price.venta_unidad * item.quantity;
+            subtotal += product.pricing.unitSellPrice * item.quantity;
         }
     });
     const iva = subtotal * (ivaRate / 100);
