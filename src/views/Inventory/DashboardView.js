@@ -12,9 +12,10 @@ export function InventoryDashboardView(element, state) {
         <div class="view-header">
             <h2 class="view-title"><i class="bi bi-box-seam me-2"></i> Resumen de Inventario</h2>
              <!--{/* Botón para ir a productos, aunque ya está en el menú contextual */} -->
-            <a href="#/products" class="btn-secondary" data-route="#/products">
+            
+            <button href="#/inventory/products" class="btn-secondary" data-route="#/inventory/products">
                  <i class="bi bi-list-task me-1"></i> Ver Lista de Productos
-            </a>
+            </button>
         </div>
 
         <!--{/* Puedes añadir StatCards o un EmptyState */} -->

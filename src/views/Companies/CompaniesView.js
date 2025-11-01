@@ -127,7 +127,9 @@ export function CompaniesView(element, state) {
                             <option value="last_30_days">Sort By: Last 30 Days</option>
                             <option value="newest">Newest</option>
                         </select>
-                        <button class="btn-icon btn-secondary" data-action="manage-columns" data-tippy-content="Administrar Columnas" style="margin: auto;padding: 1px 10.5px 1px 10.5px;>
+                        <button class="btn-icon btn-secondary" data-action="manage-columns" 
+                            data-tippy-content="Administrar Columnas"
+                            style="margin: auto;padding: 1px 10.5px 1px 10.5px;">
                             <i class="bi bi-layout-three-columns"></i>
                         </button>
                     </div>
