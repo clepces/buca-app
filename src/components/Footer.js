@@ -1,5 +1,8 @@
 // ======================================================
 // ARCHIVO: src/components/Footer.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
+// CORRECCIÓN: Leer el nombre de la tienda desde 'appConfig'
+//             (Anotación U-2)
 // ======================================================
 
 /**
@@ -9,7 +12,13 @@
  */
 export function Footer(state) {
     const year = new Date().getFullYear();
-    const storeName = state.settings.store.store_name || 'Tu Tienda';
+    
+    // --- ¡INICIO DE CORRECCIÓN! ---
+    const appConfig = state.settings.appConfig;
+    const storeName = appConfig?.system?.metadata?.appNameSimplify || // "B.U.C.A"
+                      state.settings.store.store_name || // Fallback
+                      'Tu Tienda';
+    // --- FIN DE CORRECCIÓN! ---
 
     return `
         <footer class="footer">

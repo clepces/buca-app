@@ -1,5 +1,7 @@
 // ======================================================
-// ARCHIVO CORREGIDO: src/router/routes.js
+// ARCHIVO: src/router/routes.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
+// CORRECCIÓN: Usar permisos de MÓDULO (Anotación C-5)
 // ======================================================
 
 import { PERMISSIONS } from '../services/roles.config.js';
@@ -11,9 +13,6 @@ const PosView = () => import('../views/PosView.js').then(m => m.PosView);
 const ClientsView = () => import('../views/ClientsView.js').then(m => m.ClientsView);
 const DashboardView = () => import('../views/Dashboard/DashboardView.js').then(m => m.DashboardView);
 const InventoryDashboardView = () => import('../views/Inventory/DashboardView.js').then(m => m.InventoryDashboardView);
-
-// --- ¡CORRECCIÓN AQUÍ! ---
-// Debe importar 'CompaniesView' desde 'CompaniesView.js', no 'InventoryDashboardView'
 const CompaniesDashboardView = () => import('../views/Companies/CompaniesView.js').then(m => m.CompaniesView);
 
 
@@ -28,23 +27,20 @@ export const routes = [
         label: 'Panel',
         icon: 'bi-grid-1x2-fill'
     },
-    // --- Módulo COMPANIES (NUEVO) ---
     {
         path: '#/companies',
-        component: CompaniesDashboardView, // Usa la importación corregida
+        component: CompaniesDashboardView,
         permission: PERMISSIONS.VIEW_COMPANIES_MODULE,
-        context: MODULES.CORE, // Lo mantenemos en CORE según tu ruta
+        context: MODULES.CORE,
         isMainModule: true,
         label: 'Empresas',
-        icon: 'bi-building' // Icono más apropiado
+        icon: 'bi-building'
     },
     // --- Módulo INVENTARIO ---
     {
         path: '#/inventory',
         component: InventoryDashboardView,
-        // --- ¡CORRECCIÓN AQUÍ! ---
-        // El permiso se renombró a VIEW_INVENTORY_MODULE
-        permission: PERMISSIONS.VIEW_INVENTORY_MODULE,
+        permission: PERMISSIONS.VIEW_INVENTORY_MODULE, // <-- Correcto
         context: MODULES.SGA_SCM,
         isMainModule: true,
         label: 'Inventario',
@@ -63,7 +59,8 @@ export const routes = [
     {
         path: '#/pos',
         component: PosView,
-        permission: PERMISSIONS.VIEW_POS, // Este estaba bien
+        // --- ¡CORRECCIÓN AQUÍ! ---
+        permission: PERMISSIONS.VIEW_POS_MODULE, // Antes: VIEW_POS
         context: MODULES.POS,
         isMainModule: true,
         label: 'Ventas y Compras',
@@ -73,7 +70,8 @@ export const routes = [
     {
         path: '#/clients',
         component: ClientsView,
-        permission: PERMISSIONS.VIEW_CLIENTS, // Este estaba bien
+        // --- ¡CORRECCIÓN AQUÍ! ---
+        permission: PERMISSIONS.VIEW_CLIENTS_MODULE, // Antes: VIEW_CLIENTS
         context: MODULES.CRM,
         isMainModule: true,
         label: 'Clientes',
