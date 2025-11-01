@@ -1,11 +1,8 @@
 /* ==========================================================================
-   TOAST NOTIFICATIONS
-   Estilos para las notificaciones emergentes que informan al usuario.
+   TOAST NOTIFICATIONS (CORREGIDO CON BOOTSTRAP ICONS)
    ========================================================================== */
 
-/* --------------------------------------------------------------------------
-   1. ESTILO GENERAL DEL TOAST
--------------------------------------------------------------------------- */
+/* 1. ESTILO GENERAL DEL TOAST */
 .toast {
     display: flex;
     align-items: center;
@@ -13,33 +10,41 @@
     position: fixed;
     top: 20px;
     left: 50%;
-    transform: translateX(-50%); /* Centrado horizontalmente */
+    transform: translateX(-50%);
     padding: 1rem 1.5rem;
     border-radius: var(--bs-border-radius);
     box-shadow: var(--shadow-lg);
     z-index: 9999;
     font-weight: 500;
     max-width: 90%;
-    pointer-events: none; /* Evita que el toast interfiera con los clics */
+    pointer-events: none;
     animation: toastSlideIn 0.4s ease-out forwards, toastSlideOut 0.4s 3s ease-in forwards;
 }
 
-/* ANÁLISIS: Se añade un icono a cada toast para mejorar la claridad */
+/* --- ¡INICIO DE CORRECCIÓN! --- */
 .toast::before {
-    font-family: "Font Awesome 5 Free";
+    /* Usa la familia de fuentes Bootstrap Icons */
+    font-family: 'bootstrap-icons';
     font-weight: 900;
     font-size: 1.2rem;
+    /* Corrección de alineación vertical */
+    font-style: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
+/* --- FIN DE CORRECCIÓN --- */
 
-/* --------------------------------------------------------------------------
-   2. VARIANTES DE COLOR E ICONOS
--------------------------------------------------------------------------- */
+
+/* 2. VARIANTES DE COLOR E ICONOS */
 .toast-success {
     background-color: var(--bs-success);
     color: var(--bs-white);
 }
 .toast-success::before {
-    content: '\f058'; /* check-circle */
+    content: '\f26a'; /* check-circle-fill */
 }
 
 .toast-error {
@@ -47,7 +52,7 @@
     color: var(--bs-white);
 }
 .toast-error::before {
-    content: '\f071'; /* exclamation-triangle */
+    content: '\f336'; /* exclamation-triangle-fill */
 }
 
 .toast-warning {
@@ -55,7 +60,7 @@
     color: var(--bs-white);
 }
 .toast-warning::before {
-    content: '\f06a'; /* exclamation-circle */
+    content: '\f32d'; /* exclamation-circle-fill */
 }
 
 .toast-info {
@@ -63,13 +68,11 @@
     color: var(--bs-white);
 }
 .toast-info::before {
-    content: '\f05a'; /* info-circle */
+    content: '\f431'; /* info-circle-fill */
 }
 
 
-/* --------------------------------------------------------------------------
-   3. ANIMACIONES
--------------------------------------------------------------------------- */
+/* 3. ANIMACIONES (Sin cambios) */
 @keyframes toastSlideIn {
     from {
         opacity: 0;

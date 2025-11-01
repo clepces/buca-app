@@ -295,21 +295,20 @@
 
 [data-bs-theme="dark"] .nav-button span,
 [data-bs-theme="dark"] .nav-button i {
-    color: var(--bs-gray-900);
+    color: var(--bs-gray-600); /* Ahora es gris claro */
 }
-
 [data-bs-theme="dark"] .nav-button.active span,
 [data-bs-theme="dark"] .nav-button.active i,
 [data-bs-theme="dark"] .nav-button:hover span,
 [data-bs-theme="dark"] .nav-button:hover i {
-    color: var(--bs-white);
+    color: var(--bs-white); /* Este estaba bien (blanco) */
 }
 
 [data-bs-theme="dark"] .contextual-nav-menu .back-button {
-    background-color: var(--bs-gray-400);
+    background-color: var(--bs-gray-700);
 }
 [data-bs-theme="dark"] .contextual-nav-menu .back-button:hover {
-    background-color: var(--bs-gray-200);
+    background-color: var(--bs-gray-600);
 }
 
 [data-bs-theme="dark"] .contextual-nav-menu .section-title-link {
