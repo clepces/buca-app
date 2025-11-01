@@ -1,4 +1,9 @@
-// ARCHIVO NUEVO: src/services/modules.config.js
+// ======================================================
+// ARCHIVO: src/services/modules.config.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.2 - FILE: 1.0.6
+// CORRECCIÓN: (Anotación E-3) Eliminado 'modulesConfig'
+//             que era código muerto.
+// ======================================================
 
 export const MODULES = {
     CORE: 'core',
@@ -7,25 +12,4 @@ export const MODULES = {
     CRM: 'crm'
 };
 
-export const modulesConfig = [
-    {
-        id: MODULES.CORE,
-        name: "Núcleo del Sistema",
-        isDefault: true,
-    },
-    {
-        id: MODULES.SGA_SCM,
-        name: "Gestión de Almacén",
-        isDefault: false,
-    },
-    {
-        id: MODULES.POS,
-        name: "Punto de Venta (POS)",
-        isDefault: false,
-    },
-    {
-        id: MODULES.CRM,
-        name: "Gestión de Clientes (CRM)",
-        isDefault: false,
-    }
-];
+// --- 'modulesConfig' (array) ELIMINADO ---

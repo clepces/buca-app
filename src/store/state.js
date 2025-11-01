@@ -1,30 +1,31 @@
-// store/state.js
-import { MODULES } from '../services/modules.config.js'; // importar MODULES!
+// ======================================================
+// ARCHIVO: src/store/state.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.1.0 - FILE: 1.0.2
+// CORRECCIÓN: (Anotación J-2) Estado unificado.
+// 1. Se eliminan 'user', 'businessId', 'departmentId' y 'role'
+//    para evitar duplicidad. 'state.session' es ahora la única
+//    fuente de verdad.
+// ======================================================
 
-/**
- * Genera el estado inicial de la aplicación.
- * Se usa para inicializar y para resetear (ej. al hacer logout).
- */
+import { MODULES } from '../services/modules.config.js';
+
 export const getInitialState = () => ({
-  // Estado de autenticación y sesión
-  isAuthenticated: false,
-  isLoading: false, // Controla el estado de carga global (ej. login)
-  user: null, // Almacenará { uid, email, name }
+  isAuthenticated: false, // <-- Obsoleto, pero se mantiene por ahora
+  isLoading: false,
   
-  // --- Cajones para la sesión ---
-  businessId: null,   // Almacenará el ID del negocio activo
-  departmentId: null, // Almacenará el ID del departamento del usuario
-  role: null,         // Almacenará el rol del usuario (ej. 'owner', 'seller')
+  // --- SECCIÓN ELIMINADA (Duplicada) ---
+  // user: null,
+  // businessId: null,
+  // departmentId: null,
+  // role: null,
   // ------------------------------------
 
-  // Estructura de sesión (usada por App.js)
   session: {
     isLoggedIn: false,
-    user: null,
-    business: null
+    user: null,     // { uid, email, name, role }
+    business: null  // { id, departmentId }
   },
 
-  // Configuración global de la app (cargada al inicio)
   settings: {
     store: {
       store_name: 'Mi Tienda',
@@ -44,36 +45,23 @@ export const getInitialState = () => ({
       tax_rate: 16,
       calculation_method: 'markup'
     },
-    appConfig: null, // Viene de la colección 'app_config'
-    exchangeRates: null, // Viene de 'exchange_rates'
-    permissions: null, // Basado en el rol
+    appConfig: null,
+    exchangeRates: null,
+    permissions: null,
   },
 
-  // Datos del negocio (se cargan después del login)
   products: [],
   clients: [],
   sales: [],
-  // ... otros almacenes de datos ...
   
-  // Estado de la UI
   ui: {
-    navContext: MODULES.CORE, // Antes era main', 'inventory', 'pos', 'clients', etc.
-    modal: {
-      isOpen: false,
-      content: null, // 'productForm', 'clientForm', etc.
-      props: {},
-    },
+    navContext: MODULES.CORE,
     toast: {
       isVisible: false,
       message: '',
-      type: 'info', // 'info', 'success', 'error'
+      type: 'info',
     },
   },
 });
 
-/**
- * El estado global de la aplicación (NO reactivo).
- * Es un simple objeto de JavaScript.
- * NO MODIFICAR DIRECTAMENTE. Usar acciones o servicios.
- */
 export const state = getInitialState();

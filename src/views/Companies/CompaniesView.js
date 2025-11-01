@@ -1,7 +1,11 @@
 // ======================================================
-// ARCHIVO ACTUALIZADO: src/views/Companies/CompaniesView.js
-// VERSIÓN 3.2: Arregla el layout de filtros (elimina flex-wrap)
-//              y asegura la separación (mt-4).
+// ARCHIVO: src/views/Companies/CompaniesView.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.2 - FILE: 1.0.2
+// CORRECCIÓN: (Anotaciones K-1, AP-1)
+// 1. Refactorizado para usar el patrón de renderizado inteligente.
+// 2. 'render()' solo crea el layout y 'updateTable()' actualiza los datos.
+// 3. Se elimina el "hack" de guardar/restaurar foco.
+// 4. Se usa 'pagination.service.js' (AP-1).
 // ======================================================
 
 import { StatCard } from '../../components/StatCard.js';
@@ -13,17 +17,19 @@ import { state as globalState } from '../../store/state.js';
 import { can } from '../../services/permissions.service.js';
 import { PERMISSIONS } from '../../services/roles.config.js';
 import { debounce } from '../../utils/debounce.js';
+// --- ¡IMPORTACIÓN AÑADIDA! (Anotación AP-1) ---
+import { paginate, getTotalPages } from '../../services/pagination.service.js';
 
 export function CompaniesView(element, state) {
     const canCreate = can(PERMISSIONS.CREATE_COMPANY);
 
-    // --- Lógica de Estado y Datos ---
     const viewState = {
         currentPage: 1,
         itemsPerPage: 10,
-        totalItems: 9,
+        totalItems: 0,
         searchTerm: '',
         selectedCompanies: new Set(),
+        // Datos de Platzhalter
         companies: [
             { id: '1', name: 'BrightWave Innovations', domain: 'brightwave.com', email: 'michael@example.com', accountUrl: 'https://bwi.example.com', plan: 'Advanced (Monthly)', createdDate: '12 Sep 2024', status: 'Active' },
             { id: '2', name: 'Stellar Dynamics', domain: 'stellar.com', email: 'sophie@example.com', accountUrl: 'https://sd.example.com', plan: 'Basic (Yearly)', createdDate: '24 Oct 2024', status: 'Active' },
@@ -37,18 +43,26 @@ export function CompaniesView(element, state) {
         ]
     };
     
+    // --- Lógica de Filtro y Paginación ---
     let paginatedCompanies = [];
+    let filteredCompanies = [];
 
-    const getPaginatedData = () => {
-        const filtered = viewState.companies.filter(c => 
+    const applyFilters = () => {
+        filteredCompanies = viewState.companies.filter(c => 
             c.name.toLowerCase().includes(viewState.searchTerm) ||
             c.email.toLowerCase().includes(viewState.searchTerm)
         );
-        viewState.totalItems = filtered.length;
-        const startIndex = (viewState.currentPage - 1) * viewState.itemsPerPage;
-        const endIndex = startIndex + viewState.itemsPerPage;
-        paginatedCompanies = filtered.slice(startIndex, endIndex);
-        return paginatedCompanies;
+        viewState.totalItems = filteredCompanies.length;
+    };
+    
+    const applyPagination = () => {
+        // --- ¡CORRECCIÓN! (Anotación AP-1) ---
+        // Usamos el servicio de paginación
+        paginatedCompanies = paginate(
+            filteredCompanies, 
+            viewState.currentPage, 
+            viewState.itemsPerPage
+        );
     };
 
     const isAllVisibleSelected = () => {
@@ -56,25 +70,58 @@ export function CompaniesView(element, state) {
         return paginatedCompanies.every(c => viewState.selectedCompanies.has(c.id));
     };
 
-    // --- Función de Renderizado Principal ---
-    const render = () => {
-        getPaginatedData();
-        const totalPages = Math.ceil(viewState.totalItems / viewState.itemsPerPage);
 
+    // --- ¡NUEVA FUNCIÓN DE RENDERIZADO PARCIAL! ---
+    const updateTableAndPagination = () => {
+        Logger.trace('[CompaniesView] Actualizando solo tabla y paginación...');
+        applyFilters();
+        applyPagination();
+        
+        const totalPages = getTotalPages(viewState.totalItems, viewState.itemsPerPage);
+
+        // 1. Actualizar la tabla
+        const tableContainer = element.querySelector("#companies-table-container");
+        if (tableContainer) {
+            tableContainer.innerHTML = CompaniesTable({ 
+                companies: paginatedCompanies,
+                selectedIds: viewState.selectedCompanies,
+                isAllSelected: isAllVisibleSelected()
+            });
+        }
+
+        // 2. Actualizar la paginación
+        const paginationContainer = element.querySelector("#companies-pagination-container");
+        if (paginationContainer) {
+            paginationContainer.innerHTML = PaginationControls({
+                currentPage: viewState.currentPage,
+                totalPages: totalPages,
+                totalItems: viewState.totalItems,
+                itemsPerPage: viewState.itemsPerPage
+            });
+        }
+        
+        // 3. Actualizar el contador del título
+        const titleCounter = element.querySelector("#view-title-counter");
+        if (titleCounter) {
+            titleCounter.textContent = viewState.totalItems;
+        }
+    };
+
+
+    // --- FUNCIÓN DE RENDERIZADO PRINCIPAL (SOLO SE EJECUTA UNA VEZ) ---
+    const renderLayout = () => {
         const totalCompanies = '950';
         const activeCompanies = '920';
         const inactiveCompanies = '30';
         const companyLocation = '180';
 
         element.innerHTML = `
-            <style>
-            </style>
             <div class="view-header align-items-center mb-4">
                 <div>
                     <h2 class="view-title mb-1">
                         <i class="bi bi-building me-2"></i> 
                         Companies 
-                        <span class="badge bg-primary-subtle text-primary-emphasis ms-2">${viewState.totalItems}</span>
+                        <span class="badge bg-primary-subtle text-primary-emphasis ms-2" id="view-title-counter">${viewState.totalItems}</span>
                     </h2>
                     <p class="text-muted mb-0">Administra todas las compañías en la plataforma.</p>
                 </div>
@@ -102,59 +149,39 @@ export function CompaniesView(element, state) {
                 ${StatCard({ title: 'Company Location', value: companyLocation, icon: 'bi-geo-alt-fill', className: 'stat-card-location', miniGraph: true })}
             </div>
 
-            <div class="table-container-wrapper mt-4" style="margin-top: inherit;">
-                
+            <div class="table-container-wrapper mt-4">
                 <div class="table-filters">
                     <div class="search-container">
                         <i class="bi bi-search search-icon"></i>
                         <input type="search" id="search-companies" class="form-control" placeholder="Buscar por nombre, email..." value="${viewState.searchTerm}">
                     </div>
-                    
-                    <div class="d-flex gap-2" style="margin-left: auto;flex-direction: row;display: flex;margin: 2.5px;gap: inherit;">
+                    <div class="d-flex gap-2" style="margin-left: auto;">
                         <select id="filter-plan" class="form-control" style="min-width: 150px;">
                             <option value="">Select Plan</option>
                             <option value="basic">Basic</option>
-                            <option value="premium">Premium</option>
-                            <option value="enterprise">Enterprise</option>
                         </select>
                         <select id="filter-status" class="form-control" style="min-width: 150px;">
                             <option value="">Select Status</option>
                             <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
                         </select>
                         <select id="filter-sort" class="form-control" style="min-width: 180px;">
                             <option value="last_7_days">Sort By: Last 7 Days</option>
-                            <option value="last_30_days">Sort By: Last 30 Days</option>
-                            <option value="newest">Newest</option>
                         </select>
-                        <button class="btn-icon btn-secondary" data-action="manage-columns" 
-                            data-tippy-content="Administrar Columnas"
-                            style="margin: auto;padding: 1px 10.5px 1px 10.5px;">
+                        <button class="btn-icon btn-secondary" data-action="manage-columns" data-tippy-content="Administrar Columnas">
                             <i class="bi bi-layout-three-columns"></i>
                         </button>
                     </div>
                 </div>
 
                 <div id="companies-table-container">
-                    ${CompaniesTable({ 
-                        companies: paginatedCompanies,
-                        selectedIds: viewState.selectedCompanies,
-                        isAllSelected: isAllVisibleSelected()
-                    })}
+                    ${EmptyState({ icon: 'bi-hourglass-split', message: 'Cargando compañías...' })}
                 </div>
-
                 <div class="pagination-container" id="companies-pagination-container">
-                    ${PaginationControls({
-                        currentPage: viewState.currentPage,
-                        totalPages: totalPages,
-                        totalItems: viewState.totalItems,
-                        itemsPerPage: viewState.itemsPerPage
-                    })}
-                </div>
+                    </div>
             </div>
         `;
         
-        // Inicializar Tooltips
+        // Inicializar Tooltips (solo una vez)
         setTimeout(() => {
             if (typeof tippy !== 'undefined') {
                 tippy('[data-tippy-content]');
@@ -164,66 +191,62 @@ export function CompaniesView(element, state) {
         }, 100);
     };
     
-    // --- Renderizado con Debounce (para el buscador) ---
-    const debouncedRender = debounce(() => {
-        const focusedElement = document.activeElement;
-        const isSearch = focusedElement.id === 'search-companies';
-        const selectionStart = isSearch ? focusedElement.selectionStart : null;
-        
-        render();
-        
-        if (isSearch) {
-            const searchInput = document.getElementById('search-companies');
-            if (searchInput) {
-                searchInput.focus();
-                searchInput.selectionStart = selectionStart;
-            }
-        }
+    // --- Renderizado con Debounce (llama a la nueva función) ---
+    const debouncedSearchHandler = debounce(() => {
+        // No necesitamos guardar el foco, solo actualizamos la tabla
+        updateTableAndPagination(); 
     }, 300);
 
-    // --- Manejadores de Eventos (Sin cambios) ---
+    // --- Manejadores de Eventos ---
     
     const handlePagination = (e) => {
         const target = e.target;
-        let needsRender = false;
+        let needsUpdate = false;
+
         const pageButton = target.closest('.btn-page');
         if (pageButton) {
             viewState.currentPage = parseInt(pageButton.dataset.page, 10);
-            needsRender = true;
+            needsUpdate = true;
         }
+
         if (target.closest('#btn-next-page')) {
-            const totalPages = Math.ceil(viewState.totalItems / viewState.itemsPerPage);
+            const totalPages = getTotalPages(viewState.totalItems, viewState.itemsPerPage);
             if (viewState.currentPage < totalPages) {
                 viewState.currentPage++;
-                needsRender = true;
+                needsUpdate = true;
             }
         }
+
         if (target.closest('#btn-prev-page')) {
             if (viewState.currentPage > 1) {
                 viewState.currentPage--;
-                needsRender = true;
+                needsUpdate = true;
             }
         }
+
         if (target.id === 'items-per-page') {
             viewState.itemsPerPage = parseInt(target.value, 10);
             viewState.currentPage = 1;
-            needsRender = true;
+            needsUpdate = true;
         }
-        if (needsRender) render();
+        
+        if (needsUpdate) {
+            updateTableAndPagination(); // <-- Llama a la nueva función
+        }
     };
 
     const handleSearch = (e) => {
         if (e.target.id === 'search-companies') {
             viewState.searchTerm = e.target.value.toLowerCase();
             viewState.currentPage = 1;
-            debouncedRender();
+            debouncedSearchHandler(); // <-- Llama al debounce
         }
     };
 
     const handleSelection = (e) => {
         const target = e.target;
         const action = target.dataset.action;
-        let needsRender = false;
+        let needsUpdate = false;
 
         if (action === 'select-all') {
             const isChecked = target.checked;
@@ -232,7 +255,7 @@ export function CompaniesView(element, state) {
             } else {
                 paginatedCompanies.forEach(c => viewState.selectedCompanies.delete(c.id));
             }
-            needsRender = true;
+            needsUpdate = true;
         }
 
         if (action === 'select-one') {
@@ -242,11 +265,11 @@ export function CompaniesView(element, state) {
             } else {
                 viewState.selectedCompanies.delete(companyId);
             }
-            needsRender = true;
+            needsUpdate = true;
         }
 
-        if (needsRender) {
-            render();
+        if (needsUpdate) {
+            updateTableAndPagination(); // <-- Llama a la nueva función
         }
     };
 
@@ -265,23 +288,28 @@ export function CompaniesView(element, state) {
         if (action === 'view-company') { Logger.info(`Abrir modal para VER compañía: ${companyId}`); }
         if (action === 'edit-company') { Logger.info(`Abrir modal para EDITAR compañía: ${companyId}`); }
         if (action === 'delete-company') { Logger.info(`Abrir modal para ELIMINAR compañía: ${companyId}`); }
-        if (action === 'refresh-data') { Logger.info('Refrescando datos de compañías...'); }
+        if (action === 'refresh-data') { Logger.info('Refrescando datos de compañías...'); updateTableAndPagination(); }
         if (action === 'manage-columns') { Logger.info('Abrir modal "Manage Columns" (Próximamente)...'); }
     };
 
-    // Renderizado inicial
-    render();
+    // --- CICLO DE VIDA DE LA VISTA ---
+    
+    // 1. Renderizado inicial del Layout
+    renderLayout();
+    
+    // 2. Carga inicial de datos de la tabla
+    updateTableAndPagination();
 
-    // Listeners
+    // 3. Adjuntar Listeners (una sola vez)
     element.addEventListener('click', handleActions);
     element.addEventListener('click', handlePagination);
     element.addEventListener('input', handleSearch);
 
-    // Función de limpieza
+    // 4. Función de limpieza
     return () => {
         Logger.info('Limpiando CompaniesView y sus listeners...');
         element.removeEventListener('click', handleActions);
         element.removeEventListener('click', handlePagination);
         element.removeEventListener('input', handleSearch);
     };
-}   
+}

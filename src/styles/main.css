@@ -1,6 +1,8 @@
 /* ======================================================
 // ARCHIVO: src/styles/main.css
-// Este es el punto de entrada para todos nuestros estilos.
+// CORRECCIÓN: (Anotación Y-6)
+// 1. Se añade 'product-form.css'
+// 2. Se elimina 'calculator.css' (obsoleto)
 // ====================================================== */
 
 /* 1. Reseteo y Estilos Base */
@@ -25,10 +27,12 @@
 @import url('./components/products.css');
 @import url('./components/table.css');
 @import url('./components/pagination.css');
-@import url('./components/calculator.css');
 @import url('./components/pos.css');
 @import url('./components/tabs.css');
 @import url('./components/historial.css');
+@import url('./components/product-form.css'); /* <-- ¡AÑADIDO! */
+/* @import url('./components/calculator.css'); */ /* <-- ¡ELIMINADO! */
+
 
 /* 4. Otros y Media Queries */
 @import url('./components/message.css');
