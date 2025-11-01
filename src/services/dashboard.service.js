@@ -1,13 +1,18 @@
-// src/services/dashboard.service.js
-import { Logger } from './logger.service.js'; // <-- AÑADIR ESTA LÍNEA
+// ======================================================
+// ARCHIVO: src/services/dashboard.service.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
+// CORRECCIÓN: Actualizado para leer la nueva estructura de
+//             datos del producto (ej. product.pricing.unitSellPrice)
+// ======================================================
+
+import { Logger } from './logger.service.js';
 
 export function getDashboardStats(products) {
 
     Logger.info(`Dashboard Stats: Calculando con ${products ? products.length : 0} productos.`);
     if (products && products.length > 0) {
-        Logger.trace('Primer producto para cálculo:', JSON.stringify(products[0])); // Log first product data
+        Logger.trace('Primer producto para cálculo:', JSON.stringify(products[0]));
     }
-
 
     if (!products || products.length === 0) {
         return {
@@ -19,15 +24,13 @@ export function getDashboardStats(products) {
     }
 
     const totals = products.reduce((acc, product, index) => {
+        // --- ¡INICIO DE CORRECCIÓN! (Anotación M-2) ---
+        // Leemos la nueva estructura "plana"
         const currentStock = product.stock?.current || 0;
         const packageCost = product.pricing?.packageCost || 0;
-        // --- ¡CAMBIO AQUÍ! Acceso a unitsPerPackage ---
-        // Ahora lee directamente de pricing o del objeto priceLists
-        const unitsPerPackage = product.pricing?.unitsPerPackage || product.pricing?.priceLists?.unitsPerPackage || 1;
-        // --- ¡CAMBIO AQUÍ! Acceso a unitSellPrice ---
-        // Ahora lee directamente de pricing o del objeto priceLists
-        const unitSellPrice = product.pricing?.unitSellPrice || product.pricing?.priceLists?.unitSellPrice || 0;
-        // ---------------------------------------------
+        const unitsPerPackage = product.pricing?.unitsPerPackage || 1;
+        const unitSellPrice = product.pricing?.unitSellPrice || 0;
+        // --- FIN DE CORRECCIÓN ---
 
         const costPerUnit = packageCost / (unitsPerPackage > 0 ? unitsPerPackage : 1);
         const investmentToAdd = costPerUnit * currentStock;
@@ -44,7 +47,6 @@ export function getDashboardStats(products) {
         return acc;
     }, { investment: 0, stockValue: 0 });
 
-    // ... (handle NaN and return) ...
     const totalInvestment = isNaN(totals.investment) ? 0 : totals.investment;
     const totalStockValue = isNaN(totals.stockValue) ? 0 : totals.stockValue;
     const potentialProfit = totalStockValue - totalInvestment;

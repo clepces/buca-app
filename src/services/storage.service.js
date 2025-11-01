@@ -1,4 +1,9 @@
-// services/storage.service.js
+// ======================================================
+// ARCHIVO: src/services/storage.service.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
+// CORRECCIÓN: Añadida la función 'saveNewProduct'.
+// ======================================================
+
 import { db } from '../firebase-config.js';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { getInitialState } from '../store/state.js';
@@ -26,10 +31,7 @@ export async function initializeStorage(providerName = 'firebase') {
 
 export async function loadState() {
     if (!activeAdapter) throw new Error("Storage service not initialized.");
-
     const state = getInitialState();
-    // Al inicio, no sabemos el negocio, solo cargamos el estado por defecto.
-    // La carga de productos ocurre DESPUÉS del login.
     Logger.info('✅ Initial state loaded.');
     return state;
 }
@@ -57,8 +59,6 @@ export async function loadGlobalConfig() {
         });
 
         const configArray = await Promise.all(configPromises);
-        
-        // Combina el array de objetos (ej. [{system: ...}, {plans: ...}]) en uno solo
         const globalConfig = configArray.reduce((acc, current) => ({ ...acc, ...current }), {});
 
         Logger.info('✅ Configuración global cargada.');
@@ -66,7 +66,6 @@ export async function loadGlobalConfig() {
 
     } catch (error) {
         Logger.error('Error Crítico al cargar la configuración global:', error);
-        // Lanzamos el error para que main.js pueda manejarlo
         throw new Error(`CONFIG_LOAD_FAILED: ${error.message}`);
     }
 }
@@ -77,8 +76,6 @@ export async function loadBusinessData(state) {
     Logger.info(`Loading data for business: ${state.session.business.id}`);
     const products = await activeAdapter.getAllProducts(state);
     
-    // Aquí podrías cargar clientes, ventas, etc., en el futuro
-    
     return { products: products || [] };
 }
 
@@ -87,9 +84,26 @@ export async function saveState(state) {
      await activeAdapter.saveSettings(state);
 }
 
-// --- El resto de funciones que delegan en el adaptador ---
-// (Estas funciones parecen no usarse, pero las dejamos por si acaso)
+// --- ¡NUEVA FUNCIÓN AÑADIDA! ---
+export async function saveNewProduct(state, productData) {
+    if (!activeAdapter) throw new Error("Storage service not initialized.");
+    if (typeof activeAdapter.createProduct !== 'function') {
+         Logger.warn(`El adaptador ${activeAdapter} no implementa createProduct.`);
+         return productData; // Devuelve los datos sin ID
+    }
+    return await activeAdapter.createProduct(state, productData);
+}
+// --- FIN DE LA NUEVA FUNCIÓN ---
+
 export const getUserByUsername = (username) => activeAdapter.getUserByUsername(username);
 export const saveUser = (user) => activeAdapter.saveUser(user);
-export const deleteProductById = (state, productId) => activeAdapter.deleteProduct(state, productId);
-export const updateProductById = (state, productId, data) => activeAdapter.updateProduct(state, productId, data);
+
+export const deleteProductById = (state, productId) => {
+    if (!activeAdapter) throw new Error("Storage service not initialized.");
+    return activeAdapter.deleteProduct(state, productId);
+};
+
+export const updateProductById = (state, productId, data) => {
+     if (!activeAdapter) throw new Error("Storage service not initialized.");
+    return activeAdapter.updateProduct(state, productId, data);
+};

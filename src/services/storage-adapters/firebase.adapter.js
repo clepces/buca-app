@@ -1,32 +1,16 @@
-// services/storage-adapters/firebase.adapter.js
+// ======================================================
+// ARCHIVO: src/services/storage-adapters/firebase.adapter.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
+// CORRECCIÓN: Añadida la función 'createProduct' al adaptador.
+// ======================================================
 
-import { db } from '../../firebase-config';
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, startAfter, writeBatch } from 'firebase/firestore';
+import { db } from '../../firebase-config.js';
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query, where, writeBatch } from 'firebase/firestore';
 
-/**
- * Obtiene la ruta de la colección, manejando sub-colecciones.
- * @param {string} path - La ruta de la colección (ej. 'products' o 'businesses/id/products').
- * @returns {CollectionReference}
- */
-const getCollection = (path) => {
-  return collection(db, path);
-};
+// --- Funciones C.R.U.D. Genéricas (Sin cambios) ---
+const getCollection = (path) => collection(db, path);
+const getDocRef = (path) => doc(db, path);
 
-/**
- * Obtiene la referencia a un documento, manejando sub-colecciones.
- * @param {string} path - La ruta al documento (ej. 'products/id' o 'businesses/id/products/id').
- * @returns {DocumentReference}
- */
-const getDocRef = (path) => {
-  return doc(db, path);
-};
-
-/**
- * Obtiene un documento por su ID desde una ruta de colección.
- * @param {string} collectionPath - Ruta a la colección.
- * @param {string} id - ID del documento.
- * @returns {Promise<object|null>} - Los datos del documento o null.
- */
 export const get = async (collectionPath, id) => {
   try {
     const docRef = getDocRef(`${collectionPath}/${id}`);
@@ -34,155 +18,82 @@ export const get = async (collectionPath, id) => {
     if (docSnap.exists()) {
       return { id: docSnap.id, ...docSnap.data() };
     } else {
-      // --- ¡CAMBIO AQUÍ! ---
       console.log(`[firebase] No se encontró el documento: ${collectionPath}/${id}`);
-      // --------------------
       return null;
     }
   } catch (error) {
-    // --- ¡CAMBIO AQUÍ! ---
     console.error(`[firebase] Error en get(${collectionPath}, ${id})`, error);
-    // --------------------
-    throw error; // Relanza el error para que error.service lo maneje
+    throw error;
   }
 };
-
-/**
- * Obtiene todos los documentos de una colección (opcionalmente con filtros).
- * @param {string} collectionPath - Ruta a la colección.
- * @param {Array} [qParams] - Array de parámetros de consulta (ej. ['status', '==', 'active']).
- * @returns {Promise<Array>} - Un array de documentos.
- */
 export const getAll = async (collectionPath, qParams) => {
   try {
     let q = query(getCollection(collectionPath));
-    
-    // Aplicar filtros si existen
     if (qParams && qParams.length > 0) {
       qParams.forEach(param => {
         if (Array.isArray(param) && param.length === 3) {
           q = query(q, where(param[0], param[1], param[2]));
         }
-        // TODO: Añadir soporte para orderBy, limit, etc.
       });
     }
-
     const querySnapshot = await getDocs(q);
     const results = [];
     querySnapshot.forEach((doc) => {
       results.push({ id: doc.id, ...doc.data() });
     });
     return results;
-
   } catch (error) {
-    // --- ¡CAMBIO AQUÍ! ---
     console.error(`[firebase] Error en getAll(${collectionPath})`, error);
-    // --------------------
     throw error;
   }
 };
-
-/**
- * Crea un nuevo documento en una colección.
- * @param {string} collectionPath - Ruta a la colección.
- * @param {object} data - Los datos para el nuevo documento.
- * @returns {Promise<string>} - El ID del nuevo documento.
- */
 export const create = async (collectionPath, data) => {
   try {
     const docRef = await addDoc(getCollection(collectionPath), data);
     return docRef.id;
   } catch (error) {
-    // --- ¡CAMBIO AQUÍ! ---
     console.error(`[firebase] Error en create(${collectionPath})`, error, data);
-    // --------------------
     throw error;
   }
 };
-
-/**
- * Crea o sobrescribe un documento con un ID específico.
- * @param {string} collectionPath - Ruta a la colección.
- * @param {string} id - El ID del documento a crear/sobrescribir.
- * @param {object} data - Los datos a guardar.
- * @returns {Promise<void>}
- */
 export const set = async (collectionPath, id, data) => {
   try {
     const docRef = getDocRef(`${collectionPath}/${id}`);
-    await setDoc(docRef, data); // setDoc crea o sobrescribe
+    await setDoc(docRef, data);
   } catch (error) {
-    // --- ¡CAMBIO AQUÍ! ---
     console.error(`[firebase] Error en set(${collectionPath}, ${id})`, error, data);
-    // --------------------
     throw error;
   }
 };
-
-/**
- * Actualiza un documento existente.
- * @param {string} collectionPath - Ruta a la colección.
- * @param {string} id - El ID del documento a actualizar.
- * @param {object} data - Los datos a actualizar (merge).
- * @returns {Promise<void>}
- */
 export const update = async (collectionPath, id, data) => {
   try {
     const docRef = getDocRef(`${collectionPath}/${id}`);
-    await updateDoc(docRef, data); // updateDoc hace merge
+    await updateDoc(docRef, data);
   } catch (error) {
-    // --- ¡CAMBIO AQUÍ! ---
     console.error(`[firebase] Error en update(${collectionPath}, ${id})`, error, data);
-    // --------------------
     throw error;
   }
 };
-
-/**
- * Elimina un documento.
- * @param {string} collectionPath - Ruta a la colección.
- * @param {string} id - El ID del documento a eliminar.
- * @returns {Promise<void>}
- */
 export const remove = async (collectionPath, id) => {
   try {
     const docRef = getDocRef(`${collectionPath}/${id}`);
     await deleteDoc(docRef);
   } catch (error) {
-    // --- ¡CAMBIO AQUÍ! ---
     console.error(`[firebase] Error en remove(${collectionPath}, ${id})`, error);
-    // --------------------
     throw error;
   }
 };
-
-/**
- * Obtiene una referencia a un nuevo lote de escritura (batch).
- * @returns {WriteBatch}
- */
-export const getBatch = () => {
-  return writeBatch(db);
-};
-
-/**
- * Ejecuta un lote de escritura.
- * @param {WriteBatch} batch - El lote a ejecutar.
- * @returns {Promise<void>}
- */
+export const getBatch = () => writeBatch(db);
 export const commitBatch = async (batch) => {
   try {
     await batch.commit();
   } catch (error) {
-    // --- ¡CAMBIO AQUÍ! ---
     console.error('[firebase] Error al ejecutar el batch', error);
-    // --------------------
     throw error;
   }
 };
 
-/**
- * Adaptador completo de Firebase para storage.service.js
- */
+// --- Objeto Adaptador (ACTUALIZADO) ---
 export const firebaseAdapter = {
   async init() {
     console.log('[firebase] Adaptador inicializado');
@@ -190,15 +101,9 @@ export const firebaseAdapter = {
 
   async getAllProducts(state) {
     try {
-      if (!state.session?.business?.id) {
-        return [];
-      }
-      
+      if (!state.session?.business?.id) return [];
       const businessId = state.session.business.id;
-      if (businessId === 'admin_view') {
-        return []; // El admin no tiene productos
-      }
-      
+      if (businessId === 'admin_view') return [];
       const products = await getAll(`businesses/${businessId}/products`);
       return products || [];
     } catch (error) {
@@ -207,17 +112,28 @@ export const firebaseAdapter = {
     }
   },
 
-  async saveSettings(state) {
+  // --- ¡NUEVA FUNCIÓN AÑADIDA! ---
+  async createProduct(state, productData) {
     try {
       if (!state.session?.business?.id) {
-        return;
+        throw new Error("No hay ID de negocio en la sesión para crear el producto.");
       }
-      
       const businessId = state.session.business.id;
-      if (businessId === 'admin_view') {
-        return; // El admin no guarda configuraciones de negocio
-      }
-      
+      // 'create' (addDoc) generará un ID automático para el producto
+      const newProductId = await create(`businesses/${businessId}/products`, productData);
+      return { ...productData, id: newProductId }; // Devuelve el producto con su nuevo ID
+    } catch (error) {
+      console.error('[firebase] Error creando producto:', error);
+      throw error;
+    }
+  },
+  // --- FIN DE LA NUEVA FUNCIÓN ---
+
+  async saveSettings(state) {
+    try {
+      if (!state.session?.business?.id) return;
+      const businessId = state.session.business.id;
+      if (businessId === 'admin_view') return;
       await set(`businesses/${businessId}/settings`, 'app', state.settings);
     } catch (error) {
       console.error('[firebase] Error guardando configuración:', error);
@@ -249,18 +165,26 @@ export const firebaseAdapter = {
     }
   },
 
-  async deleteProduct(productId) {
+  async deleteProduct(state, productId) {
     try {
-      await remove('products', productId);
+       if (!state.session?.business?.id) {
+        throw new Error("No hay ID de negocio en la sesión para eliminar el producto.");
+      }
+      const businessId = state.session.business.id;
+      await remove(`businesses/${businessId}/products`, productId);
     } catch (error) {
       console.error('[firebase] Error eliminando producto:', error);
       throw error;
     }
   },
 
-  async updateProduct(productId, data) {
+  async updateProduct(state, productId, data) {
     try {
-      await update('products', productId, data);
+       if (!state.session?.business?.id) {
+        throw new Error("No hay ID de negocio en la sesión para actualizar el producto.");
+      }
+       const businessId = state.session.business.id;
+      await update(`businesses/${businessId}/products`, productId, data);
     } catch (error) {
       console.error('[firebase] Error actualizando producto:', error);
       throw error;
