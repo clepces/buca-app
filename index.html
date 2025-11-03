@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="light">
-	<!--begin::Head-->
 	<head>
 		<meta charset="UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,30 +7,16 @@
 		<title>Business Under Control Access</title>
 
 		<link rel="shortcut icon" href="/icons/logo.fire.svg" type="image/ico" />
-
-		<!--begin::PWA (obligatorio para todas las páginas)-->
 		<link rel="manifest" href="/manifest.json">
-		<!--end::PWA-->
-
-		<!--begin::Fonts (obligatorio para todas las páginas)-->
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-		<!--end::Fonts-->
-
-		<!--begin::Vendor Stylesheets (usado solo para esta página)-->
 		<link rel="stylesheet" href="/src/styles/main.css">
-		<!--end::Vendor Stylesheets-->
-
-		<!--begin::Global Stylesheets Bundle (obligatorio para todas las páginas)-->
-		<!--end::Global Stylesheets Bundle-->
-
-		<!--begin::Javascript-->
-		<!--begin::Global Javascript Bundle(obligatorio para todas las páginas)-->
+	</head>
+	<body>
+		<div id="app-loader"></div>
+		<div id="app"></div>
 		<script type="module" src="/src/main.js"></script>
-		<!--end::Global Javascript Bundle-->
-
-		<!--begin::Vendors Javascript(usado solo para esta página)-->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.2/jspdf.plugin.autotable.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script> 
@@ -40,18 +25,5 @@
 		<script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
 		<script src="https://unpkg.com/@popperjs/core@2"></script>
 		<script src="https://unpkg.com/tippy.js@6"></script>
-		<!--end::Vendors Javascript-->
-		<!--end::Javascript-->
-
-	</head>
-	<!--end::Head-->
-	<!--begin::Body-->
-	<body>
-		<!--begin::App-->
-		<div id="app">
-			<div class="app-loader"></div>
-		</div>
-		<!--end::App-->
 	</body>
-	<!--end::Body-->
 </html>

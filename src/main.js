@@ -1,72 +1,97 @@
-// src/main.js
-import { handleError } from './services/error.service.js';
-window.onerror = (message, source, lineno, colno, error) => { handleError(error || new Error(message), `global(${source}:${lineno}:${colno})`); return true;};
-window.onunhandledrejection = (event) => { handleError(event.reason || new Error('Unhandled promise rejection'), 'global-promise'); event.preventDefault();};
+// ======================================================
+// ARCHIVO: src/main.js
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.1
+// CORRECCIÓN: Se pasa 'mainLoader' al constructor de 'App'
+//             para evitar el TypeError 'this.mainLoader.hide is not a function'.
+// ======================================================
 
-import App from './App.js';
-import { LoaderComponent } from './components/Loader.js';
-import { loadGlobalConfig, initializeStorage, loadState } from './services/storage.service.js';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase-config.js';
-import { onAuthStateChanged } from "firebase/auth";
+import { handleError } from './utils/handleError.js';
 import { Logger } from './services/logger.service.js';
-import { delay } from './utils/retardo.js';
-import { state } from './store/state.js';
-
-const rootElement = document.querySelector('#app');
+import App from './App.js';
+import { loadState, initializeStorage, loadGlobalConfig } from './services/storage.service.js';
+import { setSettings } from './store/actions.js';
+import { LoaderComponent } from './components/Loader.js';
 
 async function main() {
-    const loader = LoaderComponent();
-    rootElement.innerHTML = '';
-    rootElement.appendChild(loader.element);
-    let appInstance = null;
-
     try {
-        loader.updateMessage('Inicializando almacenamiento...');
+        const appRoot = document.getElementById('app');
+        if (!appRoot) {
+            throw new Error("El elemento 'app' no se encuentra en el DOM.");
+        }
+        
+        const loader = LoaderComponent();
+        document.getElementById('app-loader').appendChild(loader.element);
+        const mainLoader = {
+            hide: loader.hide
+        };
+
         await initializeStorage('firebase');
         Logger.info('Almacenamiento inicializado.');
-
-        loader.updateMessage('Cargando configuración global...');
+        
         const globalConfig = await loadGlobalConfig();
+        Logger.info('✅ Configuración global cargada.');
 
-        loader.updateMessage('Cargando estado inicial...');
         const initialState = await loadState();
+        Logger.info('✅ Initial state loaded.');
 
-        initialState.settings.appConfig = globalConfig; 
-
-        if (globalConfig?.system?.metadata) {
-            initialState.settings.store.store_name = globalConfig.system.metadata.appNameSimplify || 'B.U.C.A';
-            initialState.settings.store.store_description = globalConfig.system.metadata.appName || 'Business Under Control Access';
-        }
-
-        Object.assign(state, initialState);
+        initialState.settings.appConfig = globalConfig;
+        setSettings(initialState.settings); 
         Logger.info('Estado inicial cargado.');
-        await delay(500);
 
         onAuthStateChanged(auth, async (user) => {
             Logger.info(`onAuthStateChanged: user = ${user ? user.uid : 'null'}`);
-            if (!appInstance) {
-                appInstance = new App(rootElement, initialState, loader);
-                window.app = appInstance;
+            try {
+                if (!window.app) {
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    // Se añade 'mainLoader' como tercer argumento, que faltaba.
+                    const appInstance = new App(appRoot, initialState, mainLoader);
+                    // --- FIN DE LA CORRECCIÓN ---
+                    
+                    await appInstance.init();
+                    window.app = appInstance;
+                }
+                await window.app.handleAuthStateChange(user);
+            } catch (error) {
+                Logger.error('Error en onAuthStateChanged:', error);
+                handleError(error, { 
+                    message: 'Error al procesar la autenticación.', 
+                    critical: true,
+                    loaderUI: mainLoader
+                });
             }
-            appInstance.handleAuthStateChange(user);
         });
+
     } catch (error) {
-        Logger.error('Error Crítico durante el arranque de la aplicación:', error);
-        handleError(error, 'main.js:init');
-        loader.showError('Error fatal al iniciar la aplicación.');
-    } finally {
-        // El loader se quita dentro de App.js cuando la app está lista o muestra el login
+        Logger.error('Error fatal en main():', error);
+        handleError(error, { 
+            message: 'No se pudo iniciar la aplicación.', 
+            critical: true 
+        });
+    }
+
+    if ('serviceWorker' in navigator && import.meta.env.PROD) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    Logger.info('Service Worker registrado con éxito:', registration);
+                })
+                .catch(error => {
+                    Logger.error('Error al registrar el Service Worker:', error);
+                });
+        });
     }
 }
 
-// Inicia la aplicación
-main();
+window.onerror = (message, source, lineno, colno, error) => {
+    Logger.error('Error global no capturado:', { message, source, lineno, colno, error });
+    handleError(error || new Error(message), { message: 'Error inesperado en la aplicación.', critical: true });
+};
 
-// Registro del Service Worker (solo en producción)
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => Logger.info('Service Worker registrado con éxito:', registration.scope))
-            .catch(error => Logger.error('Fallo en el registro del Service Worker:', error));
-    });
-}
+window.onunhandledrejection = (event) => {
+    Logger.error('Promesa global rechazada no capturada:', event.reason);
+    handleError(event.reason, { message: `Error en global-promise: ${event.reason?.message}`, critical: false });
+};
+
+document.addEventListener('DOMContentLoaded', main);

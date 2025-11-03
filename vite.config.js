@@ -12,7 +12,7 @@ export default defineConfig({
   },
   server: {
     host: 'localhost',
-    port: 8080, // Puedes usar el puerto que prefieras
+    port: 80, // Puedes usar el puerto que prefieras
     open: true, // Abrirá el navegador automáticamente
   }
 });

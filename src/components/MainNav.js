@@ -1,5 +1,9 @@
 // ======================================================
-// ARCHIVO CORREGIDO: src/components/MainNav.js
+// ARCHIVO: src/components/MainNav.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
+// CORRECCIÓN: (Anotación J-2)
+// 1. Lee el nombre/email desde 'state.session.user'
+//    en lugar de 'state.session.user' (que era un mix).
 // ======================================================
 
 import { can } from '../services/permissions.service.js';
@@ -9,15 +13,17 @@ import { PERMISSIONS } from '../services/roles.config.js';
 
 export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE) {
 
-    const userName = state.session.user?.name || 'Usuario';
-    const userEmail = state.session.user?.email || 'email@dominio.com';
+    // --- ¡INICIO DE CORRECCIÓN! ---
+    const userName = state.session?.user?.name || 'Usuario';
+    const userEmail = state.session?.user?.email || 'email@dominio.com';
+    // --- FIN DE CORRECCIÓN ---
 
-    // --- 1. Obtener Rutas del Menú Principal ---
+    // 1. Obtener Rutas del Menú Principal
     const mainRoutes = routes.filter(route =>
         route.isMainModule && can(route.permission)
     );
 
-    // --- 2. Preparar Datos para el Menú Contextual (SI APLICA) ---
+    // 2. Preparar Datos para el Menú Contextual
     let sectionTitle = '';
     let sectionPath = '#/';
     let mainRouteOfContext = null;
@@ -40,7 +46,7 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
         }
     }
 
-    // --- 3. Construir HTML del Menú Contextual (SI APLICA) ---
+    // 3. Construir HTML del Menú Contextual
     const contextualMenuHTML = showContextualMenu ? `
         <li class="breadcrumb-item">
             <a href="#/" class="nav-button back-button" data-route="#/">
@@ -65,11 +71,11 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
         `).join('')}
     ` : '';
 
-    // --- 4. Lógica del Tema (sin cambios) ---
+    // 4. Lógica del Tema
     const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
     const themeIconClass = currentTheme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill';
 
-    // --- 5. Renderizado Final ---
+    // 5. Renderizado Final
     return `
         <div class="toolbar-container">
             <div class="toolbar-scroll-wrapper">

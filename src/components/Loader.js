@@ -1,4 +1,9 @@
-// ARCHIVO CORREGIDO: src/components/Loader.js
+// ======================================================
+// ARCHIVO: src/components/Loader.js
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.0
+// CORRECCIÓN: (TypeError) Se añade la función 'hide()' que
+//             faltaba y que 'App.js' necesita para funcionar.
+// ======================================================
 
 export function LoaderComponent() {
     const loaderElement = document.createElement('div');
@@ -27,7 +32,6 @@ export function LoaderComponent() {
     return {
         element: loaderElement,
         updateMessage: function(message) {
-            // ... (el resto de la función se mantiene igual)
             const textElement = this.element.querySelector('#loader-message');
             if (textElement) {
                 textElement.textContent = message;
@@ -39,6 +43,18 @@ export function LoaderComponent() {
             if (logoWrapper) {
                 logoWrapper.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 8rem; color: var(--error-color);"></i>';
             }
+        },
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Se añade la función 'hide' que faltaba.
+        hide: function() {
+            if (loaderElement) {
+                loaderElement.style.transition = 'opacity 0.3s ease-out';
+                loaderElement.style.opacity = '0';
+                setTimeout(() => {
+                    loaderElement.remove();
+                }, 300);
+            }
         }
+        // --- FIN DE LA CORRECCIÓN ---
     };
 }

@@ -1,4 +1,12 @@
-// ARCHIVO CORREGIDO: src/App.js
+// ======================================================
+// ARCHIVO: src/App.js
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.0
+// CORRECCIÓN: (Anotación J-2) 'bootAuthenticatedApp' lee el rol
+//             desde 'state.session' en lugar de 'state.role'.
+// CORRECCIÓN: (SyntaxError) Se añade 'async' a
+//             'handleLogoutSequence' para permitir 'await'.
+// ======================================================
+
 import { state } from './store/state.js';
 import { registerRerender, setUser } from './store/actions.js';
 import { logout, tracedLoadUserData } from './services/auth.service.js';
@@ -21,7 +29,7 @@ export default class App {
 
     constructor(rootElement, initialState, mainLoader) {
         this.root = rootElement;
-        this.state = initialState; // Estado local de la instancia App
+        this.state = initialState;
         this.mainLoader = mainLoader;
         this.currentViewCleanup = () => {};
         this.boundHandleGlobalActions = this.handleGlobalActions.bind(this);
@@ -29,6 +37,11 @@ export default class App {
         this.hasGlobalListener = false;
         Logger.info('App: Instancia creada.');
         registerRerender(this.render.bind(this));
+    }
+
+    async init() {
+        Logger.info('App: Inicializando...');
+        registerRerender(this.rerender.bind(this));
     }
 
     async handleAuthStateChange(user) {
@@ -51,7 +64,6 @@ export default class App {
                     departmentId: sessionData.business.departmentId,
                     role: sessionData.user.role
                 });
-                // setUser ya actualiza state.session, no necesitamos duplicar
                 if (state.session.business.id === 'admin_view') {
                     this.mainLoader.updateMessage('Bienvenido, Administrador');
                     state.products = [];
@@ -66,11 +78,10 @@ export default class App {
                     }
                 }
                 await delay(1500);
-                this.bootAuthenticatedApp();
+                this.bootAuthenticatedApp(sessionData);
             } else {
                 Logger.warn('No se pudo cargar sesión. Mostrando login.');
-                await logout(); // Llama a logout si falla la carga
-                // showLogin() será llamado por onAuthStateChanged(null)
+                await logout(); 
             }
         } else {
             if (this.isLoggingOut) {
@@ -91,77 +102,64 @@ export default class App {
         }
     }
 
-    bootAuthenticatedApp() {
+    async bootAuthenticatedApp(sessionData) {
         Logger.info('App: arrancando aplicación autenticada.');
+        this.mainLoader.hide();
+        this.root.innerHTML = this.renderLayout();
+        
+        const canViewDashboard = can(PERMISSIONS.VIEW_DASHBOARD);
+        
+        // --- INICIO DE LA CORRECCIÓN 1 (Lógica J-2) ---
+        // Se lee el rol desde 'sessionData' o 'state.session.user.role'
+        // en lugar del obsoleto 'this.state.role' para arreglar el bug 'undefined'.
+        const userRole = sessionData?.role || this.state.session?.user?.role;
+        Logger.trace(`[App] bootAuthenticatedApp: Rol del usuario es ${userRole}`);
+        // --- FIN DE LA CORRECCIÓN 1 ---
+
+        const defaultRoute = '#/';
+        let redirectTo = defaultRoute;
+
+        if (!canViewDashboard) {
+            Logger.warn('Usuario no tiene permiso para Dashboard. Buscando ruta alternativa...');
+            
+            if (userRole === 'cajero' && can(PERMISSIONS.VIEW_POS_MODULE)) {
+                redirectTo = '#/pos';
+            } else if (userRole === 'user' && can(PERMISSIONS.VIEW_INVENTORY_MODULE)) {
+                redirectTo = '#/inventory';
+            } else {
+                Logger.error('Usuario sin permisos para dashboard ni para rutas alternativas. Mostrando error.');
+                this.root.querySelector('#view-container').innerHTML = `<p>Error: No tienes permisos para ver ninguna página.</p>`;
+                return;
+            }
+        }
+
+        const currentHash = window.location.hash || '#/';
+        if (currentHash !== redirectTo && redirectTo !== defaultRoute) {
+            Logger.info(`Redirigiendo a la ruta por defecto del rol: ${redirectTo}`);
+            window.location.hash = redirectTo;
+        } else {
+            Logger.info(`Usuario tiene permiso para Dashboard. Ruta por defecto: ${defaultRoute}`);
+            if (currentHash === redirectTo) {
+                Logger.info(`Ya estamos en la ruta correcta (${currentHash}). Renderizando layout e iniciando router.`);
+            }
+        }
+        
+        await delay(50);
+        
+        Logger.trace('ιχ Llamando a initRouter después de posible redirección.');
+        initRouter(this.root.querySelector('#view-container'), this.state, this.handleNavigation.bind(this));
+
         if (!this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
             this.hasGlobalListener = true;
             Logger.info('Listener de acciones globales añadido.');
         }
-
-        // --- INICIO DE LA LÓGICA CORREGIDA ---
-        
-        // 1. Definimos las rutas base
-        const dashboardPath = '#/';
-        const rootPath = '#/';
-        const currentHash = window.location.hash || '#/';
-
-        // 2. Verificamos si la ruta actual (en la URL) es válida y tenemos permiso
-        const currentRoute = routes.find(r => r.path === currentHash);
-        const isCurrentRouteValid = currentRoute && can(currentRoute.permission);
-
-        // 3. Buscamos la ruta "por defecto" (el Dashboard o el primer fallback)
-        let defaultRoutePath = null;
-        const dashboardRoute = routes.find(r => r.path === dashboardPath);
-        if (dashboardRoute && can(dashboardRoute.permission)) {
-            defaultRoutePath = dashboardPath;
-            Logger.info(`Usuario tiene permiso para Dashboard. Ruta por defecto: ${defaultRoutePath}`);
-        } else {
-            const fallbackRoute = routes.find(route => route.path !== rootPath && can(route.permission));
-            if (fallbackRoute) {
-                defaultRoutePath = fallbackRoute.path;
-                Logger.info(`Usuario NO puede ver Dashboard. Ruta alternativa por defecto: ${defaultRoutePath}`);
-            } else {
-                // Caso extremo: solo puede ver la raíz (que es el dashboard)
-                defaultRoutePath = rootPath;
-                Logger.warn(`Usuario solo tiene permiso para la ruta raíz '${rootPath}'. Usando como por defecto.`);
-            }
-        }
-
-        // 4. Decidimos si redirigir
-        let needsRedirect = false;
-        if (!isCurrentRouteValid) {
-            // La ruta actual NO es válida (ej. /#/foo) O no tenemos permiso.
-            // Redirigimos al path por defecto.
-            Logger.warn(`Ruta actual '${currentHash}' no es válida o no tiene permisos. Redirigiendo a la ruta por defecto.`);
-            needsRedirect = true;
-        } else if (currentHash === rootPath && defaultRoutePath !== rootPath) {
-             // Caso especial: Estamos en la raíz, pero nuestra ruta por defecto NO es la raíz
-             // (ej. un Cajero que entra a /#/ y debe ir a /#/pos)
-             Logger.info(`Ruta actual es raíz, pero la ruta por defecto es ${defaultRoutePath}. Redirigiendo.`);
-             needsRedirect = true;
-        }
-
-        if (needsRedirect) {
-            Logger.info(`Redirigiendo desde '${currentHash}' hacia la ruta objetivo: ${defaultRoutePath}`);
-            window.location.hash = defaultRoutePath;
-        } else {
-            // La ruta actual es válida y tenemos permisos (ej. /#/clients), no hacemos nada
-            Logger.info(`Ya estamos en la ruta correcta (${currentHash}). Renderizando layout e iniciando router.`);
-            this.renderLayout();
-            // initRouter(this.handleNavigation.bind(this)); // Esta línea aquí es redundante
-        }
-        
-        // --- FIN DE LA LÓGICA CORREGIDA ---
-
-        // Esta llamada SIEMPRE debe ejecutarse al final para que el router escuche
-        setTimeout(() => {
-            Logger.trace("Llamando a initRouter después de posible redirección.");
-            initRouter(this.handleNavigation.bind(this));
-        }, 0);
     }
 
-    async handleLogoutSequence() {
+    // --- INICIO DE LA CORRECCIÓN 2 (Sintaxis) ---
+    // Se añade 'async' para poder usar 'await' dentro de la función.
+    async handleLogoutSequence(toastMessage = '¡Hasta pronto!') {
+    // --- FIN DE LA CORRECCIÓN 2 ---
         if (this.isLoggingOut) return;
         Logger.info('Iniciando secuencia de cierre de sesión...');
         this.isLoggingOut = true;
@@ -214,9 +212,7 @@ export default class App {
 
     renderLayout() {
         const currentPath = window.location.hash || '#/';
-        // --- INICIO MODIFICACIÓN ---
-        // Pasamos state.ui.navContext y state completo a MainNav
-        const mainNavHTML = MainNav(currentPath, state, state.ui.navContext); // <-- Genera el HTML correcto        // --- FIN MODIFICACIÓN ---
+        const mainNavHTML = MainNav(currentPath, state, state.ui.navContext);
         
         this.root.innerHTML = `
             <div class="page-wrapper"  id="app-layout" >
@@ -252,72 +248,57 @@ export default class App {
              return;
         }
 
-        // --- Limpieza de la vista anterior ---
         if (typeof this.currentViewCleanup === 'function') {
             try { this.currentViewCleanup(); }
             catch (e) { Logger.error('Error en cleanup de vista:', e); }
             this.currentViewCleanup = () => {};
         }
 
-        // --- Encontrar la ruta y verificar permisos ---
         const route = routes.find(r => r.path === path);
-        const defaultRoute = routes.find(r => r.path === '#/'); // Ruta del dashboard como fallback
+        const defaultRoute = routes.find(r => r.path === '#/');
 
         if (!route) {
              Logger.warn(`Ruta no encontrada: ${path}. Redirigiendo a Dashboard.`);
-             window.location.hash = '#/'; // Redirige si la ruta no existe
-             return; // La redirección disparará handleNavigation de nuevo
+             window.location.hash = '#/';
+             return;
         }
 
         if (!can(route.permission)) {
             Logger.warn(`Acceso denigado a: ${path}. Redirigiendo a ruta por defecto.`);
-            // Busca la primera ruta principal a la que tenga acceso
             const accessibleRoute = routes.find(r => r.isMainModule && can(r.permission)) || defaultRoute;
             window.location.hash = accessibleRoute.path;
-            return; // La redirección disparará handleNavigation de nuevo
+            return;
         }
 
-        // --- INICIO MODIFICACIÓN: Actualizar contexto de navegación ---
-        // Asegúrate que route exista antes de acceder a route.context
-        // Y usa MODULES.CORE como fallback correcto.
         const newNavContext = route?.context || MODULES.CORE;
-        // --- FIN MODIFICACIÓN ---
         if (state.ui.navContext !== newNavContext) {
              state.ui.navContext = newNavContext;
-             // Forzamos el re-renderizado del layout para actualizar MainNav
              this.renderLayout();
-             // Esperamos un instante para que el DOM se actualice ANTES de cargar la vista
              await delay(10);
         } else {
-            // Si el contexto no cambió, solo actualizamos el botón activo en MainNav
             document.querySelectorAll('.nav-button, .contextual-nav-button').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('href') === path);
             });
         }
-        // Re-seleccionamos viewContainer por si renderLayout() lo recreó
         const updatedViewContainer = document.getElementById('view-container');
         if (!updatedViewContainer) {
              Logger.error("Contenedor de vista desaparecido después de renderLayout().");
              return;
         }
-        // --- FIN MODIFICACIÓN ---
 
 
-        // --- Cargar y renderizar la vista ---
-        updatedViewContainer.classList.add('fade-out'); // Inicia animación de salida
-        await delay(150); // Espera que termine la animación
+        updatedViewContainer.classList.add('fade-out');
+        await delay(150);
 
         try {
-            // Importa dinámicamente el componente de la vista
             const ViewComponent = await route.component();
-            // Llama a la función del componente para renderizar y obtener la función de limpieza
             this.currentViewCleanup = ViewComponent(updatedViewContainer, this.state);
         } catch (loadError) {
             Logger.error(`Error cargando componente para la vista ${path}:`, loadError);
-            updatedViewContainer.innerHTML = `<p>Error al cargar la vista ${path}.</p>`; // Mensaje de error
-            this.currentViewCleanup = () => {}; // No hay nada que limpiar
+            updatedViewContainer.innerHTML = `<p>Error al cargar la vista ${path}.</o>`;
+            this.currentViewCleanup = () => {};
         } finally {
-            updatedViewContainer.classList.remove('fade-out'); // Quita la clase para la animación de entrada
+            updatedViewContainer.classList.remove('fade-out');
         }
     }
 
@@ -351,7 +332,6 @@ export default class App {
         document.documentElement.setAttribute('data-bs-theme', next);
         Logger.info(`Tema cambiado a: ${next}`);
 
-        // Solo re-renderizar la navegación sin afectar la vista actual
         this.updateNavigation();
     }
 
@@ -359,7 +339,6 @@ export default class App {
         const currentPath = window.location.hash || '#/';
         const mainNavHTML = MainNav(currentPath, state, state.ui.navContext);
         
-        // Actualizar solo la navegación sin recrear todo el layout
         const toolbarContainer = this.root.querySelector('.toolbar-container');
         if (toolbarContainer) {
             toolbarContainer.outerHTML = mainNavHTML;

@@ -1,52 +1,70 @@
-// services/logger.service.js
+// ======================================================
+// ARCHIVO: src/services/logger.service.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
+// CORRECCIÓN: (Anotación J-2)
+// 1. 'logActivity' ahora lee desde 'state.session'.
+// ======================================================
+
+import { db } from '../firebase-config.js';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase-config';
-import { state } from '../store/state';
-import { traceExecution } from '../utils/traceExecution.js'; // Lo mantenemos simple
+import { state } from '../store/state.js';
 
-/**
- * Escribe un nuevo log en la colección global 'activity_log'.
- * Esta función está decorada con traceExecution para medir el tiempo.
- */
-export const logActivity = traceExecution('logger.service', 'logActivity')(async (logData) => {
-  try {
-    // 1. Apuntar directamente a la colección raíz
-    const logCollectionRef = collection(db, 'activity_log');
-    
-    // 2. Enriquecer el log con datos de sesión (si existen) y timestamp
-    const fullLogData = {
-      ...logData,
-      timestamp: serverTimestamp(), // Usar la hora del servidor
-      // Agregar contexto de sesión si está disponible
-      userId: logData.userId || (state.user ? state.user.uid : 'system'),
-      businessId: logData.businessId || (state.businessId || null),
-      departmentId: logData.departmentId || (state.departmentId || null),
-    };
+const activityLogRef = collection(db, 'activity_log');
+const IS_PRODUCTION = import.meta.env.PROD;
 
-    // 3. Escribir el documento
-    await addDoc(logCollectionRef, fullLogData);
-
-  } catch (error) {
-    // Error MUY grave: si el logger falla, solo podemos reportar a consola
-    console.error('Error CRÍTICO: No se pudo registrar el log:', error, logData);
+export async function logActivity(logData) {
+  if (!logData.type || !logData.context) {
+    console.warn('[Logger] logActivity necesita type y context.', logData);
+    return;
   }
-});
 
-// Exportamos la CLASE Logger solo para que los archivos que la importan no fallen,
-// pero no la usamos. La función principal es logActivity.
-export class Logger {
-    static info(message, ...args) {
-        console.log(`[INFO] 🔵 ${message}`, ...args);
+  // --- ¡INICIO DE CORRECCIÓN! ---
+  // Leemos desde la fuente de verdad unificada
+  const userId = state.session?.user?.uid || 'system';
+  const businessId = state.session?.business?.id || 'unknown_business';
+  const departmentId = state.session?.business?.departmentId || 'unknown_dept';
+  // --- FIN DE CORRECCIÓN! ---
+  
+  const fullLogData = {
+    ...logData,
+    timestamp: serverTimestamp(),
+    environment: IS_PRODUCTION ? 'production' : 'development',
+    userId,
+    businessId,
+    departmentId,
+    userAgent: navigator.userAgent
+  };
+
+  try {
+    if (IS_PRODUCTION) {
+      await addDoc(activityLogRef, fullLogData);
+    } else {
+      console.log('Activity Log (DEV):', fullLogData);
     }
-    static warn(message, ...args) {
-        console.warn(`[WARN] 🟡 ${message}`, ...args);
-    }
-    static error(message, ...args) {
-        console.error(`[ERROR] 🔴 ${message}`, ...args);
-    }
-    static trace(message, ...args) {
-        if (import.meta.env.DEV) {
-            console.log(`[TRACE] ιχ ${message}`, ...args);
-        }
-    }
+  } catch (error) {
+    console.error('Error al guardar log de actividad:', error);
+  }
 }
+
+// Clase Logger para consola (sin cambios)
+class ConsoleLogger {
+  constructor() {
+    this.IS_PRODUCTION = IS_PRODUCTION;
+  }
+  info(message, ...args) {
+    console.log(`[INFO] 🔵 ${message}`, ...args);
+  }
+  warn(message, ...args) {
+    console.warn(`[WARN] 🟡 ${message}`, ...args);
+  }
+  error(message, ...args) {
+    console.error(`[ERROR] 🔴 ${message}`, ...args);
+  }
+  trace(message, ...args) {
+    if (!this.IS_PRODUCTION) {
+      console.log(`[TRACE] ιχ ${message}`, ...args);
+    }
+  }
+}
+
+export const Logger = new ConsoleLogger();

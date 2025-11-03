@@ -1,51 +1,58 @@
-// src/views/Dashboard/DashboardView.js (¡Ahora es el Dispatcher!)
+// ======================================================
+// ARCHIVO: src/views/Dashboard/DashboardView.js
+// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
+// CORRECCIÓN: (Anotación J-2)
+// 1. Lee el rol desde 'globalState.session.user.role'
+//    en lugar de 'globalState.role'.
+// ======================================================
+
 import { Logger } from '../../services/logger.service.js';
-import { ROLES } from '../../services/roles.config.js';
 import { state as globalState } from '../../store/state.js';
 
-// Hacemos la función async para poder usar await con import()
+// Importaciones dinámicas para cada dashboard
+const SuperAdminDashboard = () => import('./Super_admin/SuperAdminDashboard.js').then(m => m.SuperAdminDashboard);
+const AdminDashboard = () => import('./Business_admin/AdminDashboard.js').then(m => m.AdminDashboard);
+const CashierDashboard = () => import('./Cashier/CashierDashboard.js').then(m => m.CashierDashboard);
+const UserDashboard = () => import('./User/UserDashboard.js').then(m => m.UserDashboard);
+
 export async function DashboardView(element, state) {
-    const currentUserRole = globalState.role; // Obtenemos el rol del estado global
-    let cleanupFunction = () => {}; // Función de limpieza por defecto
+    let cleanupFunction = () => {};
+    
+    // --- ¡INICIO DE CORRECCIÓN! ---
+    const userRole = globalState.session?.user?.role;
+    Logger.trace(`[DashboardView] Despachando dashboard para el rol: ${userRole}`);
+    // --- FIN DE CORRECCIÓN ---
 
-    element.innerHTML = '<p>Cargando panel...</p>'; // Mensaje mientras carga
+    let DashboardComponent;
 
-    try {
-        let DashboardComponentModule; // Variable para guardar el módulo importado
-
-        // Usamos un switch para cargar dinámicamente el componente correcto
-        switch (currentUserRole) {
-            case ROLES.SUPER_ADMIN:
-                // Importa dinámicamente el componente específico
-                DashboardComponentModule = await import('./Super_admin/SuperAdminDashboard.js');
-                // Llama a la función exportada del módulo, pasando element y state
-                cleanupFunction = DashboardComponentModule.SuperAdminDashboard(element, state);
-                break;
-            case ROLES.ADMIN:
-                DashboardComponentModule = await import('./Business_admin/AdminDashboard.js');
-                cleanupFunction = DashboardComponentModule.AdminDashboard(element, state);
-                break;
-            case ROLES.CAJERO:
-                DashboardComponentModule = await import('./Cashier/CashierDashboard.js');
-                cleanupFunction = DashboardComponentModule.CashierDashboard(element, state);
-                break;
-            case ROLES.USER:
-            default: // Caso por defecto (o si es USER explícitamente)
-                DashboardComponentModule = await import('./User/UserDashboard.js');
-                cleanupFunction = DashboardComponentModule.UserDashboard(element, state);
-                if (currentUserRole !== ROLES.USER) {
-                    // Log si el rol no era esperado pero caímos en el default
-                    Logger.warn(`Rol desconocido o sin dashboard específico: '${currentUserRole}'. Mostrando dashboard de Usuario.`);
-                }
-                break;
-        }
-    } catch (error) {
-        // Manejo de errores si falla la importación dinámica o la ejecución del componente
-        Logger.error(`Error al cargar el dashboard para el rol ${currentUserRole}:`, error);
-        element.innerHTML = '<p class="text-danger">Error al cargar el panel principal. Por favor, recarga la página.</p>';
-        cleanupFunction = () => { Logger.error("Limpiando vista de error del Dashboard.");}; // Limpieza simple para el error
+    switch (userRole) {
+        case 'super_admin':
+            DashboardComponent = await SuperAdminDashboard();
+            break;
+        case 'admin':
+            DashboardComponent = await AdminDashboard();
+            break;
+        case 'cajero':
+            DashboardComponent = await CashierDashboard();
+            break;
+        case 'user':
+            DashboardComponent = await UserDashboard();
+            break;
+        default:
+            // Este es el warning que viste en la consola
+            Logger.warn(`Rol desconocido o sin dashboard específico: '${userRole}'. Mostrando dashboard de Usuario.`);
+            DashboardComponent = await UserDashboard();
+            break;
     }
 
-    // Retornamos la función de limpieza específica del componente cargado (o la de error)
+    if (DashboardComponent) {
+        // Renderiza el dashboard específico y guarda su función de limpieza
+        cleanupFunction = DashboardComponent(element, globalState);
+    } else {
+        element.innerHTML = '<p>Error al cargar el dashboard.</p>';
+        Logger.error(`No se pudo cargar el componente de dashboard para el rol: ${userRole}`);
+    }
+
+    // Devuelve la función de limpieza del dashboard cargado
     return cleanupFunction;
 }
