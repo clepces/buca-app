@@ -1,10 +1,8 @@
 // ======================================================
 // ARCHIVO: src/App.js
-// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.0
-// CORRECCIÓN: (Anotación J-2) 'bootAuthenticatedApp' lee el rol
-//             desde 'state.session' en lugar de 'state.role'.
-// CORRECCIÓN: (SyntaxError) Se añade 'async' a
-//             'handleLogoutSequence' para permitir 'await'.
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.1 (FIXED)
+// CORRECCIÓN: (Error 'bind') Corregido error tipográfico en
+//             'init()'. Era 'this.render' no 'this.rerender'.
 // ======================================================
 
 import { state } from './store/state.js';
@@ -36,12 +34,17 @@ export default class App {
         this.isLoggingOut = false;
         this.hasGlobalListener = false;
         Logger.info('App: Instancia creada.');
+        // Esta línea es correcta (usa 'this.render')
         registerRerender(this.render.bind(this));
     }
 
     async init() {
         Logger.info('App: Inicializando...');
-        registerRerender(this.rerender.bind(this));
+        
+        // --- ¡INICIO DE CORRECCIÓN! ---
+        // Aquí estaba el error. Debe ser 'this.render', no 'this.rerender'.
+        registerRerender(this.render.bind(this));
+        // --- FIN DE CORRECCIÓN! ---
     }
 
     async handleAuthStateChange(user) {
@@ -109,12 +112,8 @@ export default class App {
         
         const canViewDashboard = can(PERMISSIONS.VIEW_DASHBOARD);
         
-        // --- INICIO DE LA CORRECCIÓN 1 (Lógica J-2) ---
-        // Se lee el rol desde 'sessionData' o 'state.session.user.role'
-        // en lugar del obsoleto 'this.state.role' para arreglar el bug 'undefined'.
         const userRole = sessionData?.role || this.state.session?.user?.role;
         Logger.trace(`[App] bootAuthenticatedApp: Rol del usuario es ${userRole}`);
-        // --- FIN DE LA CORRECCIÓN 1 ---
 
         const defaultRoute = '#/';
         let redirectTo = defaultRoute;
@@ -156,10 +155,7 @@ export default class App {
         }
     }
 
-    // --- INICIO DE LA CORRECCIÓN 2 (Sintaxis) ---
-    // Se añade 'async' para poder usar 'await' dentro de la función.
     async handleLogoutSequence(toastMessage = '¡Hasta pronto!') {
-    // --- FIN DE LA CORRECCIÓN 2 ---
         if (this.isLoggingOut) return;
         Logger.info('Iniciando secuencia de cierre de sesión...');
         this.isLoggingOut = true;
