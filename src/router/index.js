@@ -1,5 +1,9 @@
 // ======================================================
 // ARCHIVO: src/router/index.js
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.0 - FILE: 1.0.2
+// CORRECCIÓN: (Bug 'onNavigate') Simplificado para aceptar
+//             solo un callback y no manejar clics,
+//             que ahora son responsabilidad de App.js.
 // ======================================================
 
 let onNavigateCallback;
@@ -20,18 +24,6 @@ function resolveRoute() {
  */
 export function initRouter(onNavigate) {
     onNavigateCallback = onNavigate;
-
-    // Escucha los clics en los enlaces de navegación
-    document.body.addEventListener('click', e => {
-        const link = e.target.closest('a[data-route]');
-        if (link) {
-            e.preventDefault(); // Prevenimos la recarga de la página
-            const newPath = link.dataset.route;
-            if (window.location.hash !== newPath) {
-                window.location.hash = newPath;
-            }
-        }
-    });
 
     // Escucha los cambios en el hash (ej. botones de atrás/adelante del navegador)
     window.addEventListener('hashchange', resolveRoute);

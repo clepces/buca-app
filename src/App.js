@@ -1,16 +1,17 @@
 // ======================================================
 // ARCHIVO: src/App.js
-// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.2 (FIXED)
-// CORRECCIÓN: (Bug de Loader) Se añade 'this.mainLoader.hide()'
-//             al método 'showLogin' para ocultar el loader
-//             antes de mostrar la pantalla de login.
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.9 - FILE: 1.4.4
+// CORRECCIÓN: (Refactorización de Roles)
+// 1. Se importa 'ROLES' desde 'roles.config.js'.
+// 2. Se actualiza la lógica de redirección en 'bootAuthenticatedApp'
+//    para usar los nuevos roles (ROLES.CAJERO, ROLES.OPERADOR).
 // ======================================================
 
-import { state } from './store/state.js';
+import { state } from './store/state.js'; // <-- ¡Fuente de verdad!
 import { registerRerender, setUser } from './store/actions.js';
 import { logout, tracedLoadUserData } from './services/auth.service.js';
 import { loadBusinessData } from './services/storage.service.js';
-import { initRouter } from './router/index.js';
+import { initRouter } from './router/index.js'; // <-- Router corregido
 import { Logger } from './services/logger.service.js';
 import { LoginView } from './views/LoginView.js';
 import { Header } from './components/Header.js';
@@ -24,11 +25,15 @@ import { PERMISSIONS } from './services/roles.config.js';
 import { routes } from './router/routes.js';
 import { MODULES } from './services/modules.config.js';
 
+// --- ¡INICIO DE CORRECCIÓN! ---
+import { ROLES } from './services/roles.config.js';
+// --- FIN DE CORRECCIÓN! ---
+
 export default class App {
 
     constructor(rootElement, initialState, mainLoader) {
         this.root = rootElement;
-        this.state = initialState;
+        // --- ¡CORRECCIÓN! No guardamos 'initialState' en 'this.state' ---
         this.mainLoader = mainLoader;
         this.currentViewCleanup = () => {};
         this.boundHandleGlobalActions = this.handleGlobalActions.bind(this);
@@ -53,7 +58,9 @@ export default class App {
             } else {
                 this.mainLoader.updateMessage('Verificando credenciales...');
             }
-            const sessionData = await tracedLoadUserData(user);
+            
+            const sessionData = await tracedLoadUserData(user); 
+            
             if (sessionData) {
                 setUser({
                     uid: sessionData.user.uid,
@@ -63,6 +70,7 @@ export default class App {
                     departmentId: sessionData.business.departmentId,
                     role: sessionData.user.role
                 });
+
                 if (state.session.business.id === 'admin_view') {
                     this.mainLoader.updateMessage('Bienvenido, Administrador');
                     state.products = [];
@@ -77,13 +85,12 @@ export default class App {
                     }
                 }
                 await delay(1500);
-                this.bootAuthenticatedApp(sessionData);
+                this.bootAuthenticatedApp(sessionData); 
             } else {
                 Logger.warn('No se pudo cargar sesión. Mostrando login.');
                 await logout(); 
             }
         } else {
-            // --- ¡EL LOADER SE OCULTA AQUÍ AHORA! ---
             this.mainLoader.hide(); 
             
             if (this.isLoggingOut) {
@@ -107,11 +114,12 @@ export default class App {
     async bootAuthenticatedApp(sessionData) {
         Logger.info('App: arrancando aplicación autenticada.');
         this.mainLoader.hide();
-        this.root.innerHTML = this.renderLayout();
+        
+        this.renderLayout();
         
         const canViewDashboard = can(PERMISSIONS.VIEW_DASHBOARD);
         
-        const userRole = sessionData?.role || this.state.session?.user?.role;
+        const userRole = sessionData?.user?.role || state.session?.user?.role;
         Logger.trace(`[App] bootAuthenticatedApp: Rol del usuario es ${userRole}`);
 
         const defaultRoute = '#/';
@@ -120,11 +128,14 @@ export default class App {
         if (!canViewDashboard) {
             Logger.warn('Usuario no tiene permiso para Dashboard. Buscando ruta alternativa...');
             
-            if (userRole === 'cajero' && can(PERMISSIONS.VIEW_POS_MODULE)) {
+            // --- ¡INICIO DE CORRECCIÓN! ---
+            // Usamos las constantes de ROLES en lugar de strings hardcodeados
+            if (userRole === ROLES.CAJERO && can(PERMISSIONS.VIEW_POS_MODULE)) {
                 redirectTo = '#/pos';
-            } else if (userRole === 'user' && can(PERMISSIONS.VIEW_INVENTORY_MODULE)) {
+            } else if (userRole === ROLES.OPERADOR && can(PERMISSIONS.VIEW_INVENTORY_MODULE)) {
                 redirectTo = '#/inventory';
             } else {
+            // --- FIN DE CORRECCIÓN! ---
                 Logger.error('Usuario sin permisos para dashboard ni para rutas alternativas. Mostrando error.');
                 this.root.querySelector('#view-container').innerHTML = `<p>Error: No tienes permisos para ver ninguna página.</p>`;
                 return;
@@ -145,15 +156,23 @@ export default class App {
         await delay(50);
         
         Logger.trace('ιχ Llamando a initRouter después de posible redirección.');
-        initRouter(this.root.querySelector('#view-container'), this.state, this.handleNavigation.bind(this));
+        
+        // --- ¡CORRECCIÓN! (Bug 'onNavigate') ---
+        // Ahora solo pasamos el callback que el router espera.
+        initRouter(this.handleNavigation.bind(this));
 
         if (!this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
             this.hasGlobalListener = true;
             Logger.info('Listener de acciones globales añadido.');
         }
+
+        // --- ¡NUEVO! ---
+        // El router ya no maneja los clics en 'data-route', así que App.js
+        // debe hacerlo desde su listener global.
     }
 
+    // --- ¡MÉTODO ACTUALIZADO! ---
     async handleLogoutSequence(toastMessage = '¡Hasta pronto!') {
         if (this.isLoggingOut) return;
         Logger.info('Iniciando secuencia de cierre de sesión...');
@@ -174,18 +193,35 @@ export default class App {
         catch (error) {
             Logger.error('Error durante logout:', error);
             this.isLoggingOut = false;
-            this.showLogin();
+            this.showLogin(); // Llama a showLogin en caso de error de logout
         }
+        // onAuthStateChanged(null) se encargará de llamar a showLogin()
     }
 
+    // --- ¡MÉTODO ACTUALIZADO! ---
     handleGlobalActions(e) {
+        // 1. Manejador de Clics de Navegación (movido desde el router)
+        const link = e.target.closest('a[data-route]');
+        if (link) {
+            e.preventDefault(); 
+            const newPath = link.dataset.route;
+            if (window.location.hash !== newPath) {
+                window.location.hash = newPath;
+            }
+            return; // Es un clic de navegación, no una acción
+        }
+
+        // 2. Manejador de Acciones (como logout, toggle-theme)
         const actionElement = e.target.closest('[data-action]');
         if (!actionElement) return;
+        
         const action = actionElement.dataset.action;
         const dropdown = document.getElementById('actions-menu-dropdown');
+        
         if (action !== 'toggle-actions-menu' && dropdown?.classList.contains('show')) {
             dropdown.classList.remove('show');
         }
+        
         if (action === 'logout') {
             this.handleLogoutSequence();
         } else {
@@ -211,23 +247,23 @@ export default class App {
         
         this.root.innerHTML = `
             <div class="page-wrapper"  id="app-layout" >
-                ${Header(this.state)}
+                ${Header(state)}
                 <main class="content">
                     ${mainNavHTML}
                     <div class="container view-container" id="view-container"></div>
                 </main>
-                ${Footer(this.state)}
+                ${Footer(state)}
                 ${Toast()}
             </div>
         `;
-        if (this.state.session.isLoggedIn && !this.hasGlobalListener) {
+        if (state.session.isLoggedIn && !this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
             this.hasGlobalListener = true;
         }
     }
 
     render() {
-        if (this.state.session.isLoggedIn) {
+        if (state.session.isLoggedIn) {
             const currentPath = window.location.hash || '#/';
             this.renderLayout();
             this.handleNavigation(currentPath);
@@ -281,13 +317,12 @@ export default class App {
              return;
         }
 
-
         updatedViewContainer.classList.add('fade-out');
         await delay(150);
 
         try {
             const ViewComponent = await route.component();
-            this.currentViewCleanup = ViewComponent(updatedViewContainer, this.state);
+            this.currentViewCleanup = ViewComponent(updatedViewContainer, state);
         } catch (loadError) {
             Logger.error(`Error cargando componente para la vista ${path}:`, loadError);
             updatedViewContainer.innerHTML = `<p>Error al cargar la vista ${path}.</o>`;
@@ -297,11 +332,8 @@ export default class App {
         }
     }
 
-    // --- ¡INICIO DE CORRECCIÓN! ---
-    // El método 'showLogin' ahora también es responsable
-    // de ocultar el loader principal.
     showLogin() {
-        this.mainLoader.hide(); // <-- ¡LÍNEA AÑADIDA!
+        this.mainLoader.hide(); 
         
         Logger.info('Mostrando pantalla de login...');
         if (typeof this.currentViewCleanup === 'function') {
@@ -319,13 +351,12 @@ export default class App {
         }
         this.root.innerHTML = '';
         try {
-            LoginView(this.root, this.state);
+            LoginView(this.root, state);
         } catch (renderError) {
             Logger.error('Error render Login:', renderError);
             this.root.innerHTML = 'Error crítico login.';
         }
     }
-    // --- FIN DE CORRECCIÓN! ---
 
     toggleTheme() {
         const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
@@ -339,7 +370,6 @@ export default class App {
     updateNavigation() {
         const currentPath = window.location.hash || '#/';
         const mainNavHTML = MainNav(currentPath, state, state.ui.navContext);
-        
         const toolbarContainer = this.root.querySelector('.toolbar-container');
         if (toolbarContainer) {
             toolbarContainer.outerHTML = mainNavHTML;

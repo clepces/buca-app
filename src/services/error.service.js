@@ -1,7 +1,13 @@
-// services/error.service.js
+// ======================================================
+// ARCHIVO: src/services/error.service.js
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.0 - FILE: 1.0.1
+// CORRECCIÓN: (Bug de Log) Se añade 'context' al nivel
+//             superior del objeto 'logData' para que
+//             'logger.service.js' pueda validarlo.
+// ======================================================
 
 import { showToast } from './toast.service.js';
-import { logActivity } from './logger.service.js'; // Importamos la FUNCIÓN
+import { logActivity } from './logger.service.js';
 import { state } from '../store/state.js';
 
 /**
@@ -22,16 +28,20 @@ export const handleError = (error, context = 'unknown') => {
 
   // 4. Registrar en el log de la base de datos (activity_log)
   try {
+    
+    // --- ¡INICIO DE CORRECCIÓN! ---
     const logData = {
       type: 'ERROR',
+      context: context, // <-- Se añade el contexto al nivel superior
       message: `Error en ${context}: ${error.message}`,
       details: {
         code: error.code || 'UNKNOWN',
         stack: error.stack || 'No stack available',
-        context: context,
+        context: context, // Se mantiene por redundancia
       },
-      // logActivity añadirá automáticamente el contexto de sesión (userId, etc.)
     };
+    // --- FIN DE CORRECCIÓN! ---
+
     logActivity(logData);
     
   } catch (logError) {
@@ -41,8 +51,7 @@ export const handleError = (error, context = 'unknown') => {
 
 /**
  * Traduce códigos de error (especialmente de Firebase) a mensajes amigables.
- * @param {string} errorCode - El error.message o error.code
- * @returns {string} - Un mensaje amigable.
+ * (Sin cambios)
  */
 export function getFriendlyErrorMessage(errorCode) {
   // Mensajes de Autenticación

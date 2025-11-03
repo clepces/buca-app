@@ -1,9 +1,9 @@
 // ======================================================
 // ARCHIVO: src/main.js
-// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.3 (FIXED)
-// CORRECCIÓN: Se renombra la variable global 'window.app' a
-//             'window.bucaApp' para evitar conflicto con el
-//             elemento DOM <div id="app">.
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.7 - FILE: 1.4.4 (FIXED)
+// CORRECCIÓN: (Error 'updateMessage') Se pasa el objeto
+//             'mainLoader' completo (retornado por LoaderComponent)
+//             al constructor de 'App' en lugar de un objeto parcial.
 // ======================================================
 
 import { onAuthStateChanged } from 'firebase/auth';
@@ -15,8 +15,6 @@ import { loadState, initializeStorage, loadGlobalConfig } from './services/stora
 import { setSettings } from './store/actions.js';
 import { LoaderComponent } from './components/Loader.js';
 
-// (Los logs de [DEBUG_BUCA] se han eliminado de esta versión limpia)
-
 async function main() {
     try {
         const appRoot = document.getElementById('app');
@@ -24,11 +22,11 @@ async function main() {
             throw new Error("El elemento 'app' no se encuentra en el DOM.");
         }
         
-        const loader = LoaderComponent();
-        document.getElementById('app-loader').appendChild(loader.element);
-        const mainLoader = {
-            hide: loader.hide
-        };
+        // --- ¡INICIO DE CORRECCIÓN! ---
+        // 'mainLoader' es ahora el objeto completo retornado por LoaderComponent()
+        const mainLoader = LoaderComponent();
+        document.getElementById('app-loader').appendChild(mainLoader.element);
+        // --- FIN DE CORRECCIÓN! ---
 
         await initializeStorage('firebase');
         Logger.info('Almacenamiento inicializado.');
@@ -46,21 +44,22 @@ async function main() {
         onAuthStateChanged(auth, async (user) => {
             Logger.info(`onAuthStateChanged: user = ${user ? user.uid : 'null'}`);
             try {
-                // --- ¡INICIO DE CORRECCIÓN! ---
-                if (!window.bucaApp) { // Usamos 'bucaApp'
+                if (!window.bucaApp) { 
+                    // --- ¡INICIO DE CORRECCIÓN! ---
+                    // Pasamos el 'mainLoader' completo al constructor
                     const appInstance = new App(appRoot, initialState, mainLoader);
+                    // --- FIN DE CORRECCIÓN! ---
+                    
                     await appInstance.init();
-                    window.bucaApp = appInstance; // Usamos 'bucaApp'
+                    window.bucaApp = appInstance;
                 }
-                await window.bucaApp.handleAuthStateChange(user); // Usamos 'bucaApp'
-                // --- FIN DE CORRECCIÓN! ---
-
+                await window.bucaApp.handleAuthStateChange(user);
             } catch (error) {
                 Logger.error('Error en onAuthStateChanged:', error);
                 handleError(error, { 
                     message: 'Error al procesar la autenticación.', 
                     critical: true,
-                    loaderUI: mainLoader
+                    loaderUI: mainLoader // mainLoader SÍ tiene .showError() (implícitamente)
                 });
             }
         });
@@ -70,6 +69,7 @@ async function main() {
         handleError(error, { 
             message: 'No se pudo iniciar la aplicación.', 
             critical: true 
+            // No podemos pasar el loader aquí porque puede que haya fallado
         });
     }
 

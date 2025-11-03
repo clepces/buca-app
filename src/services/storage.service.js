@@ -21,6 +21,7 @@ const adapters = {
 let activeAdapter;
 
 export async function initializeStorage(providerName = 'firebase') {
+
     activeAdapter = adapters[providerName];
     if (!activeAdapter) {
         Logger.error(`Storage provider "${providerName}" is not valid. Using IndexedDB.`);
@@ -30,6 +31,7 @@ export async function initializeStorage(providerName = 'firebase') {
 }
 
 export async function loadState() {
+
     if (!activeAdapter) throw new Error("Storage service not initialized.");
     const state = getInitialState();
     Logger.info('✅ Initial state loaded.');
@@ -37,6 +39,7 @@ export async function loadState() {
 }
 
 export async function loadGlobalConfig() {
+
     try {
         const configCollectionRef = collection(db, 'app_config');
         const docNames = [
@@ -71,6 +74,7 @@ export async function loadGlobalConfig() {
 }
 
 export async function loadBusinessData(state) {
+
     if (!activeAdapter || !state.session.business) throw new Error("User is not associated with a business.");
     
     Logger.info(`Loading data for business: ${state.session.business.id}`);

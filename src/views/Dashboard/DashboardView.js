@@ -1,13 +1,18 @@
 // ======================================================
 // ARCHIVO: src/views/Dashboard/DashboardView.js
-// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
-// CORRECCIÓN: (Anotación J-2)
-// 1. Lee el rol desde 'globalState.session.user.role'
-//    en lugar de 'globalState.role'.
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.0 - FILE: 1.0.2
+// CORRECCIÓN: (Refactorización de Roles)
+// 1. Se importa 'ROLES' desde 'roles.config.js'.
+// 2. Se actualiza el 'switch' para usar los nuevos
+//    nombres de roles (Propietario, Operador, Cajero).
 // ======================================================
 
 import { Logger } from '../../services/logger.service.js';
 import { state as globalState } from '../../store/state.js';
+
+// --- ¡INICIO DE CORRECCIÓN! ---
+import { ROLES } from '../../services/roles.config.js';
+// --- FIN DE CORRECCIÓN! ---
 
 // Importaciones dinámicas para cada dashboard
 const SuperAdminDashboard = () => import('./Super_admin/SuperAdminDashboard.js').then(m => m.SuperAdminDashboard);
@@ -25,23 +30,24 @@ export async function DashboardView(element, state) {
 
     let DashboardComponent;
 
+    // --- ¡INICIO DE CORRECCIÓN! ---
+    // Actualizamos los 'case' a los nuevos roles
     switch (userRole) {
-        case 'super_admin':
+        case ROLES.SUPER_ADMIN:
             DashboardComponent = await SuperAdminDashboard();
             break;
-        case 'admin':
+        case ROLES.PROPIETARIO: // Antes: 'admin'
             DashboardComponent = await AdminDashboard();
             break;
-        case 'cajero':
+        case ROLES.CAJERO: // Antes: 'cajero'
             DashboardComponent = await CashierDashboard();
             break;
-        case 'user':
+        case ROLES.OPERADOR: // Antes: 'user'
             DashboardComponent = await UserDashboard();
             break;
         default:
-            // Este es el warning que viste en la consola
-            Logger.warn(`Rol desconocido o sin dashboard específico: '${userRole}'. Mostrando dashboard de Usuario.`);
-            DashboardComponent = await UserDashboard();
+            Logger.warn(`Rol desconocido o sin dashboard específico: '${userRole}'. Mostrando dashboard de Operador.`);
+            DashboardComponent = await UserDashboard(); // El default es el dashboard más simple
             break;
     }
 

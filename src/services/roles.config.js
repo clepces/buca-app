@@ -1,11 +1,20 @@
-// ARCHIVO CORREGIDO Y DEFINITIVO: src/services/roles.config.js
+// ======================================================
+// ARCHIVO: src/services/roles.config.js
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.2.0 - FILE: 1.1.0
+// CORRECCIÓN: (Refactorización de Roles)
+// 1. Se renombra 'ROLES.ADMIN' a 'ROLES.PROPIETARIO'.
+// 2. Se renombra 'ROLES.USER' a 'ROLES.OPERADOR'.
+// 3. Se actualizan las llaves en 'rolesConfig' para coincidir.
+// ======================================================
 
+// --- ¡INICIO DE CORRECCIÓN! ---
 export const ROLES = {
     SUPER_ADMIN: 'super_admin',
-    ADMIN: 'admin',
-    USER: 'user',
-    CAJERO: 'cajero'
+    PROPIETARIO: 'Propietario', // Antes: ADMIN: 'admin'
+    OPERADOR: 'Operador',     // Antes: USER: 'user'
+    CAJERO: 'Cajero'           // Antes: CAJERO: 'cajero'
 };
+// --- FIN DE CORRECCIÓN ---
 
 export const PERMISSIONS = {
     // --- Vistas Generales ---
@@ -43,6 +52,8 @@ export const PERMISSIONS = {
     
 };
 
+// --- ¡INICIO DE CORRECCIÓN! ---
+// Actualizamos las llaves para que coincidan con el objeto ROLES
 export const rolesConfig = {
     [ROLES.SUPER_ADMIN]: {
         // Super Admin tiene acceso a todo
@@ -65,8 +76,7 @@ export const rolesConfig = {
             PERMISSIONS.VIEW_CLIENTS_MODULE,
         ]
     },
-    [ROLES.ADMIN]: {
-        // Admin del negocio tiene acceso a todo excepto configuraciones del sistema
+    [ROLES.PROPIETARIO]: { // Antes: [ROLES.ADMIN]
         permissions: [
             PERMISSIONS.VIEW_DASHBOARD,
             PERMISSIONS.VIEW_INVENTORY_MODULE,
@@ -77,23 +87,23 @@ export const rolesConfig = {
             PERMISSIONS.VIEW_POS_MODULE,
             PERMISSIONS.USE_POS,
             PERMISSIONS.VIEW_CLIENTS_MODULE,
-            PERMISSIONS.EDIT_SETTINGS_BUSINESS, // <- Cambio aquí
+            PERMISSIONS.EDIT_SETTINGS_BUSINESS,
         ]
     },
-    [ROLES.USER]: {
+    [ROLES.OPERADOR]: { // Antes: [ROLES.USER]
         permissions: [
             PERMISSIONS.VIEW_DASHBOARD,
             PERMISSIONS.VIEW_INVENTORY_MODULE,
             PERMISSIONS.VIEW_PRODUCTS
         ]
     },
-    [ROLES.CAJERO]: {
+    [ROLES.CAJERO]: { // Antes: [ROLES.CAJERO] (solo cambiamos mayúscula)
         permissions: [
             PERMISSIONS.VIEW_DASHBOARD,
             PERMISSIONS.VIEW_POS_MODULE,
             PERMISSIONS.USE_POS,
-            // Podría tener acceso limitado a Clientes para buscarlos
-             PERMISSIONS.VIEW_CLIENTS_MODULE,
+            PERMISSIONS.VIEW_CLIENTS_MODULE,
         ]
     }
 };
+// --- FIN DE CORRECCIÓN ---

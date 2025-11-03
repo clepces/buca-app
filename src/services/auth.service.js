@@ -1,11 +1,25 @@
+// ======================================================
+// ARCHIVO: src/services/auth.service.js
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.4 - FILE: 1.0.4
+// CORRECCIÓN: (Refactorización de Roles)
+// 1. Se importa 'ROLES' desde 'roles.config.js'.
+// 2. Se actualiza el mapeo de 'jobTitle' a los nuevos
+//    roles (Propietario, Operador, Cajero).
+// ======================================================
+
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase-config'; // Importa tus instancias de FB
+import { auth, db } from '../firebase-config.js';
 import { setLoading, setUser, clearUser } from '../store/actions';
-import { logActivity } from './logger.service'; // Usamos la función logActivity
-import { handleError, getFriendlyErrorMessage } from './error.service';
-import { traceExecution } from '../utils/traceExecution';
+import { logActivity, Logger } from './logger.service.js';
+import { handleError, getFriendlyErrorMessage } from './error.service.js';
+import { traceExecution } from '../utils/traceExecution.js';
 import { state } from '../store/state.js';
+
+// --- ¡INICIO DE CORRECCIÓN! ---
+// Importamos los nuevos roles
+import { ROLES } from './roles.config.js'; 
+// --- FIN DE CORRECCIÓN! ---
 
 export const initAuthListener = traceExecution('auth.service', 'initAuthListener')(() => {
 	return new Promise((resolve) => {
@@ -18,6 +32,7 @@ export const initAuthListener = traceExecution('auth.service', 'initAuthListener
 						setUser(sessionData);
 						logActivity({
 							type: 'AUTH_SESSION_RESUMED',
+							context: 'auth.service:initAuthListener',
 							message: `Sesión reanudada para ${sessionData.name}`,
 							userId: sessionData.uid,
 							businessId: sessionData.businessId,
@@ -60,6 +75,7 @@ export const loginEmailPassword = traceExecution('auth.service', 'loginEmailPass
 	  	setUser(sessionData);
 	  	logActivity({
 	  		type: 'AUTH_LOGIN',
+            context: 'auth.service:loginEmailPassword',
 	  		message: `Inicio de sesión exitoso para ${sessionData.name}`,
 	  		userId: sessionData.uid,
 	  		businessId: sessionData.businessId,
@@ -72,12 +88,17 @@ export const loginEmailPassword = traceExecution('auth.service', 'loginEmailPass
 	  	};
 	} catch (error) {
 		setLoading(false);
-		handleError(error, 'auth.service:loginEmailPassword');
-		clearUser();
-		const friendlyMessage = getFriendlyErrorMessage(error.message || error.code);
+		Logger.error('Error en auth.service:loginEmailPassword', error); 
+
+		// --- ¡INICIO DE CORRECCIÓN! ---
+		// Se prioriza 'error.code' para que el servicio
+		// de errores pueda traducir 'auth/invalid-credential'.
+		const friendlyMessage = getFriendlyErrorMessage(error.code || error.message);
+		// --- FIN DE CORRECCIÓN! ---
+
 		return { 
-			success: false, 
-			message: friendlyMessage || 'Error desconocido'
+      success: false, 
+      message: friendlyMessage || 'Error desconocido'
 		};
 	}
 });
@@ -88,6 +109,7 @@ export const logout = traceExecution('auth.service', 'logout')(async () => {
 		const userIdForLog = state.user ? state.user.uid : 'unknown'; 
 		logActivity({
 			type: 'AUTH_LOGOUT',
+			context: 'auth.service:logout',
 			message: 'Usuario cerró sesión',
 			userId: userIdForLog,
 		});
@@ -99,6 +121,8 @@ export const logout = traceExecution('auth.service', 'logout')(async () => {
 		setLoading(false);
 	}
 });
+
+// --- (El resto del archivo 'auth.service.js' no tiene cambios) ---
 
 const internalLogout = async () => {
 	try {
@@ -139,7 +163,6 @@ const fetchUserSessionContext = async (uid, email) => {
 	const userDirRef = doc(db, 'user_directory', uid);
 	const userDirSnap = await getDoc(userDirRef);
 
-	// >>> AÑADIR ESTAS LÍNEAS PARA DEPURAR <<<
 	console.log('--- DEBUG: Datos leídos de user_directory ---');
 	console.log('userDirSnap.exists():', userDirSnap.exists())
 
@@ -164,48 +187,42 @@ const fetchUserSessionContext = async (uid, email) => {
 				name: adminName, 
 				businessId: null, 
 				departmentId: null, 
-				role: 'super_admin' 
+				role: ROLES.SUPER_ADMIN // Usamos la constante
 			};
 		}
 
-	console.log('[DEBUG] userDirData:', userDirData); // O usa el log más detallado de arriba
+	console.log('[DEBUG] userDirData:', userDirData);
 	const { businessId } = userDirData;
 	if (!businessId) throw new Error('AUTH_NO_BUSINESS_ID');
 
-	// --- PASO 3: Obtener Perfil del Negocio (LEYENDO jobTitle) ---
 	const userProfileRef = doc(db, 'businesses', businessId, 'users', uid);
 	const userProfileSnap = await getDoc(userProfileRef);
 
 	if (!userProfileSnap.exists()) throw new Error('AUTH_USER_PROFILE_NOT_FOUND');
 
 	const userProfileData = userProfileSnap.data();
-	// --- ¡CAMBIO AQUÍ! Leemos 'name', 'jobTitle', 'departmentIds' ---
 	const { name, jobTitle, departmentIds } = userProfileData;
 
-	// Verificación y Mapeo de Rol
 	if (!name || !jobTitle) {
-		// La advertencia original ahora es más precisa
 		console.warn(`Perfil de usuario ${uid} en negocio ${businessId} incompleto. Falta name o jobTitle.`);
-		// Puedes decidir si lanzar un error o continuar con valores por defecto
 	}
 
-	// --- ¡CAMBIO AQUÍ! Mapeamos jobTitle a role ---
-	let userRole = 'user'; // Rol por defecto si jobTitle no existe o no coincide
+	let userRole = ROLES.OPERADOR; // Rol por defecto es Operador
 	if (jobTitle === 'Propietario') {
-	  userRole = 'admin';
+    	userRole = ROLES.PROPIETARIO;
 	} else if (jobTitle === 'Cajero') {
-	  userRole = 'cajero';
-	} else if (jobTitle === 'Empleado') { // Añadimos mapeo para 'Empleado' si lo usas
-	  userRole = 'user';
+		userRole = ROLES.CAJERO;
+	} else if (jobTitle === 'Empleado') { 
+		userRole = ROLES.OPERADOR;
 	}
 
 	return {
 	  uid: uid,
 	  email: email,
-	  name: name || email, // Usamos email como fallback
+	  name: name || email,
 	  businessId: businessId,
-	  departmentId: (departmentIds && departmentIds.length > 0) ? departmentIds[0] : null, // Tomamos el primero o null
-	  role: userRole, // Usamos el rol mapeado
+	  departmentId: (departmentIds && departmentIds.length > 0) ? departmentIds[0] : null,
+	  role: userRole,
 	};
 
   } else {
