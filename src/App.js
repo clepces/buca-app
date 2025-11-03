@@ -1,8 +1,9 @@
 // ======================================================
 // ARCHIVO: src/App.js
-// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.1 (FIXED)
-// CORRECCIÓN: (Error 'bind') Corregido error tipográfico en
-//             'init()'. Era 'this.render' no 'this.rerender'.
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.2 (FIXED)
+// CORRECCIÓN: (Bug de Loader) Se añade 'this.mainLoader.hide()'
+//             al método 'showLogin' para ocultar el loader
+//             antes de mostrar la pantalla de login.
 // ======================================================
 
 import { state } from './store/state.js';
@@ -34,17 +35,12 @@ export default class App {
         this.isLoggingOut = false;
         this.hasGlobalListener = false;
         Logger.info('App: Instancia creada.');
-        // Esta línea es correcta (usa 'this.render')
         registerRerender(this.render.bind(this));
     }
 
     async init() {
         Logger.info('App: Inicializando...');
-        
-        // --- ¡INICIO DE CORRECCIÓN! ---
-        // Aquí estaba el error. Debe ser 'this.render', no 'this.rerender'.
         registerRerender(this.render.bind(this));
-        // --- FIN DE CORRECCIÓN! ---
     }
 
     async handleAuthStateChange(user) {
@@ -87,6 +83,9 @@ export default class App {
                 await logout(); 
             }
         } else {
+            // --- ¡EL LOADER SE OCULTA AQUÍ AHORA! ---
+            this.mainLoader.hide(); 
+            
             if (this.isLoggingOut) {
                 const loaderContainer = this.root.querySelector('.app-loader');
                 if (loaderContainer) {
@@ -298,7 +297,12 @@ export default class App {
         }
     }
 
+    // --- ¡INICIO DE CORRECCIÓN! ---
+    // El método 'showLogin' ahora también es responsable
+    // de ocultar el loader principal.
     showLogin() {
+        this.mainLoader.hide(); // <-- ¡LÍNEA AÑADIDA!
+        
         Logger.info('Mostrando pantalla de login...');
         if (typeof this.currentViewCleanup === 'function') {
             try {
@@ -321,6 +325,7 @@ export default class App {
             this.root.innerHTML = 'Error crítico login.';
         }
     }
+    // --- FIN DE CORRECCIÓN! ---
 
     toggleTheme() {
         const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
