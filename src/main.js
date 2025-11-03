@@ -1,15 +1,20 @@
 // ======================================================
 // ARCHIVO: src/main.js
-// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.1
-// CORRECCIÓN: Se pasa 'mainLoader' al constructor de 'App'
-//             para evitar el TypeError 'this.mainLoader.hide is not a function'.
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.6 - FILE: 1.4.2 (DEBUG)
+// CORRECCIÓN: Añadidos logs de depuración para rastrear el
+//             error 'handleAuthStateChange is not a function'.
 // ======================================================
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase-config.js';
 import { handleError } from './utils/handleError.js';
 import { Logger } from './services/logger.service.js';
+
+// --- ¡INICIO DE DEPURACIÓN! ---
 import App from './App.js';
+console.log('[DEBUG_BUCA] 1. Importación de App.js:', App);
+// --- FIN DE DEPURACIÓN ---
+
 import { loadState, initializeStorage, loadGlobalConfig } from './services/storage.service.js';
 import { setSettings } from './store/actions.js';
 import { LoaderComponent } from './components/Loader.js';
@@ -44,17 +49,39 @@ async function main() {
             Logger.info(`onAuthStateChanged: user = ${user ? user.uid : 'null'}`);
             try {
                 if (!window.app) {
-                    // --- INICIO DE LA CORRECCIÓN ---
-                    // Se añade 'mainLoader' como tercer argumento, que faltaba.
-                    const appInstance = new App(appRoot, initialState, mainLoader);
-                    // --- FIN DE LA CORRECCIÓN ---
                     
+                    // --- ¡INICIO DE DEPURACIÓN! ---
+                    console.log('[DEBUG_BUCA] 2. window.app no existe. Creando nueva instancia de App...');
+                    const appInstance = new App(appRoot, initialState, mainLoader);
+                    
+                    console.log('[DEBUG_BUCA] 3. Instancia de App creada:', appInstance);
+                    console.log('[DEBUG_BUCA] 4. ¿appInstance.init existe?', typeof appInstance.init);
+                    console.log('[DEBUG_BUCA] 5. ¿appInstance.handleAuthStateChange existe?', typeof appInstance.handleAuthStateChange);
+                    // --- FIN DE DEPURACIÓN ---
+
                     await appInstance.init();
                     window.app = appInstance;
+                    
+                    // --- ¡INICIO DE DEPURACIÓN! ---
+                    console.log('[DEBUG_BUCA] 6. window.app ha sido asignado:', window.app);
+                    // --- FIN DE DEPURACIÓN ---
                 }
-                await window.app.handleAuthStateChange(user);
+
+                // --- ¡INICIO DE DEPURACIÓN! ---
+                console.log('[DEBUG_BUCA] 7. A punto de llamar a window.app.handleAuthStateChange...');
+                console.log('[DEBUG_BUCA] 8. Objeto window.app actual:', window.app);
+                console.log('[DEBUG_BUCA] 9. ¿window.app.handleAuthStateChange existe?', typeof window.app.handleAuthStateChange);
+                // --- FIN DE DEPURACIÓN ---
+
+                await window.app.handleAuthStateChange(user); // Esta es la línea 55 (aprox.) que falla
+
             } catch (error) {
                 Logger.error('Error en onAuthStateChanged:', error);
+                
+                // --- ¡INICIO DE DEPURACIÓN! ---
+                console.error('[DEBUG_BUCA] 10. ERROR CAPTURADO DENTRO DE onAuthStateChanged:', error);
+                // --- FIN DE DEPURACIÓN ---
+
                 handleError(error, { 
                     message: 'Error al procesar la autenticación.', 
                     critical: true,
