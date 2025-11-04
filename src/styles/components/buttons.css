@@ -1,3 +1,18 @@
+/* ======================================================
+// ARCHIVO: src/styles/components/buttons.css
+// CORRECCIÓN: (Especificidad de CSS) Se añade 'button.'
+//             a .btn-icon y .btn-icon-sm para asegurar
+//             que anulen el padding del 'button' base.
+// ====================================================== */
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--bs-white);
+}
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+}
+
 .btn-secondary {
     background-color: var(--bs-gray-200);
     color: var(--bs-gray-800);
@@ -40,33 +55,41 @@
     background-color: #0aa2c0;
 }
 
-.btn-icon {
+/* --- ¡INICIO DE CORRECCIÓN! --- */
+
+/* Botón de Ícono Base */
+/* Se añade 'button.' para aumentar la especificidad */
+button.btn-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding: 0; /* <-- Correcto: Sin padding */
     border-radius: var(--bs-border-radius);
     line-height: 1;
     width: 40px;
     height: 40px;
 }
-.btn-icon i {
+button.btn-icon i {
     font-size: 1.1rem;
 }
 
-.btn-icon-sm {
+/* Botón de Ícono Pequeño */
+/* Se añade 'button.' y se asegura padding 0 */
+button.btn-icon-sm {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0.5rem;
+    width: 32px;  /* <-- Solo cambia el tamaño */
+    height: 32px; /* <-- Solo cambia el tamaño */
     border-radius: var(--bs-border-radius);
     line-height: 1;
+    padding: 0; /* <-- Aseguramos padding 0 */
 }
-.btn-icon-sm i {
+button.btn-icon-sm i {
     font-size: 0.9rem;
 }
+/* --- FIN DE CORRECCIÓN! --- */
+
 
 button:focus-visible {
     outline: none;

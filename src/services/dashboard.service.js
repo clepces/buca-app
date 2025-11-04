@@ -1,8 +1,10 @@
 // ======================================================
 // ARCHIVO: src/services/dashboard.service.js
-// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
-// CORRECCIÓN: Actualizado para leer la nueva estructura de
-//             datos del producto (ej. product.pricing.unitSellPrice)
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.2.0 - FILE: 1.1.0
+// CORRECCIÓN: (Bug M-2) El servicio ahora lee la estructura
+//             de precios anidada correcta
+//             (pricing.priceLists.unitSellPrice)
+//             en lugar de la estructura plana.
 // ======================================================
 
 import { Logger } from './logger.service.js';
@@ -24,12 +26,14 @@ export function getDashboardStats(products) {
     }
 
     const totals = products.reduce((acc, product, index) => {
-        // --- ¡INICIO DE CORRECCIÓN! (Anotación M-2) ---
-        // Leemos la nueva estructura "plana"
+        // --- ¡INICIO DE CORRECCIÓN! (Bug M-2) ---
         const currentStock = product.stock?.current || 0;
         const packageCost = product.pricing?.packageCost || 0;
         const unitsPerPackage = product.pricing?.unitsPerPackage || 1;
-        const unitSellPrice = product.pricing?.unitSellPrice || 0;
+
+        // Buscamos el precio en la nueva estructura anidada que
+        // vimos en los logs de depuración de Chrome.
+        const unitSellPrice = product.pricing?.priceLists?.unitSellPrice || 0;
         // --- FIN DE CORRECCIÓN ---
 
         const costPerUnit = packageCost / (unitsPerPackage > 0 ? unitsPerPackage : 1);

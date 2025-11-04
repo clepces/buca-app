@@ -167,7 +167,7 @@ export function CompaniesView(element, state) {
                         <select id="filter-sort" class="form-control" style="min-width: 180px;">
                             <option value="last_7_days">Sort By: Last 7 Days</option>
                         </select>
-                        <button class="btn-icon btn-secondary" data-action="manage-columns" data-tippy-content="Administrar Columnas">
+                        <button class="btn-icon btn-secondary" data-action="manage-columns" data-tippy-content="Administrar Columnas" style="padding: revert;">
                             <i class="bi bi-layout-three-columns"></i>
                         </button>
                     </div>

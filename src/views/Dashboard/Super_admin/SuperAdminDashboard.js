@@ -157,7 +157,7 @@ export function SuperAdminDashboard(element, state) {
     }
 
     // --- INICIALIZAR GRÁFICOS Y SELECTOR DE FECHAS ---
-    setTimeout(() => {
+    // setTimeout(() => {
         // Inicializar Gráficos
         if (typeof ApexCharts !== 'undefined') {
             try {
@@ -192,7 +192,7 @@ export function SuperAdminDashboard(element, state) {
         }
         // --- FIN CAMBIO ---
 
-    }, 100);
+    // }, 100);
 
     // --- Funciones de Gráficos (¡Companies modificado!) ---
 

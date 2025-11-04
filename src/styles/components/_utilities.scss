@@ -1,0 +1,62 @@
+/* ======================================================
+// ARCHIVO NUEVO: src/styles/components/_utilities.scss
+// Contiene clases de utilidad comunes (como Bootstrap)
+// para acelerar el layout.
+// ====================================================== */
+
+/* --- Display --- */
+.d-flex {
+    display: flex !important;
+}
+.d-none {
+    display: none !important;
+}
+.d-block {
+    display: block !important;
+}
+.d-grid {
+    display: grid !important;
+}
+
+/* --- Flexbox --- */
+.justify-content-between {
+    justify-content: space-between !important;
+}
+.justify-content-center {
+    justify-content: center !important;
+}
+.align-items-center {
+    align-items: center !important;
+}
+.flex-column {
+    flex-direction: column !important;
+}
+
+/* --- Spacing (Gap) --- */
+/* (Usamos 0.25rem como base) */
+.gap-1 {
+    gap: 0.25rem !important;
+}
+.gap-2 {
+    gap: 0.5rem !important; /* La que intentamos usar era 0.75rem, ajusto esta */
+}
+.gap-3 {
+    gap: 1rem !important;
+}
+
+/* --- Spacing (Margins) --- */
+.m-auto {
+    margin: auto !important;
+}
+.ms-auto {
+    margin-left: auto !important; /* La que necesitábamos */
+}
+.me-auto {
+    margin-right: auto !important;
+}
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
