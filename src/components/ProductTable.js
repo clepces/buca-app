@@ -1,12 +1,14 @@
 // ======================================================
 // ARCHIVO: src/components/ProductTable.js
-// VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
-// CORRECCIÓN: Refactorizado para leer la nueva estructura de datos,
-//             usar Bootstrap Icons y verificar permisos.
+// VERSION APP: 3.0.0 - MODULE:SGA_SCM: 1.1.0 - FILE: 1.0.2
+// CORRECCIÓN: (Bug W-1 / M-2) Tabla robusta
+// 1. La tabla ahora revisa la estructura de datos NUEVA
+//    (product.pricing.packageSellPrice) Y la ANTIGUA
+//    (product.pricing.priceLists.packageSellPrice)
+//    para evitar los "$0.00".
 // ======================================================
 
 import { EmptyState } from './EmptyState.js';
-// --- ¡IMPORTACIONES AÑADIDAS! ---
 import { can } from '../services/permissions.service.js';
 import { PERMISSIONS } from '../services/roles.config.js';
 
@@ -21,7 +23,7 @@ export function ProductTable(products, settings) {
 
     if (!products || products.length === 0) {
         return EmptyState({
-            icon: 'bi-box-open', // <-- Icono actualizado
+            icon: 'bi-box-seam', // Icono actualizado
             message: 'Aún no hay productos registrados'
         });
     }
@@ -43,20 +45,30 @@ export function ProductTable(products, settings) {
             </thead>
             <tbody>
                 ${products.map(product => {
-                    // --- ¡INICIO DE CORRECCIÓN! Usamos la NUEVA estructura ---
+                    
+                    // --- ¡INICIO DE CORRECCIÓN! (Bug W-1 / M-2) ---
+                    // Leemos la nueva estructura "plana"
                     const productName = product.name || 'N/A';
                     const categoryDisplay = product.categoryId || 'N/A';
-                    const packagePrice = product.pricing?.packageSellPrice?.toFixed(2) || '0.00';
-                    const unitPrice = product.pricing?.unitSellPrice?.toFixed(2) || '0.00';
                     const productId = product.id;
+
+                    // Hacemos la tabla robusta:
+                    // Comprueba el precio en la estructura NUEVA (plana) O en la ANTIGUA (anidada).
+                    const packagePrice = product.pricing?.packageSellPrice || 
+                                       product.pricing?.priceLists?.packageSellPrice || 
+                                       0;
+                    
+                    const unitPrice = product.pricing?.unitSellPrice || 
+                                    product.pricing?.priceLists?.unitSellPrice || 
+                                    0;
                     // --- FIN DE CORRECCIÓN ---
 
                     return `
                     <tr data-product-id="${productId}">
                         <td data-label="Producto">${productName}</td>
                         <td data-label="Categoría">${categoryDisplay}</td>
-                        <td data-label="Precio Paquete">${simboloPrincipal}${packagePrice}</td>
-                        <td data-label="Precio Unitario">${simboloPrincipal}${unitPrice}</td>
+                        <td data-label="Precio Paquete">${simboloPrincipal}${packagePrice.toFixed(2)}</td>
+                        <td data-label="Precio Unitario">${simboloPrincipal}${unitPrice.toFixed(2)}</td>
                         <td data-label="Acciones" class="actions">
                             <div class="list-actions">
                                 <button class="btn-icon btn-icon-sm" data-action="abastecer" title="Abastecer Inventario (Próx.)">

@@ -1,8 +1,10 @@
+/*
 // ======================================================
 // ARCHIVO: src/styles/main.scss
 // CORRECCIÓN: Se cambia @import url() a @import de SASS
 //             para asegurar el orden correcto de la cascada (CSS).
 // ======================================================
+*/
 
 /* 1. Reseteo y Estilos Base */
 @import './reset.css';
@@ -10,12 +12,13 @@
 @import 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
 
 /* 2. Utilidades Globales */
-@import './components/_utilities.scss';
+@import './components/_utilities.css';
 
 /* 3. Componentes Fundamentales */
 @import './components/buttons.css';
 @import './components/forms.css';
 @import './components/modal.css';
+@import './components/calculator.css';
 @import './components/toast.css';
 @import './components/loader.css';
 @import './components/login.css';

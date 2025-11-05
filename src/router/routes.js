@@ -8,12 +8,20 @@ import { PERMISSIONS } from '../services/roles.config.js';
 import { MODULES } from '../services/modules.config.js';
 
 // --- Importaciones de Vistas ---
-const ProductsView = () => import('../views/Inventory/products/ProductsView.js').then(m => m.ProductsView);
-const PosView = () => import('../views/PosView.js').then(m => m.PosView);
-const ClientsView = () => import('../views/ClientsView.js').then(m => m.ClientsView);
+
+// VISTAS: SUPER ADMIN, PROPIETARIO, OPERADOR, CAJA
 const DashboardView = () => import('../views/Dashboard/DashboardView.js').then(m => m.DashboardView);
-const InventoryDashboardView = () => import('../views/Inventory/DashboardView.js').then(m => m.InventoryDashboardView);
 const CompaniesDashboardView = () => import('../views/Companies/CompaniesView.js').then(m => m.CompaniesView);
+
+// VISTAS: PROPIETARIO, OPERADOR
+const InventoryDashboardView = () => import('../views/Inventory/DashboardView.js').then(m => m.InventoryDashboardView);
+const ProductsView = () => import('../views/Inventory/products/ProductsView.js').then(m => m.ProductsView);
+
+// VISTAS: PROPIERARIO, CAJA
+const PosView = () => import('../views/PosView.js').then(m => m.PosView);
+
+// VISTAS: PROPIETARIO, OPERADOR, CAJA -> limitado  
+const ClientsView = () => import('../views/ClientsView.js').then(m => m.ClientsView);
 
 
 export const routes = [
@@ -59,7 +67,6 @@ export const routes = [
     {
         path: '#/pos',
         component: PosView,
-        // --- ¡CORRECCIÓN AQUÍ! ---
         permission: PERMISSIONS.VIEW_POS_MODULE, // Antes: VIEW_POS
         context: MODULES.POS,
         isMainModule: true,
@@ -70,7 +77,6 @@ export const routes = [
     {
         path: '#/clients',
         component: ClientsView,
-        // --- ¡CORRECCIÓN AQUÍ! ---
         permission: PERMISSIONS.VIEW_CLIENTS_MODULE, // Antes: VIEW_CLIENTS
         context: MODULES.CRM,
         isMainModule: true,

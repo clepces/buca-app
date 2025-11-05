@@ -1,9 +1,12 @@
 // ======================================================
 // ARCHIVO: src/components/ProductForm.js
-// CORRECCIÓN: (Anotación Y-6) Se eliminó el bloque <style>
-//             de 180+ líneas.
+// VERSION APP: 3.0.0 - MODULE:SGA_SCM: 1.1.2 - FILE: 1.0.4
+// CORRECCIÓN: (Bug Edición - Campos Vacíos)
+// 1. La lógica para 'prodMarginPct' ahora también revisa
+//    la ruta 'pricing.priceLists.marginPercentage'
+//    para cargar correctamente la ganancia.
 // ======================================================
-
+    
 import { calcularPrecioVenta } from '../services/calculation.service.js';
 import { validarCamposTexto, productoExiste } from '../services/validation.service.js';
 import { addProductToState, updateProductInState } from '../store/actions.js';
@@ -33,8 +36,33 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     let wizardStepper = null;
     let wizardSteps = null;
 
-    // --- ¡BLOQUE <STYLE> ELIMINADO DE AQUÍ! ---
+   // --- ¡INICIO DE CORRECCIÓN! (Variables Robustas) ---
+    const prodName = isEditMode ? (productToEdit?.name || productToEdit?.product_info?.product_name || '') : '';
+    const prodBrand = isEditMode ? (productToEdit?.brand || productToEdit?.product_info?.product_brand || '') : '';
+    const prodCategory = isEditMode ? (productToEdit?.categoryId || productToEdit?.product_info?.product_category || '') : '';
+    const prodDesc = isEditMode ? (productToEdit?.description || productToEdit?.product_info?.description || '') : '';
+    const prodCost = isEditMode ? (productToEdit?.pricing?.packageCost || productToEdit?.product_price?.costo_inicial_paquete || '') : '';
 
+    // CORRECCIÓN PARA GANANCIA %
+    const prodMarginPct = isEditMode ? 
+        (
+            productToEdit?.pricing?.marginPercentage ||              // 1. Ruta nueva (plana)
+            productToEdit?.pricing?.priceLists?.marginPercentage || // 2. Ruta anidada (la de tu BD)
+            (productToEdit?.product_ajuste?.percentage * 100) ||   // 3. Ruta antigua (V2)
+            ''
+        ) : '';
+
+    // CORRECCIÓN PARA UNID./PAQUETE
+    const prodUnitsPerPkg = isEditMode ? 
+        (
+            productToEdit?.pricing?.unitsPerPackage ||              // 1. Ruta nueva (plana - la de tu BD)
+            productToEdit?.product_price?.unidades_por_paquete ||   // 2. Ruta antigua (V2)
+            ''
+        ) : '';
+
+    const prodStock = isEditMode ? (productToEdit?.stock?.current || productToEdit?.product_estado?.disponible || '') : '';
+    // --- FIN DE CORRECCIÓN ---
+    
     element.innerHTML = `
         <div class="wizard-stepper" id="product-wizard-stepper">
             <div class="step active" data-step="1"><span>Paso 1</span>Básico</div>
@@ -52,17 +80,17 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                 <h3><i class="bi bi-info-circle-fill me-1"></i> Información Básica</h3>
                                 <div class="form-group">
                                     <label for="producto">Nombre <span class="text-danger">*</span></label>
-                                    <input type="text" id="producto" required value="${isEditMode ? (productToEdit?.name || '') : ''}">
+                                    <input type="text" id="producto" required value="${prodName}">
                                 </div>
                                 <div class="form-group">
                                     <label for="marca">Marca <span class="text-danger">*</span></label>
-                                    <input type="text" id="marca" required value="${isEditMode ? (productToEdit?.brand || '') : ''}">
+                                    <input type="text" id="marca" required value="${prodBrand}">
                                 </div>
                                 <div class="form-group">
                                     <label for="categoria">Categoría <span class="text-danger">*</span></label>
                                     <select id="categoria" required>
                                         <option value="">Selecciona</option>
-                                        ${categories.map(cat => `<option value="${cat}" ${isEditMode && productToEdit?.categoryId === cat ? 'selected' : ''}>${cat}</option>`).join('')}
+                                       ${categories.map(cat => `<option value="${cat}" ${prodCategory === cat ? 'selected' : ''}>${cat}</option>`).join('')}
                                     </select>
                                 </div>
                             </section>
@@ -72,13 +100,12 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                 <h3><i class="bi bi-pencil-square me-1"></i> Detalles</h3>
                                 <div class="form-group">
                                     <label for="descripcion">Descripción</label>
-                                    <textarea id="descripcion" placeholder="Detalles del producto (opcional)" rows="8">${isEditMode ? (productToEdit?.description || '') : ''}</textarea>
+                                    <textarea id="descripcion" placeholder="Detalles del producto (opcional)" rows="8">${prodDesc}</textarea>
                                 </div>
                             </section>
                         </div>
                     </div>
                 </div>
-
                 <div class="wizard-step" data-step="2" style="display: none;">
                     <div class="construction-notice">
                         <i class="bi bi-tools"></i>
@@ -113,7 +140,6 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                         </div>
                     </div>
                 </div>
-
                 <div class="wizard-step" data-step="3" style="display: none;">
                      <div class="form-grid-layout">
                          <div class="form-column-left">
@@ -121,11 +147,11 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                 <h3><i class="bi bi-calculator-fill me-1"></i> Cálculo de Precios</h3>
                                 <div class="form-group">
                                     <label for="costo">Costo Paquete (${simboloPrincipal}) <span class="text-danger">*</span></label>
-                                    <input type="number" id="costo" step="0.01" required value="${isEditMode ? (productToEdit?.pricing?.packageCost || '') : ''}">
+                                    <input type="number" id="costo" step="0.01" required value="${prodCost}">
                                 </div>
                                 <div class="form-group">
                                     <label for="ganancia">Ganancia (%) <span class="text-danger">*</span></label>
-                                    <input type="number" id="ganancia" step="0.1" required value="${isEditMode ? (productToEdit?.pricing?.marginPercentage || '') : ''}">
+                                    <input type="number" id="ganancia" step="0.1" required value="${prodMarginPct}">
                                 </div>
                              </section>
                          </div>
@@ -139,12 +165,12 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                     </div>
                                     <div style="flex: 1;" class="form-group">
                                         <label for="unidades-por-paquete">Unid./Paquete</label>
-                                        <input type="number" id="unidades-por-paquete" placeholder="Opc." min="1" value="${isEditMode ? (productToEdit?.pricing?.unitsPerPackage || '') : ''}">
+                                        <input type="number" id="unidades-por-paquete" placeholder="Opc." min="1" value="${prodUnitsPerPkg}">
                                     </div>
                                 </div>
                                 <div class="form-group" style="margin-bottom: 3.5rem;">
                                     <label for="unidades">Stock Inicial (Unidades) <span class="text-danger">*</span></label>
-                                    <input type="number" id="unidades" required min="1" value="${isEditMode ? (productToEdit?.stock?.current || '') : ''}">
+                                    <input type="number" id="unidades" required min="1" value="${prodStock}">
                                 </div>
                             </section>
                         </div>
@@ -179,21 +205,21 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                             <section class="summary-section prices-section">
                                 <h3><i class="bi bi-tags-fill me-1"></i> Precios de Venta</h3>
                                 <div class="summary-prices-grid">
-                                    
                                     <div class="summary-price-card unit-price">
                                         <div class="card-header"><i class="bi bi-box me-1"></i>Precio Unitario</div>
                                         <div class="card-body">
-                                            <div class="price-cluster">
-                                                <span class="price-main currency-toggle" id="summary-precio-unidad-principal" data-usd-value="0" data-ves-value="0" data-current-currency="usd" title="Clic para cambiar">${simboloPrincipal}0.00</span>
-                                                <span class="price-secondary currency-toggle" id="summary-precio-unidad-base" data-usd-value="0" data-ves-value="0" data-current-currency="ves" title="Clic para cambiar">${simboloBase}0.00</span>
+                                            <div class="price-header-grid">
+                                                <div class="price-cluster">
+                                                    <span class="price-main currency-toggle" id="summary-precio-unidad-principal" data-usd-value="0" data-ves-value="0" data-current-currency="usd" title="Clic para cambiar">${simboloPrincipal}0.00</span>
+                                                    <span class="price-secondary currency-toggle" id="summary-precio-unidad-base" data-usd-value="0" data-ves-value="0" data-current-currency="ves" title="Clic para cambiar">${simboloBase}0.00</span>
+                                                </div>
+                                                <small class="price-details">
+                                                    Costo Unitario: <span id="summary-costo-unidad">$0.00</span><br/>
+                                                    Ganancia: <span id="summary-ganancia-pct">0</span>% | IVA: ${tasaIVA}%
+                                                </small>
                                             </div>
-                                            <small class="price-details">
-                                                Costo Unitario: <span id="summary-costo-unidad">$0.00</span><br/>
-                                                Ganancia: <span id="summary-ganancia-pct">0</span>% | IVA: ${tasaIVA}%
-                                            </small>
                                         </div>
                                     </div>
-
                                     <div class="summary-price-card package-price">
                                         <div class="card-header"><i class="bi bi-boxes me-1"></i>Precio Paquete (<span id="summary-paquete-unidades">?</span> Unid.)</div>
                                         <div class="card-body">
@@ -288,22 +314,6 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     };
 
     const formatNumber = (num, decimals = 2) => new Intl.NumberFormat('es-VE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
-
-    const populateForm = (product) => {
-        nombreInput.value = product.name || '';
-        marcaInput.value = product.brand || '';
-        categoriaSelect.value = product.categoryId || '';
-        descripcionInput.value = product.description || '';
-        costoInput.value = product.pricing?.packageCost || '';
-        gananciaInput.value = product.pricing?.marginPercentage || '';
-        totalUnidadesInput.value = product.stock?.current || '';
-        unidadesPorPaqueteInput.value = product.pricing?.unitsPerPackage || '';
-        element.querySelector('#sku').value = product.sku || '';
-        element.querySelector('#barcode').value = product.barcode || '';
-        element.querySelector('#proveedor').value = product.supplier || '';
-        element.querySelector('#peso').value = product.weightKg || '';
-     };
-    if (isEditMode && productToEdit) { populateForm(productToEdit); }
 
     const updateFooterButtons = (stepNum) => {
         if (!btnPrev || !btnNext || !btnCalculate || !btnSave || !copyButton || !attachInvoiceButton) { return; }

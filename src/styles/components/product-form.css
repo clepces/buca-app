@@ -64,7 +64,7 @@
     gap: 1rem; 
 }
 
-.package-price .price-header-grid {
+.package-price .price-header-grid, {
     display: grid;
     grid-template-columns: 1fr auto; 
     align-items: center;
@@ -92,7 +92,7 @@
     align-items: stretch; 
 }
 .discount-suggestion-box {
-    background-color: var(--primary-light-hover);
+    /*background-color: var(--primary-light-hover);*/
     border: 1px dashed var(--primary-color);
     border-radius: var(--bs-border-radius);
     padding: 0.75rem 1rem;
@@ -163,6 +163,7 @@
     background-color: rgba(75, 85, 99, 0.2);
     border-color: var(--bs-border-color);
 }
+
 .package-price-label {
     font-size: 0.8rem;
     color: var(--bs-gray-600);
@@ -247,7 +248,7 @@
 #modal-body-container { height: 75vh;  }
 
 .construction-notice {
-    background-color: var(--primary-light-hover);
+    /*background-color: var(--primary-light-hover);*/
     border: 1px solid var(--primary-light);
     color: var(--primary-dark);
     border-radius: var(--bs-border-radius);
@@ -469,4 +470,14 @@
 .currency-toggle:hover { 
     text-decoration: none; 
     filter: brightness(1.1); 
+}
+
+.price-cluster {
+    display: contents;
+}
+
+.price-header-grid {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
 }

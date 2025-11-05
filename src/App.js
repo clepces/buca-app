@@ -7,27 +7,23 @@
 //    para usar los nuevos roles (ROLES.CAJERO, ROLES.OPERADOR).
 // ======================================================
 
-import { state } from './store/state.js'; // <-- ¡Fuente de verdad!
+import { state } from './store/state.js';
 import { registerRerender, setUser } from './store/actions.js';
 import { logout, tracedLoadUserData } from './services/auth.service.js';
 import { loadBusinessData } from './services/storage.service.js';
-import { initRouter } from './router/index.js'; // <-- Router corregido
+import { initRouter } from './router/index.js';
 import { Logger } from './services/logger.service.js';
 import { LoginView } from './views/LoginView.js';
 import { Header } from './components/Header.js';
 import { MainNav } from './components/MainNav.js';
 import { Footer } from './components/Footer.js';
 import { LoaderComponent } from './components/Loader.js';
-import { Toast } from './components/Toast.js';
 import { delay } from './utils/retardo.js';
 import { can } from './services/permissions.service.js';
 import { PERMISSIONS } from './services/roles.config.js';
 import { routes } from './router/routes.js';
 import { MODULES } from './services/modules.config.js';
-
-// --- ¡INICIO DE CORRECCIÓN! ---
 import { ROLES } from './services/roles.config.js';
-// --- FIN DE CORRECCIÓN! ---
 
 export default class App {
 
@@ -172,7 +168,6 @@ export default class App {
         // debe hacerlo desde su listener global.
     }
 
-    // --- ¡MÉTODO ACTUALIZADO! ---
     async handleLogoutSequence(toastMessage = '¡Hasta pronto!') {
         if (this.isLoggingOut) return;
         Logger.info('Iniciando secuencia de cierre de sesión...');
@@ -198,7 +193,6 @@ export default class App {
         // onAuthStateChanged(null) se encargará de llamar a showLogin()
     }
 
-    // --- ¡MÉTODO ACTUALIZADO! ---
     handleGlobalActions(e) {
         // 1. Manejador de Clics de Navegación (movido desde el router)
         const link = e.target.closest('a[data-route]');
@@ -253,9 +247,7 @@ export default class App {
                     <div class="container view-container" id="view-container"></div>
                 </main>
                 ${Footer(state)}
-                ${Toast()}
-            </div>
-        `;
+            </div>        `;
         if (state.session.isLoggedIn && !this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
             this.hasGlobalListener = true;

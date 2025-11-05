@@ -31,8 +31,8 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
     let showContextualMenu = currentContext !== MODULES.CORE;
 
     if (showContextualMenu) {
-        contextSubRoutes = routes.filter(route =>
-            route.context === currentContext && can(route.permission) && !route.isMainModule
+        contextSubRoutes = routes.filter(
+            route => route.context === currentContext && can(route.permission) && !route.isMainModule
         );
         mainRouteOfContext = routes.find(r => r.context === currentContext && r.isMainModule);
 

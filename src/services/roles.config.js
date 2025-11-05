@@ -70,10 +70,10 @@ export const rolesConfig = {
             // Sistema
             PERMISSIONS.EDIT_SETTINGS_SYSTEM,
             // Puede ver todo lo demás también (opcional, pero común)
-            PERMISSIONS.VIEW_INVENTORY_MODULE,
-            PERMISSIONS.VIEW_PRODUCTS,
-            PERMISSIONS.VIEW_POS_MODULE,
-            PERMISSIONS.VIEW_CLIENTS_MODULE,
+            // PERMISSIONS.VIEW_INVENTORY_MODULE,
+            // PERMISSIONS.VIEW_PRODUCTS,
+            // PERMISSIONS.VIEW_POS_MODULE,
+            // PERMISSIONS.VIEW_CLIENTS_MODULE,
         ]
     },
     [ROLES.PROPIETARIO]: { // Antes: [ROLES.ADMIN]

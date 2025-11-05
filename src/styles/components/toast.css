@@ -1,78 +1,110 @@
 /* ==========================================================================
-   TOAST NOTIFICATIONS (CORREGIDO CON BOOTSTRAP ICONS)
-   ========================================================================== */
+// ARCHIVO: src/styles/components/toast.css
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.0 - FILE: 1.1.0
+// CORRECCIÓN: (Rediseño de UI y Bug Z-Index)
+// 1. Z-index aumentado a 10010 (por encima del modal).
+// 2. Diseño cambiado a fondo de tarjeta con borde de color.
+// 3. Añadidos estilos para el nuevo layout (icono, contenido, título).
+// ========================================================================== */
 
-/* 1. ESTILO GENERAL DEL TOAST */
+/* 1. CONTENEDOR PRINCIPAL */
 .toast {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    align-items: stretch; /* Alinear items para altura completa */
+    gap: 0; /* Sin gap, el padding interno lo maneja */
     position: fixed;
-    top: 20px;
+    top: 24px; /* Un poco más abajo */
     left: 50%;
     transform: translateX(-50%);
-    padding: 1rem 1.5rem;
+    
+    background-color: var(--bs-card-bg); /* Fondo de tarjeta */
     border-radius: var(--bs-border-radius);
     box-shadow: var(--shadow-lg);
-    z-index: 9999;
-    font-weight: 500;
-    max-width: 90%;
-    pointer-events: none;
+    
+    /* --- ¡CORRECCIÓN Z-INDEX! --- */
+    z-index: 10010; /* Encima del modal (10000) */
+    
+    max-width: 450px;
+    width: 90%;
+    pointer-events: auto; /* Permitir clic en el botón de cerrar */
     animation: toastSlideIn 0.4s ease-out forwards, toastSlideOut 0.4s 3s ease-in forwards;
+    
+    border-left-width: 5px; /* Borde de color */
+    border-left-style: solid;
+    overflow: hidden; /* Para los bordes redondeados */
 }
 
-/* --- ¡INICIO DE CORRECCIÓN! --- */
-.toast::before {
-    /* Usa la familia de fuentes Bootstrap Icons */
-    font-family: 'bootstrap-icons';
-    font-weight: 900;
-    font-size: 1.2rem;
-    /* Corrección de alineación vertical */
-    font-style: normal;
-    font-variant: normal;
-    text-transform: none;
+/* --- Se elimina el ::before obsoleto --- */
+
+/* 2. ÁREAS INTERNAS */
+.toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 1.25rem;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.toast-content {
+    flex-grow: 1;
+    padding: 1rem;
+    padding-right: 2.5rem; /* Espacio para el botón de cerrar */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centrar texto verticalmente */
+}
+
+.toast-title {
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    font-size: 1rem;
+    line-height: 1.2;
+}
+
+.toast-message {
+    font-weight: 500;
+    color: var(--bs-body-color);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.toast-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--bs-gray-400);
+    font-size: 1.5rem;
+    font-weight: 700;
     line-height: 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: color var(--transition-fast);
 }
-/* --- FIN DE CORRECCIÓN --- */
-
-
-/* 2. VARIANTES DE COLOR E ICONOS */
-.toast-success {
-    background-color: var(--bs-success);
-    color: var(--bs-white);
-}
-.toast-success::before {
-    content: '\f26a'; /* check-circle-fill */
+.toast-close:hover {
+    color: var(--bs-gray-700);
 }
 
-.toast-error {
-    background-color: var(--error-color);
-    color: var(--bs-white);
-}
-.toast-error::before {
-    content: '\f336'; /* exclamation-triangle-fill */
+[data-bs-theme="dark"] .toast-close:hover {
+     color: var(--bs-gray-100);
 }
 
-.toast-warning {
-    background-color: var(--warning-color);
-    color: var(--bs-white);
-}
-.toast-warning::before {
-    content: '\f32d'; /* exclamation-circle-fill */
-}
+/* 3. VARIANTES DE COLOR (Icono y Borde) */
+.toast-success { border-color: var(--bs-success); }
+.toast-success .toast-icon { color: var(--bs-success); }
 
-.toast-info {
-    background-color: var(--primary-color);
-    color: var(--bs-white);
-}
-.toast-info::before {
-    content: '\f431'; /* info-circle-fill */
-}
+.toast-error { border-color: var(--error-color); }
+.toast-error .toast-icon { color: var(--error-color); }
 
+.toast-warning { border-color: var(--warning-color); }
+.toast-warning .toast-icon { color: var(--warning-color); }
 
-/* 3. ANIMACIONES (Sin cambios) */
+.toast-info { border-color: var(--primary-color); }
+.toast-info .toast-icon { color: var(--primary-color); }
+
+/* 4. ANIMACIONES (Sin cambios) */
 @keyframes toastSlideIn {
     from {
         opacity: 0;
