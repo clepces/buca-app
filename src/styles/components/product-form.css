@@ -542,7 +542,7 @@
 
 /* Estilos para un valor que SÍ cambió */
 .diff-item.changed {
-    background-color: var(--primary-light-hover);
+    background-color: var(--bs-gray-50);
     border-radius: var(--bs-border-radius-sm);
 }
 

@@ -396,12 +396,25 @@ export function ProductForm(productToEdit = null, modalElementRef) {
         
         // Mensaje de advertencia si no hay cambios
         if (!changesHTML.includes('changed')) {
-            changesHTML = `<div class="summary-no-changes"><i class="bi bi-info-circle me-1"></i> No se detectaron cambios en los campos.</div>` + changesHTML;
+            changesHTML = `
+            <div class="summary-no-changes">
+                <i class="bi bi-info-circle me-1"></i> 
+                No se detectaron cambios en los campos.
+            </div>` 
+            + changesHTML;
         } else {
-            changesHTML = `<div class="summary-changes-detected"><i class="bi bi-exclamation-triangle-fill me-1"></i> ¡Atención! Revisa los cambios antes de guardar.</div>` + changesHTML;
+            changesHTML = `
+            <div class="summary-changes-detected">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> 
+                ¡Atención! Revisa los cambios antes de guardar.
+            </div>` 
+            + changesHTML;
         }
 
-        return `<div class="summary-diff-view">${changesHTML}</div>`;
+        return `
+        <div class="summary-diff-view">
+            ${changesHTML}
+        </div>`;
     }
 
     /**
