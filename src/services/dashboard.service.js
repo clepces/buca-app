@@ -26,14 +26,17 @@ export function getDashboardStats(products) {
     }
 
     const totals = products.reduce((acc, product, index) => {
-        // --- ¡INICIO DE CORRECCIÓN! (Bug M-2) ---
+        // --- ¡INICIO DE CORRECCIÓN! (Cálculo de $0.00) ---
         const currentStock = product.stock?.current || 0;
         const packageCost = product.pricing?.packageCost || 0;
         const unitsPerPackage = product.pricing?.unitsPerPackage || 1;
 
-        // Buscamos el precio en la nueva estructura anidada que
-        // vimos en los logs de depuración de Chrome.
-        const unitSellPrice = product.pricing?.priceLists?.unitSellPrice || 0;
+        // Hacemos la lectura robusta:
+        // 1. Intenta leer la estructura NUEVA (anidada)
+        // 2. Si falla, intenta leer la estructura ANTIGUA (plana)
+        const unitSellPrice = product.pricing?.priceLists?.[0]?.unitSellPrice || 
+                            product.pricing?.unitSellPrice || 
+                            0;
         // --- FIN DE CORRECCIÓN ---
 
         const costPerUnit = packageCost / (unitsPerPackage > 0 ? unitsPerPackage : 1);
@@ -49,7 +52,9 @@ export function getDashboardStats(products) {
         acc.stockValue += stockValueToAdd;
 
         return acc;
-    }, { investment: 0, stockValue: 0 });
+    }, { 
+        investment: 0, stockValue: 0 
+    });
 
     const totalInvestment = isNaN(totals.investment) ? 0 : totals.investment;
     const totalStockValue = isNaN(totals.stockValue) ? 0 : totals.stockValue;

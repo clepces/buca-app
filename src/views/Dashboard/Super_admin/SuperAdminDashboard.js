@@ -28,7 +28,7 @@ export function SuperAdminDashboard(element, state) {
                     <input type="text" id="superadmin-datepicker" placeholder="Seleccionar rango...">
                  </div>
             </div>
-            </div>
+        </div>
 
         <div class="panel-grid mb-4" style="padding-bottom: 1rem;">
             ${StatCard({

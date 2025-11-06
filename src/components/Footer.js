@@ -23,9 +23,45 @@ export function Footer(state) {
     return `
         <footer class="footer">
             <div class="footer-content">
+                <div class="site-footer-row is-start">
+                    <a href="" target="_blank">
+                        Estado <div class="status-active"> Operativo</div>
+                    </a>
+
+                    <div class="footer-separator"></div>
+
+                    <a href="" rel="noopener" target="_blank">
+                        Support
+                    </a>
+
+                    <div class="footer-separator"></div>
+                    
+                    <a href="" rel="noopener" target="_blank">
+                        Docs
+                    </a>
+                </div>
+
                 <span>&copy;${year}</span>
                 <a href="#">${storeName}</a>
                 <span>. Todos los derechos reservados.</span>
+
+                <div class="site-footer-row is-end">
+                    <a href="" rel="noopener" target="_blank">
+                        About Clepces
+                    </a>
+
+                    <div class="footer-separator"></div>
+                    <a href="" rel="noopener" target="_blank">
+                        Terms
+                    </a>
+                    <div class="footer-separator"></div>
+                    <a href="" rel="noopener" target="_blank">
+                        Privacy
+                    </a>
+                </div>
+
+
+                
             </div>
         </footer>
     `;

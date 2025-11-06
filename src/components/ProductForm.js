@@ -36,32 +36,26 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     let wizardStepper = null;
     let wizardSteps = null;
 
-   // --- ¡INICIO DE CORRECCIÓN! (Variables Robustas) ---
-    const prodName = isEditMode ? (productToEdit?.name || productToEdit?.product_info?.product_name || '') : '';
-    const prodBrand = isEditMode ? (productToEdit?.brand || productToEdit?.product_info?.product_brand || '') : '';
-    const prodCategory = isEditMode ? (productToEdit?.categoryId || productToEdit?.product_info?.product_category || '') : '';
-    const prodDesc = isEditMode ? (productToEdit?.description || productToEdit?.product_info?.description || '') : '';
-    const prodCost = isEditMode ? (productToEdit?.pricing?.packageCost || productToEdit?.product_price?.costo_inicial_paquete || '') : '';
+    // --- ¡INICIO DE CORRECCIÓN! (Lectura de Edición) ---
+    // Obtenemos la primera lista de precios (o un objeto vacío si no existe)
+    const mainPriceList = isEditMode ? (productToEdit?.pricing?.priceLists?.[0] || {}) : {};
 
-    // CORRECCIÓN PARA GANANCIA %
+    const prodName = isEditMode ? (productToEdit?.name || '') : '';
+    const prodBrand = isEditMode ? (productToEdit?.brand || '') : '';
+    const prodCategory = isEditMode ? (productToEdit?.categoryId || '') : '';
+    const prodDesc = isEditMode ? (productToEdit?.description || '') : '';
+    const prodCost = isEditMode ? (productToEdit?.pricing?.packageCost || '') : '';
+    const prodUnitsPerPkg = isEditMode ? (productToEdit?.pricing?.unitsPerPackage || '') : '';
+    const prodStock = isEditMode ? (productToEdit?.stock?.current || '') : '';
+    
+    // Leemos la ganancia desde la lista de precios anidada
     const prodMarginPct = isEditMode ? 
         (
-            productToEdit?.pricing?.marginPercentage ||              // 1. Ruta nueva (plana)
-            productToEdit?.pricing?.priceLists?.marginPercentage || // 2. Ruta anidada (la de tu BD)
-            (productToEdit?.product_ajuste?.percentage * 100) ||   // 3. Ruta antigua (V2)
-            ''
+            mainPriceList.marginPercentage ||                  // 1. Intenta leer la NUEVA estructura (anidada)
+            productToEdit?.pricing?.marginPercentage ||        // 2. Si falla, lee la ANTIGUA estructura (plana)
+            ''                                                 // 3. Fallback
         ) : '';
-
-    // CORRECCIÓN PARA UNID./PAQUETE
-    const prodUnitsPerPkg = isEditMode ? 
-        (
-            productToEdit?.pricing?.unitsPerPackage ||              // 1. Ruta nueva (plana - la de tu BD)
-            productToEdit?.product_price?.unidades_por_paquete ||   // 2. Ruta antigua (V2)
-            ''
-        ) : '';
-
-    const prodStock = isEditMode ? (productToEdit?.stock?.current || productToEdit?.product_estado?.disponible || '') : '';
-    // --- FIN DE CORRECCIÓN ---
+    const prodPeso = isEditMode ? (productToEdit?.dimensions?.weight || '') : '';
     
     element.innerHTML = `
         <div class="wizard-stepper" id="product-wizard-stepper">
@@ -112,16 +106,16 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                         <span>Esta sección está en construcción. ¡Próximamente podrás gestionar el inventario detallado!</span>
                     </div>
                     <div class="form-grid-layout">
-                         <div class="form-column-left future-section">
+                         <div class="form-column-left">
                             <section class="form-section">
                                 <h3><i class="bi bi-archive-fill me-1"></i> Inventario</h3>
                                 <div class="form-group">
                                     <label for="sku">SKU</label>
-                                    <input disabled type="text" id="sku" placeholder="Código único (Opcional)">
+                                    <input type="text" id="sku" placeholder="Código único (Opcional)">
                                 </div>
                                 <div class="form-group">
                                     <label for="barcode">Código de Barras</label>
-                                    <input disabled type="text" id="barcode" placeholder="Ej: 759...">
+                                    <input type="text" id="barcode" placeholder="Ej: 759...">
                                 </div>
                             </section>
                         </div>
@@ -134,7 +128,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                 </div>
                                 <div class="form-group">
                                     <label for="peso">Peso (Kg)</label>
-                                    <input disabled type="number" id="peso" step="0.01" placeholder="Opcional">
+                                    <input disabled type="number" id="peso" step="0.01" placeholder="Opcional" value="${prodPeso}">
                                 </div>
                             </section>
                         </div>
@@ -193,9 +187,9 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                             <section class="summary-section">
                                 <h3><i class="bi bi-receipt me-1"></i> Resumen de Compra</h3>
                                 <div class="summary-purchase-info">
-                                    <div class="purchase-item"><span>Costo Paquete:</span> <strong><span id="summary-costo-paquete">$0.00</span></strong></div>
-                                    <div class="purchase-item"><span>Cantidad Paquetes:</span> <strong id="summary-cantidad-paquetes">N/A</strong></div>
-                                    <div class="purchase-item"><span>Unidades/Paquete:</span> <strong id="summary-unidades-paquete">N/A</strong></div>
+                                    <div class="info-item purchase-item"><span>Costo Paquete:</span> <strong><span id="summary-costo-paquete">$0.00</span></strong></div>
+                                    <div class="info-item purchase-item"><span>Cantidad Paquetes:</span> <strong id="summary-cantidad-paquetes">N/A</strong></div>
+                                    <div class="info-item purchase-item"><span>Unidades/Paquete:</span> <strong id="summary-unidades-paquete">N/A</strong></div>
                                     <div class="purchase-item"><span>Stock Inicial (Unidades):</span> <strong id="summary-stock-inicial">0</strong></div>
                                     <div class="total-cost"><span>Costo Total Compra:</span> <strong><span id="summary-costo-total">$0.00</span></strong></div>
                                 </div>
@@ -206,7 +200,9 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                 <h3><i class="bi bi-tags-fill me-1"></i> Precios de Venta</h3>
                                 <div class="summary-prices-grid">
                                     <div class="summary-price-card unit-price">
-                                        <div class="card-header"><i class="bi bi-box me-1"></i>Precio Unitario</div>
+                                        <div class="card-header"><i class="bi bi-box me-1"></i>
+                                            Precio Unitario
+                                        </div>
                                         <div class="card-body">
                                             <div class="price-header-grid">
                                                 <div class="price-cluster">
@@ -221,9 +217,10 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                         </div>
                                     </div>
                                     <div class="summary-price-card package-price">
-                                        <div class="card-header"><i class="bi bi-boxes me-1"></i>Precio Paquete (<span id="summary-paquete-unidades">?</span> Unid.)</div>
+                                        <div class="card-header"><i class="bi bi-boxes me-1"></i>
+                                            Precio Paquete (<span id="summary-paquete-unidades">?</span> Unid.)
+                                        </div>
                                         <div class="card-body">
-                                            
                                             <div class="price-header-grid">
                                                 <div class="price-cluster">
                                                     <span class="price-main currency-toggle" id="summary-precio-paquete-principal" data-usd-value="0" data-ves-value="0" data-current-currency="usd" title="Clic para cambiar">${simboloPrincipal}0.00</span>
@@ -234,7 +231,13 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                                     Ganancia: <span id="summary-ganancia-pct-detalle">0</span>% | IVA: ${tasaIVA}%
                                                 </small>
                                             </div>
-
+                                        </div>
+                                    </div>
+                                    <div class="summary-price-card package-price">
+                                        <div class="card-header"><i class="bi bi-boxes me-1"></i>
+                                            Precio Paquete Ofercta 
+                                        </div>
+                                        <div class="card-body">
                                             <div class="package-controls-grid">
                                                 <div class="discount-suggestion-box">
                                                     <div class="discount-header">
@@ -243,7 +246,6 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                                     </div>
                                                     <button type="button" class="btn-apply-discount" id="btn-apply-package-offer" title="Aplicar precio de oferta">Aplicar</button>
                                                 </div>
-                                                
                                                 <div class="manual-input-box" id="manual-package-price-box">
                                                     <label for="override-package-price" class="package-price-label" id="manual-package-price-label">
                                                         <i class="bi bi-pencil-fill me-1"></i> O establecer manual:
@@ -254,11 +256,9 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                                     </div>
                                                 </div>
                                             </div>
-                                             
                                             <span class="package-price-note">
                                                 Precio calculado: <span id="summary-paquete-precio-calculado-nota">$0.00</span>.
                                             </span>
-                                            
                                         </div>
                                     </div>
                                 </div>
@@ -375,52 +375,169 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     unidadesPorPaqueteInput.addEventListener('input', autoCalcularUnidades);
 
     setTimeout(() => {
-        const modalFooterContainer = modalElementRef.querySelector('#modal-footer-container'); if (!modalFooterContainer) { Logger.error("¡Error fatal! No se encontró #modal-footer-container."); showToast("Error interno al inicializar botones.", "error"); return; } modalFooterContainer.innerHTML = '';
-        btnPrev = document.createElement('button'); btnPrev.type = 'button'; btnPrev.id = 'modal-btn-prev'; btnPrev.className = 'btn-secondary me-auto'; btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`;
-        attachInvoiceButton = document.createElement('button'); attachInvoiceButton.type = 'button'; attachInvoiceButton.id = 'modal-btn-attach-invoice'; attachInvoiceButton.className = 'btn-secondary btn-sm me-auto'; attachInvoiceButton.innerHTML = `<i class="bi bi-paperclip me-1"></i> Adjuntar Factura`; attachInvoiceButton.disabled = true; attachInvoiceButton.title = 'Adjuntar Factura (Próximamente)'; attachInvoiceButton.style.backgroundColor = 'var(--bs-gray-500)';
-        copyButton = document.createElement('button'); copyButton.type = 'button'; copyButton.id = 'modal-btn-copy-summary'; copyButton.className = 'btn-secondary btn-sm me-auto'; copyButton.innerHTML = `<i class="bi bi-clipboard-check me-1"></i> Copiar`; copyButton.addEventListener('click', () => { /* ... lógica copiar ... */ });
-        btnNext = document.createElement('button'); btnNext.type = 'button'; btnNext.id = 'modal-btn-next'; btnNext.className = 'btn-primary'; btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`;
-        btnCalculate = document.createElement('button'); btnCalculate.type = 'button'; btnCalculate.id = 'modal-btn-calculate'; btnCalculate.className = 'btn-primary'; btnCalculate.innerHTML = `<i class="bi bi-calculator me-1"></i> Calcular y Revisar`;
-        btnSave = document.createElement('button'); btnSave.type = 'submit'; btnSave.id = isEditMode ? 'modal-btn-update' : 'modal-btn-save'; btnSave.className = 'btn-primary'; btnSave.innerHTML = `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? 'Actualizar Producto' : 'Guardar Producto'}`; btnSave.setAttribute('form', 'product-form');
+        const modalFooterContainer = modalElementRef.querySelector('#modal-footer-container'); 
+        if (!modalFooterContainer) { 
+            Logger.error("¡Error fatal! No se encontró #modal-footer-container."); 
+            showToast("Error interno al inicializar botones.", "error"); 
+            return; 
+        } 
+        modalFooterContainer.innerHTML = '';
+        btnPrev = document.createElement('button'); 
+        btnPrev.type = 'button'; 
+        btnPrev.id = 'modal-btn-prev'; 
+        btnPrev.className = 'btn-secondary me-auto'; 
+        btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`;
+        attachInvoiceButton = document.createElement('button'); 
+        attachInvoiceButton.type = 'button'; 
+        attachInvoiceButton.id = 'modal-btn-attach-invoice'; 
+        attachInvoiceButton.className = 'btn-secondary btn-sm me-auto'; 
+        attachInvoiceButton.innerHTML = `<i class="bi bi-paperclip me-1"></i> Adjuntar Factura`; 
+        attachInvoiceButton.disabled = true; 
+        attachInvoiceButton.title = 'Adjuntar Factura (Próximamente)'; 
+        attachInvoiceButton.style.backgroundColor = 'var(--bs-gray-500)';
+        copyButton = document.createElement('button'); 
+        copyButton.type = 'button'; copyButton.id = 'modal-btn-copy-summary'; 
+        copyButton.className = 'btn-secondary btn-sm me-auto'; 
+        copyButton.innerHTML = `<i class="bi bi-clipboard-check me-1"></i> Copiar`; 
+        copyButton.addEventListener('click', () => { /* ... lógica copiar ... */ });
+        btnNext = document.createElement('button'); 
+        btnNext.type = 'button'; 
+        btnNext.id = 'modal-btn-next'; 
+        btnNext.className = 'btn-primary'; 
+        btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`;
+        btnCalculate = document.createElement('button'); 
+        btnCalculate.type = 'button'; 
+        btnCalculate.id = 'modal-btn-calculate'; 
+        btnCalculate.className = 'btn-primary'; 
+        btnCalculate.innerHTML = `<i class="bi bi-calculator me-1"></i> Calcular y Revisar`;
+        btnSave = document.createElement('button'); 
+        btnSave.type = 'submit'; 
+        btnSave.id = isEditMode ? 'modal-btn-update' : 'modal-btn-save'; 
+        btnSave.className = 'btn-primary'; 
+        btnSave.innerHTML = `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? 'Actualizar Producto' : 'Guardar Producto'}`; 
+        btnSave.setAttribute('form', 'product-form');
         modalFooterContainer.append(btnPrev, attachInvoiceButton, copyButton, btnCalculate, btnNext, btnSave);
-        try { const modalHeader = modalElementRef.querySelector('.modal-header'); const closeButton = modalElementRef.querySelector('.modal-header .close'); if (modalHeader && wizardStepper && closeButton) { modalHeader.insertBefore(wizardStepper, closeButton); } else { Logger.warn('[ProductForm] No se pudo mover el stepper al header.'); } } catch (error) { Logger.error('[ProductForm] Error al mover el stepper:', error); }
-        btnPrev.addEventListener('click', () => { if (currentStep === 4) showStep(3); else if (currentStep === 3) showStep(2); else if (currentStep === 2) showStep(1); });
-        btnNext.addEventListener('click', () => { if (currentStep === 1) { const nombre = nombreInput.value; const marca = marcaInput.value; const categoria = categoriaSelect.value; if (!validarCamposTexto(nombre, marca, categoria)) { showToast("Completa Nombre, Marca y Categoría (*).", "warning"); return; } showStep(2); } else if (currentStep === 2) { showStep(3); } });
+        try { 
+            const modalHeader = modalElementRef.querySelector('.modal-header'); 
+            const closeButton = modalElementRef.querySelector('.modal-header .close'); 
+            if (modalHeader && wizardStepper && closeButton) { 
+                modalHeader.insertBefore(wizardStepper, closeButton); 
+            } else { 
+                Logger.warn('[ProductForm] No se pudo mover el stepper al header.'); 
+            } 
+        } catch (error) { 
+            Logger.error('[ProductForm] Error al mover el stepper:', error); 
+        }
+        btnPrev.addEventListener('click', () => { 
+            if (currentStep === 4) 
+                showStep(3); 
+            else if (currentStep === 3) 
+                showStep(2); 
+            else if (currentStep === 2) 
+                showStep(1); 
+            }
+        );
+        btnNext.addEventListener('click', () => { 
+            if (currentStep === 1) { 
+                const nombre = nombreInput.value; 
+                const marca = marcaInput.value; 
+                const categoria = categoriaSelect.value; 
+                if (!validarCamposTexto(nombre, marca, categoria)) { 
+                    showToast("Completa Nombre, Marca y Categoría (*).", "warning"); 
+                    return; 
+                } 
+                showStep(2); 
+            } else if (currentStep === 2) {
+                showStep(3); 
+            } 
+        });
         btnCalculate.addEventListener('click', calculateAndShowSummary);
-
         form.addEventListener('submit', async (e) => {
-            e.preventDefault(); if (!lastCalculatedPrices) { showToast("Calcula los precios antes de guardar.", "warning"); return; }
-            const nombre = nombreInput.value; const marca = marcaInput.value; const categoria = categoriaSelect.value; const costo = parseFloat(costoInput.value); const ganancia = parseFloat(gananciaInput.value); const totalUnidades = parseInt(totalUnidadesInput.value); const unidadesPorPaquete = parseInt(unidadesPorPaqueteInput.value) || null; const paquetes = parseInt(paquetesInput.value) || null; const descripcion = descripcionInput.value; const precioPaqueteManual = parseFloat(overridePackagePriceInput.value); const sku = element.querySelector('#sku').value; const barcode = element.querySelector('#barcode').value; const proveedor = element.querySelector('#proveedor').value; const peso = element.querySelector('#peso').value;
-            if (!validarCamposTexto(nombre, marca, categoria) || !totalUnidades || totalUnidades <= 0 || isNaN(costo) || costo < 0 || isNaN(ganancia) || ganancia < 0) { showToast("Completa campos requeridos (*).", "error"); showStep(1); return; }
-            btnSave.disabled = true; btnSave.innerHTML = `<i class="bi bi-hourglass-split me-1"></i> Guardando...`;
+            e.preventDefault(); if (!lastCalculatedPrices) { 
+                showToast("Calcula los precios antes de guardar.", "warning"); 
+                return; 
+            }
+            const nombre = nombreInput.value;
+            const marca = marcaInput.value;
+            const categoria = categoriaSelect.value;
+            const descripcion = descripcionInput.value;
+            const costo = parseFloat(costoInput.value);
+            const ganancia = parseFloat(gananciaInput.value);
+            const totalUnidades = parseInt(totalUnidadesInput.value);
+            const unidadesPorPaquete = parseInt(unidadesPorPaqueteInput.value) || null;
+            const paquetes = parseInt(paquetesInput.value) || null;
+            const precioPaqueteManual = parseFloat(overridePackagePriceInput.value);
+            const sku = element.querySelector('#sku').value;
+            const barcode = element.querySelector('#barcode').value;
+            const proveedor = element.querySelector('#proveedor').value;
+            const peso = element.querySelector('#peso').value; // <-- Ya leemos el peso
+
+            if (!validarCamposTexto(nombre, marca, categoria) || !totalUnidades || totalUnidades <= 0 || isNaN(costo) || costo < 0 || isNaN(ganancia) || ganancia < 0) {
+                 showToast("Completa campos requeridos (*).", "error"); 
+                 showStep(1); 
+                 return; 
+            }
+
+            btnSave.disabled = true; 
+            btnSave.innerHTML = `<i class="bi bi-hourglass-split me-1"></i> Guardando...`;
+            
             const precioPaqueteFinal = !isNaN(precioPaqueteManual) && precioPaqueteManual > 0 ? precioPaqueteManual : lastCalculatedPrices.precioFinalMayorDolar;
-            // --- ¡CORRECCIÓN! (Anotación Y-5) ---
-            // Ya no generamos el ID aquí, la base de datos lo hará.
+            
+            // --- ¡INICIO DE LA CORRECCIÓN DE ESTRUCTURA! ---
+            // Reemplazamos el objeto 'productData' anterior por este.
             const productData = { 
-                name: nombre, 
-                brand: marca, 
-                categoryId: categoria, 
-                description: descripcion, 
-                sku: sku || null, 
-                barcode: barcode || null, 
-                supplier: proveedor || null, 
-                weightKg: !isNaN(parseFloat(peso)) ? parseFloat(peso) : null, 
+                name: nombre,
+                brand: marca,
+                categoryId: categoria,
+                description: descripcion,
+                sku: sku || null,
+                barcode: barcode || null,
+                isActive: productToEdit?.isActive ?? true,
+                isFeatured: productToEdit?.isFeatured ?? false, // <-- AÑADIDO (default false)
+                
+                // --- dimensions (AÑADIDO) ---
+                dimensions: {
+                    weight: !isNaN(parseFloat(peso)) ? parseFloat(peso) : null,
+                    weightUnit: 'kg', // <-- Default
+                    width: null,      // <-- Input no existe (null)
+                    height: null,     // <-- Input no existe (null)
+                    depth: null,      // <-- Input no existe (null)
+                    dimensionUnit: 'cm' // <-- Default
+                },
+
+                // --- stock (sin cambios) ---
                 stock: { 
                     current: totalUnidades, 
                     minThreshold: productToEdit?.stock?.minThreshold ?? 10, 
                     warehouseId: productToEdit?.stock?.warehouseId ?? 'wh_principal' 
-                }, 
-                pricing: { 
-                    packageCost: costo, 
-                    unitsPerPackage: unidadesPorPaquete, 
-                    taxRatePercentage: tasaIVA, 
-                    unitSellPrice: lastCalculatedPrices.precioFinalUnitarioDolar, 
-                    packageSellPrice: precioPaqueteFinal, 
-                    marginPercentage: ganancia 
-                }, 
-                isActive: productToEdit?.isActive ?? true, 
+                },
+
+                // --- pricing (¡REESTRUCTURADO!) ---
+                pricing: {
+                    packageCost: costo,
+                    unitsPerPackage: unidadesPorPaquete,
+                    taxRatePercentage: tasaIVA,
+                    // --- Objeto 'priceLists' (como en el JSON ideal) ---
+                    priceLists: [
+                        {
+                            id: "publico", // ID de lista de precios por defecto
+                            name: "Precio Público",
+                            marginPercentage: ganancia,
+                            unitSellPrice: lastCalculatedPrices.precioFinalUnitarioDolar,
+                            packageSellPrice: precioPaqueteFinal
+                        }
+                    ]
+                },
+
+                // --- Timestamps (Añadidos) ---
+                createdAt: productToEdit?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                
+                // (Este campo se movió a la raíz, pero la lógica es la misma)
+                supplier: proveedor || null
             };
-            
+            // --- FIN DE LA CORRECCIÓN DE ESTRUCTURA ---
+
             // Si estamos en modo edición, añadimos el ID
             if (isEditMode) {
                 productData.id = productToEdit.id;
@@ -428,7 +545,6 @@ export function ProductForm(productToEdit = null, modalElementRef) {
             
             try { 
                 if (isEditMode) { 
-                    // 'updateProductInState' ya no necesita 'productData.id' como argumento separado
                     await updateProductInState(globalState, productData.id, productData); 
                     showToast(`Producto "${nombre}" actualizado.`, "success"); 
                 } else { 

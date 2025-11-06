@@ -46,20 +46,19 @@ export function ProductTable(products, settings) {
             <tbody>
                 ${products.map(product => {
                     
-                    // --- ¡INICIO DE CORRECCIÓN! (Bug W-1 / M-2) ---
-                    // Leemos la nueva estructura "plana"
+                    // --- ¡INICIO DE CORRECCIÓN! (Priorizar anidado) ---
                     const productName = product.name || 'N/A';
                     const categoryDisplay = product.categoryId || 'N/A';
                     const productId = product.id;
 
-                    // Hacemos la tabla robusta:
-                    // Comprueba el precio en la estructura NUEVA (plana) O en la ANTIGUA (anidada).
-                    const packagePrice = product.pricing?.packageSellPrice || 
-                                       product.pricing?.priceLists?.packageSellPrice || 
+                    // 1. Intenta leer la estructura NUEVA (anidada)
+                    // 2. Si falla, intenta leer la estructura PLANA (temporal)
+                    const packagePrice = product.pricing?.priceLists?.[0]?.packageSellPrice || 
+                                       product.pricing?.packageSellPrice || 
                                        0;
                     
-                    const unitPrice = product.pricing?.unitSellPrice || 
-                                    product.pricing?.priceLists?.unitSellPrice || 
+                    const unitPrice = product.pricing?.priceLists?.[0]?.unitSellPrice || 
+                                    product.pricing?.unitSellPrice || 
                                     0;
                     // --- FIN DE CORRECCIÓN ---
 

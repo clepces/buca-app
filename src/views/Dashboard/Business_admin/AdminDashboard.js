@@ -5,15 +5,22 @@ import { getDashboardStats } from '../../../services/dashboard.service.js'; // I
 import { state as globalState } from '../../../store/state.js';
 
 export function AdminDashboard(element, state) {
-    const userName = globalState.user?.name || 'Usuario';
+    const userName = globalState.session?.user?.name || 'Usuario';
     const symbol = globalState.settings.currencies.principal.symbol || '$';
-    const formatCurrency = (num) => `${symbol}${new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num)}`;
+    const formatCurrency = (num) => `${symbol}${new Intl.NumberFormat('es-VE', { 
+        minimumFractionDigits: 2, maximumFractionDigits: 2 
+    }).format(num)}`;
     const stats = getDashboardStats(state.products); // Calcular stats aquí
 
     element.innerHTML = `
-        <div class="dashboard-header">
-            <h2 class="view-title"><i class="bi bi-speedometer2 me-2"></i> Panel de Control</h2>
-            <p class="dashboard-subtitle">Bienvenido, ${userName}. Resumen general de tu negocio.</p>
+        <div class="view-header align-items-start mb-4">
+            <div>
+                <h2 class="view-title"><i class="bi bi-speedometer2 me-2"></i> Panel de Control</h2>
+                <p class="dashboard-subtitle">Bienvenido, ${userName}. Resumen general de tu negocio.</p>
+            </div>
+            <div class="ms-auto text-end">
+                {btn-action-rapida}
+            </div>
         </div>
         
         <div class="panel-grid">

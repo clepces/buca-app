@@ -104,7 +104,14 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <div id="actions-menu-dropdown" class="actions-menu-dropdown">
-                   <div class="action-item-header"> <i class="bi bi-person-circle"></i> <div class="user-info"> <span class="user-name">${userName}</span> <span class="user-email">${userEmail}</span> </div> </div> <hr>
+                    <div class="action-item-header"> <i class="bi bi-person-circle"></i> 
+                        <div class="user-info"> 
+                            <span class="user-name">${userName}</span> 
+                            <span class="user-email">${userEmail}</span> 
+                        </div> 
+                    </div> 
+
+                    <hr>
                     
                     ${(can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) || can(PERMISSIONS.EDIT_SETTINGS_SYSTEM)) ? `
                         <button class="action-item" data-action="open-config">

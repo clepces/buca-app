@@ -245,7 +245,7 @@ select, textarea {
 
 textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 224px;
 }
 
 input:focus, select:focus, textarea:focus {
