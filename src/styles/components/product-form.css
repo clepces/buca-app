@@ -481,3 +481,108 @@
     gap: 1rem;
     align-items: center;
 }
+
+/* ======================================================
+   AÑADIR AL FINAL DE: src/styles/components/product-form.css
+   Estilos para el Resumen de Edición (Diff View)
+   ====================================================== */
+
+.summary-diff-view {
+    padding: 0 1rem;
+}
+
+.summary-diff-view h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.summary-diff-view h3:first-child {
+    margin-top: 0.5rem;
+}
+
+.diff-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px dashed var(--bs-border-color);
+    font-size: 0.95rem;
+}
+
+.diff-item:last-child {
+    border-bottom: none;
+}
+
+.diff-label {
+    font-weight: 500;
+    color: var(--bs-gray-600);
+}
+
+.diff-value {
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Estilos para un valor que NO cambió */
+.diff-item.unchanged .diff-value {
+    color: var(--bs-gray-500);
+    font-weight: 500;
+}
+
+/* Estilos para un valor que SÍ cambió */
+.diff-item.changed {
+    background-color: var(--primary-light-hover);
+    border-radius: var(--bs-border-radius-sm);
+}
+
+.diff-old {
+    color: var(--error-color);
+    text-decoration: line-through;
+    font-size: 0.9rem;
+}
+
+.diff-new {
+    color: var(--bs-success);
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.diff-item.changed .bi-arrow-right-short {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+/* Mensajes de cabecera del resumen */
+.summary-no-changes,
+.summary-changes-detected {
+    padding: 1rem;
+    border-radius: var(--bs-border-radius);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.summary-no-changes {
+    background-color: var(--bs-gray-50);
+    border: 1px solid var(--bs-border-color);
+    color: var(--bs-gray-700);
+}
+
+.summary-changes-detected {
+    background-color: rgba(217, 119, 6, 0.1);
+    border: 1px solid var(--warning-color);
+    color: var(--warning-color);
+}
