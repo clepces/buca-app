@@ -1,10 +1,10 @@
 // ======================================================
 // ARCHIVO: src/components/ProductForm.js
-// VERSION APP: 3.0.0 - MODULE:SGA_SCM: 1.2.0 - FILE: 1.1.0
-// CORRECCIÓN: (Resumen de Edición Inteligente)
-// 1. El Resumen (Paso 4) ahora detecta si está en "Modo Edición".
-// 2. Si edita, muestra un resumen de "diferencias" (Antes vs. Después).
-// 3. Si crea, muestra el resumen completo normal.
+// VERSION APP: 3.0.0 - MODULE:SGA_SCM: 1.2.1 - FILE: 1.1.1
+// CORRECCIÓN: (Resumen de Edición Inteligente v2)
+// 1. El Resumen de Edición ahora se muestra en 2 columnas.
+// 2. Corregido el bug que mostraba "¡Atención!..." cuando no
+//    había cambios (comparación de 'null' vs '').
 // ======================================================
     
 import { calcularPrecioVenta } from '../services/calculation.service.js';
@@ -170,8 +170,8 @@ export function ProductForm(productToEdit = null, modalElementRef) {
             </form>
             
             <div class="wizard-step" data-step="4" style="display: none;">
-                <div class="product-summary-view" id="summary-view">
-                </div>
+                 <div class="product-summary-view" id="summary-view">
+                    </div>
             </div>
         </div>
     `;
@@ -289,10 +289,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
      * GENERA EL HTML PARA EL RESUMEN DE UN PRODUCTO NUEVO (PASO 4)
      */
     function renderNewProductSummary(data) {
-        const precioPaqueteUSD = data.precios.precioFinalMayorDolar;
-        const precioOfertaUSD = precioPaqueteUSD * (1 - 0.025); // 2.5% de descuento
-
-        // (Este es el HTML que tenías antes, pero ahora como un string)
+        // (Esta función no tiene cambios)
         return `
             <div class="summary-grid-layout">
                 <div class="summary-column-left">
@@ -330,97 +327,134 @@ export function ProductForm(productToEdit = null, modalElementRef) {
 
     /**
      * GENERA EL HTML PARA EL RESUMEN DE EDICIÓN (PASO 4)
+     * ¡VERSIÓN 2.0 con Columnas y Lógica de Alerta Corregida!
      */
     function renderEditProductSummary(newData, originalData) {
-        let changesHTML = '';
         
+        // --- INICIO DE CORRECCIÓN (Lógica de Alerta) ---
+        // Normaliza (null, undefined) a string vacío para una comparación segura
+        const fNull = (val) => (val === null || val === undefined) ? '' : val;
+        
+        // Helper para comparar de forma segura
+        const hasChanged = (newVal, oldVal) => {
+            const oldSafe = String(fNull(oldVal)).trim();
+            const newSafe = String(fNull(newVal)).trim();
+            return newSafe !== oldSafe;
+        };
+        // --- FIN DE CORRECCIÓN (Lógica de Alerta) ---
+
         // Helper para formatear
-        const fNum = (val) => formatNumber(val);
         const fCurr = (val) => `${simboloPrincipal}${formatNumber(val)}`;
         const fPerc = (val) => `${val}%`;
         const fStock = (val) => `${val} Unid.`;
-        const fText = (val) => val || 'N/A';
+        const fText = (val) => fNull(val) || 'N/A';
         const fPeso = (val) => val ? `${val} Kg` : 'N/A';
 
-        // Helper para comparar y generar HTML
+        // Helper para generar HTML
         const diff = (label, newVal, oldVal, formatter = fText) => {
-            const oldF = formatter(oldVal);
-            const newF = formatter(newVal);
-            
-            if (String(newVal ?? '').trim() !== String(oldVal ?? '').trim()) {
+            if (hasChanged(newVal, oldVal)) {
                 // Si cambió
                 return `
                 <div class="diff-item changed">
                     <span class="diff-label">${label}:</span>
                     <span class="diff-value">
-                        <span class="diff-old">${oldF}</span>
+                        <span class="diff-old">${formatter(oldVal)}</span>
                         <i class="bi bi-arrow-right-short"></i>
-                        <span class="diff-new">${newF}</span>
+                        <span class="diff-new">${formatter(newVal)}</span>
                     </span>
                 </div>`;
             } else {
-                // Si no cambió (opcional, bueno para confirmar)
+                // Si no cambió
                 return `
                 <div class="diff-item unchanged">
                     <span class="diff-label">${label}:</span>
-                    <span class="diff-value">${newF}</span>
+                    <span class="diff-value">${formatter(newVal)}</span>
                 </div>`;
             }
         };
 
-        // Comparar Info Básica
-        changesHTML += `<h3><i class="bi bi-info-circle-fill me-1"></i> Información Básica</h3>`;
-        changesHTML += diff('Nombre', newData.nombre, originalData.nombre);
-        changesHTML += diff('Marca', newData.marca, originalData.marca);
-        changesHTML += diff('Categoría', newData.categoria, originalData.categoria);
+        // --- INICIO DE CORRECCIÓN (Layout de Columnas) ---
+        
+        // Generar los HTML de cambios por secciones
+        const infoChanges = [
+            diff('Nombre', newData.nombre, originalData.nombre),
+            diff('Marca', newData.marca, originalData.marca),
+            diff('Categoría', newData.categoria, originalData.categoria)
+        ].join('');
+        
+        const logisticsChanges = [
+            diff('SKU', newData.sku, originalData.sku),
+            diff('Cód. Barras', newData.barcode, originalData.barcode),
+            diff('Peso', newData.peso, originalData.peso, fPeso)
+        ].join('');
 
-        // Comparar Identificadores y Logística
-        changesHTML += `<h3><i class="bi bi-archive-fill me-1"></i> Inventario y Logística</h3>`;
-        changesHTML += diff('SKU', newData.sku, originalData.sku);
-        changesHTML += diff('Cód. Barras', newData.barcode, originalData.barcode);
-        changesHTML += diff('Peso', newData.peso, originalData.peso, fPeso);
+        const costStockChanges = [
+            diff('Costo Paquete', newData.costo, originalData.costo, fCurr),
+            diff('Ganancia', newData.ganancia, originalData.ganancia, fPerc),
+            diff('Unid. p/ Paquete', newData.unidadesPorPaquete, originalData.unidadesPorPaquete, fStock),
+            diff('Stock Total', newData.totalUnidades, originalData.stock, fStock)
+        ].join('');
 
-        // Comparar Costos y Stock
-        changesHTML += `<h3><i class="bi bi-calculator-fill me-1"></i> Costos y Stock</h3>`;
-        changesHTML += diff('Costo Paquete', newData.costo, originalData.costo, fCurr);
-        changesHTML += diff('Ganancia', newData.ganancia, originalData.ganancia, fPerc);
-        changesHTML += diff('Unid. p/ Paquete', newData.unidadesPorPaquete, originalData.unidadesPorPaquete, fStock);
-        changesHTML += diff('Stock Total', newData.totalUnidades, originalData.stock, fStock);
-
-        // Comparar Precios Calculados
         const newUnitPrice = newData.precios.precioFinalUnitarioDolar;
         const newPackagePrice = newData.precios.precioFinalMayorDolar;
-        changesHTML += `<h3><i class="bi bi-tags-fill me-1"></i> Precios de Venta (Calculados)</h3>`;
-        changesHTML += diff('Precio Unitario', newUnitPrice, originalData.precioUnitario, fCurr);
-        changesHTML += diff('Precio Paquete', newPackagePrice, originalData.precioPaquete, fCurr);
+        const priceChanges = [
+            diff('Precio Unitario', newUnitPrice, originalData.precioUnitario, fCurr),
+            diff('Precio Paquete', newPackagePrice, originalData.precioPaquete, fCurr)
+        ].join('');
         
-        // Mensaje de advertencia si no hay cambios
-        if (!changesHTML.includes('changed')) {
-            changesHTML = `
-            <div class="summary-no-changes">
-                <i class="bi bi-info-circle me-1"></i> 
-                No se detectaron cambios en los campos.
-            </div>` 
-            + changesHTML;
-        } else {
-            changesHTML = `
+        // Comprobar si hubo algún cambio EN CUALQUIER SECCIÓN
+        const anyChanges = [infoChanges, logisticsChanges, costStockChanges, priceChanges].some(html => html.includes('changed'));
+
+        let alertHTML = '';
+        if (anyChanges) {
+            alertHTML = `
             <div class="summary-changes-detected">
                 <i class="bi bi-exclamation-triangle-fill me-1"></i> 
                 ¡Atención! Revisa los cambios antes de guardar.
-            </div>` 
-            + changesHTML;
+            </div>`;
+        } else {
+            alertHTML = `
+            <div class="summary-no-changes">
+                <i class="bi bi-info-circle me-1"></i> 
+                No se detectaron cambios en los campos.
+            </div>`;
         }
 
+        // Devolver el HTML final con el layout de 2 columnas
         return `
         <div class="summary-diff-view">
-            ${changesHTML}
+            ${alertHTML}
+            <div class="summary-grid-layout">
+                <div class="summary-column-left">
+                    <section class="summary-section">
+                        <h3><i class="bi bi-info-circle-fill me-1"></i> Información Básica</h3>
+                        ${infoChanges}
+                    </section>
+                    <section class="summary-section">
+                        <h3><i class="bi bi-calculator-fill me-1"></i> Costos y Stock</h3>
+                        ${costStockChanges}
+                    </section>
+                </div>
+                <div class="summary-column-right">
+                    <section class="summary-section">
+                        <h3><i class="bi bi-archive-fill me-1"></i> Inventario y Logística</h3>
+                        ${logisticsChanges}
+                    </section>
+                    <section class="summary-section">
+                        <h3><i class="bi bi-tags-fill me-1"></i> Precios de Venta</h3>
+                        ${priceChanges}
+                    </section>
+                </div>
+            </div>
         </div>`;
+        // --- FIN DE CORRECCIÓN (Layout de Columnas) ---
     }
 
     /**
      * Helper para renderizar las tarjetas de precio (para MODO CREAR)
      */
     function renderPriceCardsHTML(precios, costo, ganancia, unidadesPaquete) {
+        // (Esta función no tiene cambios)
         const precioUnidadUSD = precios.precioFinalUnitarioDolar;
         const precioUnidadVES = precioUnidadUSD * tasaCambio;
         const precioPaqueteUSD = precios.precioFinalMayorDolar;
@@ -492,6 +526,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
      * Añade listeners a los botones de oferta (MODO CREAR)
      */
     function bindOfferButtonEvents(summaryContainer) {
+        // (Esta función no tiene cambios)
         const manualPriceBox = summaryContainer.querySelector('#manual-package-price-box');
         const manualPriceLabel = summaryContainer.querySelector('#manual-package-price-label');
         const overridePackagePriceInput = summaryContainer.querySelector('#override-package-price');
@@ -533,6 +568,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
      * Añade listeners al toggle de moneda (MODO CREAR)
      */
     function bindCurrencyToggleEvents(summaryContainer) {
+        // (Esta función no tiene cambios)
         summaryContainer.addEventListener('click', (e) => {
             const target = e.target.closest('.currency-toggle');
             if (!target) return;
@@ -568,6 +604,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     // --- Lógica de Auto-cálculo y Submit ---
 
     const autoCalcularUnidades = () => {
+        // (Esta función no tiene cambios)
         const paquetes = parseInt(paquetesInput.value) || 0;
         const unidadesPorPaquete = parseInt(unidadesPorPaqueteInput.value) || 0;
         if (paquetes > 0 && unidadesPorPaquete > 0) {
@@ -580,6 +617,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
 
     // --- Inicialización de Botones del Footer ---
     setTimeout(() => {
+        // (Esta función no tiene cambios en su lógica)
         const modalFooterContainer = modalElementRef.querySelector('#modal-footer-container');
         if (!modalFooterContainer) {
             Logger.error("¡Error fatal! No se encontró #modal-footer-container.");
@@ -668,6 +706,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
 
         // --- Lógica de SUBMIT (Guardar/Actualizar) ---
         form.addEventListener('submit', async (e) => {
+            // (Esta función no tiene cambios)
             e.preventDefault();
             if (currentStep !== 4) {
                 // Si el usuario presiona "Enter" en un paso anterior, lo forzamos a revisar
@@ -762,7 +801,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                         showToast("Ya existe producto con nombre y marca.", "error"); 
                         showStep(1); 
                         throw new Error("Producto duplicado"); 
-                    } else { 
+                    } else {
                         // NOTA: 'addProductToState' AÚN NO CREA LA SUB-COLECCIÓN 'inventory_lots'
                         // Eso lo haremos con un WriteBatch en el futuro.
                         await addProductToState(globalState, productData); 

@@ -504,7 +504,8 @@
     margin-bottom: 1rem;
 }
 
-.summary-diff-view h3:first-child {
+.summary-column-left .summary-section:first-child h3,
+.summary-column-right .summary-section:first-child h3 {
     margin-top: 0.5rem;
 }
 
@@ -512,12 +513,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.6rem 0.5rem;
+    padding: 0.7rem 0.5rem; /* Aumentamos padding vertical */
     border-bottom: 1px dashed var(--bs-border-color);
     font-size: 0.95rem;
 }
 
-.diff-item:last-child {
+.summary-section .diff-item:last-child {
     border-bottom: none;
 }
 
@@ -539,11 +540,19 @@
     color: var(--bs-gray-500);
     font-weight: 500;
 }
-
+/* --- CORRECCIÓN DE COLOR --- */
 /* Estilos para un valor que SÍ cambió */
 .diff-item.changed {
-    background-color: var(--bs-gray-50);
+    /* Color de fondo sutil para la fila cambiada */
+    background-color: var(--primary-light-hover); 
     border-radius: var(--bs-border-radius-sm);
+    margin: 0 -0.5rem; /* Hacemos que el fondo ocupe todo el ancho */
+    padding: 0.7rem 1rem; /* Ajustamos padding para el fondo */
+}
+
+/* Tema oscuro */
+[data-bs-theme="dark"] .diff-item.changed {
+    background-color: rgba(59, 130, 246, 0.15); /* Mantenemos el fondo azulado sutil */
 }
 
 .diff-old {
