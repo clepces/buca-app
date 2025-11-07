@@ -544,7 +544,7 @@
 /* Estilos para un valor que SÍ cambió */
 .diff-item.changed {
     /* Color de fondo sutil para la fila cambiada */
-    background-color: var(--primary-light-hover); 
+    background-color: rgba(59, 130, 246, 0.15);
     border-radius: var(--bs-border-radius-sm);
     margin: 0 -0.5rem; /* Hacemos que el fondo ocupe todo el ancho */
     padding: 0.7rem 1rem; /* Ajustamos padding para el fondo */
@@ -554,7 +554,6 @@
 [data-bs-theme="dark"] .diff-item.changed {
     background-color: rgba(59, 130, 246, 0.15); /* Mantenemos el fondo azulado sutil */
 }
-
 .diff-old {
     color: var(--error-color);
     text-decoration: line-through;
@@ -590,8 +589,20 @@
     color: var(--bs-gray-700);
 }
 
+[data-bs-theme="dark"] .summary-no-changes {
+    background-color: var(--bs-gray-800);
+    border-color: var(--bs-border-color);
+    color: var(--bs-gray-300);
+}
+
 .summary-changes-detected {
     background-color: rgba(217, 119, 6, 0.1);
     border: 1px solid var(--warning-color);
+    color: #b45309; /* Color de texto warning más oscuro */
+}
+
+[data-bs-theme="dark"] .summary-changes-detected {
+    background-color: rgba(217, 119, 6, 0.15);
+    border-color: var(--warning-color);
     color: var(--warning-color);
 }

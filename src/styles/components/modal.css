@@ -458,10 +458,10 @@
     border-bottom-color: var(--bs-border-color);
 }
 
-[data-bs-theme="dark"] .modal-footer {
+/*[data-bs-theme="dark"] .modal-footer {
     background-color: var(--bs-gray-800);
     border-top-color: var(--bs-border-color);
-}
+}*/
 
 [data-bs-theme="dark"] .config-tab {
     color: var(--bs-gray-300);

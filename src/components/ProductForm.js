@@ -43,11 +43,11 @@ export function ProductForm(productToEdit = null, modalElementRef) {
         marca: isEditMode ? (productToEdit?.brand || '') : '',
         categoria: isEditMode ? (productToEdit?.categoryId || '') : '',
         descripcion: isEditMode ? (productToEdit?.description || '') : '',
-        costo: isEditMode ? (productToEdit?.pricing?.packageCost || '') : '',
-        unidadesPorPaquete: isEditMode ? (productToEdit?.pricing?.unitsPerPackage || '') : '',
-        stock: isEditMode ? (productToEdit?.stock?.current || '') : '',
-        ganancia: isEditMode ? (originalPriceList.marginPercentage || productToEdit?.pricing?.marginPercentage || '') : '',
-        peso: isEditMode ? (productToEdit?.dimensions?.weight || '') : '',
+        costo: isEditMode ? (productToEdit?.pricing?.packageCost || 0) : 0,
+        unidadesPorPaquete: isEditMode ? (productToEdit?.pricing?.unitsPerPackage || 0) : 0,
+        stock: isEditMode ? (productToEdit?.stock?.current || 0) : 0,
+        ganancia: isEditMode ? (originalPriceList.marginPercentage || productToEdit?.pricing?.marginPercentage || 0) : 0,
+        peso: isEditMode ? (productToEdit?.dimensions?.weight || null) : null,
         sku: isEditMode ? (productToEdit?.sku || '') : '',
         barcode: isEditMode ? (productToEdit?.barcode || '') : '',
         
@@ -199,7 +199,6 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     // --- Lógica del Wizard (Navegación) ---
 
     const updateFooterButtons = (stepNum) => {
-        // ... (Esta función se mantiene igual que antes) ...
         if (!btnPrev || !btnNext || !btnCalculate || !btnSave || !copyButton || !attachInvoiceButton) { return; }
         btnPrev.style.display = 'none'; btnNext.style.display = 'none'; btnCalculate.style.display = 'none'; btnSave.style.display = 'none'; copyButton.style.display = 'none'; attachInvoiceButton.style.display = 'none';
         switch (stepNum) {
@@ -211,7 +210,6 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     };
 
     const showStep = (stepNum) => {
-        // ... (Esta función se mantiene igual que antes) ...
         if (stepNum < 1 || stepNum > 4) { return; } currentStep = stepNum;
         if (wizardSteps) { wizardSteps.forEach(step => { step.style.display = (parseInt(step.dataset.step) === currentStep) ? 'block' : 'none'; }); }
         if (wizardStepper) { wizardStepper.querySelectorAll('.step').forEach(step => { const stepData = parseInt(step.dataset.step); step.classList.toggle('active', stepData === currentStep); step.classList.toggle('completed', stepData < currentStep); if (stepData >= currentStep) { step.classList.remove('completed'); } }); }
@@ -228,7 +226,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
         // 1. Obtener todos los valores NUEVOS del formulario
         const costoPorPaquete = parseFloat(costoInput.value) || 0;
         const ganancia = parseFloat(gananciaInput.value) || 0;
-        const unidadesEnPaqueteInput = parseInt(unidadesPorPaqueteInput.value);
+        const unidadesEnPaqueteInput = parseInt(unidadesPorPaqueteInput.value) || 0;
         const totalUnidadesRegistrarInput = parseInt(totalUnidadesInput.value);
         const paquetes = parseInt(paquetesInput.value);
         
@@ -327,28 +325,55 @@ export function ProductForm(productToEdit = null, modalElementRef) {
 
     /**
      * GENERA EL HTML PARA EL RESUMEN DE EDICIÓN (PASO 4)
-     * ¡VERSIÓN 2.0 con Columnas y Lógica de Alerta Corregida!
+     * ¡VERSIÓN 3.0 con Lógica de Alerta y N/A CORREGIDA!
      */
     function renderEditProductSummary(newData, originalData) {
         
-        // --- INICIO DE CORRECCIÓN (Lógica de Alerta) ---
-        // Normaliza (null, undefined) a string vacío para una comparación segura
-        const fNull = (val) => (val === null || val === undefined) ? '' : val;
-        
-        // Helper para comparar de forma segura
-        const hasChanged = (newVal, oldVal) => {
-            const oldSafe = String(fNull(oldVal)).trim();
-            const newSafe = String(fNull(newVal)).trim();
-            return newSafe !== oldSafe;
-        };
-        // --- FIN DE CORRECCIÓN (Lógica de Alerta) ---
+        // --- INICIO DE CORRECCIÓN (Lógica de Alerta y N/A) ---
 
-        // Helper para formatear
-        const fCurr = (val) => `${simboloPrincipal}${formatNumber(val)}`;
-        const fPerc = (val) => `${val}%`;
-        const fStock = (val) => `${val} Unid.`;
-        const fText = (val) => fNull(val) || 'N/A';
-        const fPeso = (val) => val ? `${val} Kg` : 'N/A';
+        // Normaliza valores vacíos/nulos PERO RESPETA EL 0
+        const fNull = (val) => {
+            // Si es null, undefined, NaN, o string vacío -> convertir a ''
+            if (val === null || val === undefined) return '';
+            if (typeof val === 'number' && isNaN(val)) return '';
+            if (typeof val === 'string' && val.trim() === '') return '';
+            // Si es 0 (número válido) -> mantenerlo como 0
+            return val;
+        };
+        
+        // Helper para comparar de forma ULTRA segura
+        const hasChanged = (newVal, oldVal) => {
+            const oldNormalized = fNull(oldVal);
+            const newNormalized = fNull(newVal);
+            
+            // Caso especial: números vs strings
+            // Ej: 0 (number) vs "0" (string) -> NO ha cambiado
+            if (typeof oldNormalized === 'number' && typeof newNormalized === 'number') {
+                return oldNormalized !== newNormalized;
+            }
+            
+            // Convertir ambos a string SOLO si no son números
+            const oldStr = String(oldNormalized).trim();
+            const newStr = String(newNormalized).trim();
+            
+            return oldStr !== newStr;
+        };
+
+        // Helper para formatear texto (respeta 0)
+        const fText = (val) => {
+            const normalized = fNull(val);
+            // Si es 0, mostrarlo como "0"
+            if (normalized === 0) return '0';
+            // Si es string vacío, mostrar N/A
+            if (normalized === '') return 'N/A';
+            return normalized;
+        };
+
+        // Formateadores numéricos (sin cambios)
+        const fCurr = (val) => `${simboloPrincipal}${formatNumber(fNull(val) || 0)}`; // Asegura que sea un número
+        const fPerc = (val) => `${fNull(val)}%`;
+        const fStock = (val) => `${fNull(val)} Unid.`;
+        const fPeso = (val) => val ? `${val} Kg` : 'N/A'; // 'val' aquí puede ser null, por eso fPeso funciona
 
         // Helper para generar HTML
         const diff = (label, newVal, oldVal, formatter = fText) => {
@@ -372,8 +397,6 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                 </div>`;
             }
         };
-
-        // --- INICIO DE CORRECCIÓN (Layout de Columnas) ---
         
         // Generar los HTML de cambios por secciones
         const infoChanges = [
@@ -403,7 +426,12 @@ export function ProductForm(productToEdit = null, modalElementRef) {
         ].join('');
         
         // Comprobar si hubo algún cambio EN CUALQUIER SECCIÓN
-        const anyChanges = [infoChanges, logisticsChanges, costStockChanges, priceChanges].some(html => html.includes('changed'));
+        const anyChanges = [
+            infoChanges, 
+            logisticsChanges, 
+            costStockChanges, 
+            priceChanges
+        ].some(html => html.includes('changed'));
 
         let alertHTML = '';
         if (anyChanges) {
@@ -420,7 +448,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
             </div>`;
         }
 
-        // Devolver el HTML final con el layout de 2 columnas
+        // Devolver el HTML final con el layout de 2 columnas (sin cambios)
         return `
         <div class="summary-diff-view">
             ${alertHTML}
@@ -447,7 +475,6 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                 </div>
             </div>
         </div>`;
-        // --- FIN DE CORRECCIÓN (Layout de Columnas) ---
     }
 
     /**

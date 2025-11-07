@@ -2,8 +2,8 @@ import { Logger } from './logger.service.js';
 
 export function calcularPrecioVenta(costoPorUnidad, porcentajeGanancia, unidades, settings) {
     Logger.info('--- Iniciando de Cálculo ---');
-    Logger.info('Costo recibido:', costoPorUnidad);
-    Logger.info('% Ganancia:', porcentajeGanancia);
+    // Logger.info('Costo recibido:', costoPorUnidad);
+    // Logger.info('% Ganancia:', porcentajeGanancia);
     if (unidades <= 0) return null;
     const tasaIVA = settings.products.tax_rate / 100;
     const metodoCalculo = settings.products.calculation_method;
@@ -19,13 +19,13 @@ export function calcularPrecioVenta(costoPorUnidad, porcentajeGanancia, unidades
         // Cálculo basado en RECARGO (markup) - el método por defecto
         subtotalVenta = costoPorUnidad * (1 + (porcentajeGanancia / 100));
     }
-    Logger.info('Subtotal (sin IVA):', subtotalVenta);
+    // Logger.info('Subtotal (sin IVA):', subtotalVenta);
     const montoIVA = subtotalVenta * tasaIVA;
-    Logger.info('Monto del IVA:', montoIVA);
+    // Logger.info('Monto del IVA:', montoIVA);
     const precioFinalTotal = subtotalVenta + montoIVA;
-    Logger.info('Precio Final Total:', precioFinalTotal);
+    // Logger.info('Precio Final Total:', precioFinalTotal);
     const precioFinalUnitario = precioFinalTotal / unidades;
-    Logger.info('Precio Final por Unidad:', precioFinalUnitario);
+    // Logger.info('Precio Final por Unidad:', precioFinalUnitario);
     Logger.info('--- Final de Cálculo ---');
     return {
         costoUnitarioDolar: costoPorUnidad / unidades,
