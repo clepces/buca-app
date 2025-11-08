@@ -1,10 +1,8 @@
 // ======================================================
 // ARCHIVO: src/components/ProductForm.js
-// VERSION APP: 3.0.0 - MODULE:SGA_SCM: 1.2.1 - FILE: 1.1.1
-// CORRECCIÓN: (Resumen de Edición Inteligente v2)
-// 1. El Resumen de Edición ahora se muestra en 2 columnas.
-// 2. Corregido el bug que mostraba "¡Atención!..." cuando no
-//    había cambios (comparación de 'null' vs '').
+// VERSION: 4.0.0 (Refactorizado)
+// PROPÓSITO: Orquesta el formulario, maneja la lógica de 
+// negocio y delega la UI al Wizard y al Summary.
 // ======================================================
     
 import { calcularPrecioVenta } from '../services/calculation.service.js';
@@ -14,48 +12,82 @@ import { showToast } from '../services/toast.service.js';
 import { state as globalState } from '../store/state.js';
 import { Logger } from '../services/logger.service.js';
 
+// --- ¡NUEVAS IMPORTACIONES DE REFACTORIZACIÓN! ---
+import { initProductFormWizard } from './ProductFormWizard.js';
+import { 
+    renderNewProductSummary, 
+    renderEditProductSummary, 
+    bindOfferButtonEvents, 
+    bindCurrencyToggleEvents 
+} from './ProductFormSummary.js';
+
+/**
+ * Componente principal del Formulario de Producto.
+ * @param {object | null} productToEdit - El producto a editar, o null si es nuevo.
+ * @param {HTMLElement} modalElementRef - La referencia al elemento del modal (pasada por modal.service).
+ */
 export function ProductForm(productToEdit = null, modalElementRef) {
     const element = document.createElement('div');
     element.className = 'product-form-wrapper';
+    
+    // --- 1. Configuración y Estado ---
     const isEditMode = productToEdit !== null;
     const categories = globalState.settings.products.available_categories || [];
     const simboloPrincipal = globalState.settings.currencies.principal.symbol || '$';
     const simboloBase = globalState.settings.currencies.base.symbol || 'Bs.';
     const tasaIVA = globalState.settings.products.tax_rate;
     const tasaCambio = globalState.settings.currencies.principal.rate;
+    
     let lastCalculatedPrices = null;
-    let currentStep = 1;
+    let wizardAPI = null; // API para controlar el wizard (showStep, setSaveButtonBusy, etc.)
 
-    let btnPrev = null;
-    let btnNext = null;
-    let btnCalculate = null;
-    let btnSave = null;
-    let copyButton = null;
-    let attachInvoiceButton = null;
-
-    let wizardStepper = null;
-    let wizardSteps = null;
-
-    // --- GUARDAMOS LOS VALORES ORIGINALES PARA COMPARAR ---
+    // --- 2. Captura de Datos Originales (Lógica de Negocio) ---
     const originalPriceList = isEditMode ? (productToEdit?.pricing?.priceLists?.[0] || {}) : {};
+    
+    // (Opcional: Logs de depuración)
+    // if (isEditMode) {
+    //     console.group('🔍 DEBUG: Captura de Valores Originales');
+    //     console.log('productToEdit completo:', productToEdit);
+    //     console.log('originalPriceList:', originalPriceList);
+    // }
+    
     const originalData = {
-        nombre: isEditMode ? (productToEdit?.name || '') : '',
-        marca: isEditMode ? (productToEdit?.brand || '') : '',
-        categoria: isEditMode ? (productToEdit?.categoryId || '') : '',
-        descripcion: isEditMode ? (productToEdit?.description || '') : '',
+
+        // Texto (con .trim())
+        nombre: isEditMode ? (productToEdit?.name?.trim() || '') : '',
+        marca: isEditMode ? (productToEdit?.brand?.trim() || '') : '',
+        categoria: isEditMode ? (productToEdit?.categoryId?.trim() || '') : '',
+        descripcion: isEditMode ? (productToEdit?.description?.trim() || '') : '',
+        sku: isEditMode ? (productToEdit?.sku?.trim() || '') : '',
+        barcode: isEditMode ? (productToEdit?.barcode?.trim() || '') : '',
+
+        // Números (con || 0)
         costo: isEditMode ? (productToEdit?.pricing?.packageCost || 0) : 0,
         unidadesPorPaquete: isEditMode ? (productToEdit?.pricing?.unitsPerPackage || 0) : 0,
         stock: isEditMode ? (productToEdit?.stock?.current || 0) : 0,
         ganancia: isEditMode ? (originalPriceList.marginPercentage || productToEdit?.pricing?.marginPercentage || 0) : 0,
-        peso: isEditMode ? (productToEdit?.dimensions?.weight || null) : null,
-        sku: isEditMode ? (productToEdit?.sku || '') : '',
-        barcode: isEditMode ? (productToEdit?.barcode || '') : '',
         
-        // Precios originales calculados
+        // Números (con || null)
+        peso: isEditMode ? (productToEdit?.dimensions?.weight || null) : null,
+        
+        // Precios (con || 0)
         precioUnitario: isEditMode ? (originalPriceList.unitSellPrice || productToEdit?.pricing?.unitSellPrice || 0) : 0,
         precioPaquete: isEditMode ? (originalPriceList.packageSellPrice || productToEdit?.pricing?.packageSellPrice || 0) : 0,
+        
+        // Valor de inventario (calculado)
+        valorInventarioOriginal: isEditMode ? ( 
+                (productToEdit?.pricing?.packageCost || 0) / (productToEdit?.pricing?.unitsPerPackage || 1) 
+        ) * (productToEdit?.stock?.current || 0) : 0,
     };
     
+    // (Opcional: Logs de depuración)
+    // if (isEditMode) {
+    //     console.log('originalData construido:', originalData);
+    //     console.groupEnd();
+    // }
+    
+    // --- 3. Renderizado del HTML (Vista) ---
+    // Este HTML es el "esqueleto" que controlará el Wizard.
     element.innerHTML = `
         <div class="wizard-stepper" id="product-wizard-stepper">
             <div class="step active" data-step="1"><span>Paso 1</span>Básico</div>
@@ -66,6 +98,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
 
         <div class="wizard-content">
             <form class="product-form" id="product-form">
+                
                 <div class="wizard-step" data-step="1" style="display: block;">
                      <div class="form-grid-layout">
                         <div class="form-column-left">
@@ -124,7 +157,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                 </div>
                                 <div class="form-group">
                                     <label for="peso">Peso (Kg)</label>
-                                    <input type="number" id="peso" step="0.01" placeholder="Opcional" value="${originalData.peso}">
+                                    <input type="number" id="peso" step="0.01" placeholder="Opcional" value="${originalData.peso || ''}">
                                 </div>
                             </section>
                         </div>
@@ -156,7 +189,7 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                                     </div>
                                     <div style="flex: 1;" class="form-group">
                                         <label for="unidades-por-paquete">Unid./Paquete</label>
-                                        <input type="number" id="unidades-por-paquete" placeholder="Opc." min="1" value="${originalData.unidadesPorPaquete}">
+                                        <input type="number" id="unidades-por-paquete" placeholder="Opc." min="1" value="${originalData.unidadesPorPaquete || ''}">
                                     </div>
                                 </div>
                                 <div class="form-group" style="margin-bottom: 3.5rem;">
@@ -167,16 +200,17 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                         </div>
                     </div>
                 </div>
+                
+                <div class="wizard-step" data-step="4" style="display: none;">
+                     <div class="product-summary-view" id="summary-view">
+                     </div>
+                </div>
             </form>
-            
-            <div class="wizard-step" data-step="4" style="display: none;">
-                 <div class="product-summary-view" id="summary-view">
-                    </div>
-            </div>
         </div>
     `;
 
-    // --- Selectores de Formulario ---
+    // --- 4. Selectores de Elementos ---
+    // (Necesarios para leer los datos del formulario)
     const form = element.querySelector('#product-form');
     const paquetesInput = element.querySelector('#paquetes');
     const unidadesPorPaqueteInput = element.querySelector('#unidades-por-paquete');
@@ -191,66 +225,53 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     const barcodeInput = element.querySelector('#barcode');
     const pesoInput = element.querySelector('#peso');
 
-    wizardStepper = element.querySelector('#product-wizard-stepper');
-    wizardSteps = element.querySelectorAll('.wizard-step');
+    // (Necesarios para pasarlos al Wizard)
+    const wizardStepper = element.querySelector('#product-wizard-stepper');
+    const wizardSteps = element.querySelectorAll('.wizard-step');
 
-    const formatNumber = (num, decimals = 2) => new Intl.NumberFormat('es-VE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
 
-    // --- Lógica del Wizard (Navegación) ---
-
-    const updateFooterButtons = (stepNum) => {
-        if (!btnPrev || !btnNext || !btnCalculate || !btnSave || !copyButton || !attachInvoiceButton) { return; }
-        btnPrev.style.display = 'none'; btnNext.style.display = 'none'; btnCalculate.style.display = 'none'; btnSave.style.display = 'none'; copyButton.style.display = 'none'; attachInvoiceButton.style.display = 'none';
-        switch (stepNum) {
-            case 1: btnNext.style.display = 'inline-flex'; btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`; break;
-            case 2: btnPrev.style.display = 'inline-flex'; btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`; btnNext.style.display = 'inline-flex'; btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`; break;
-            case 3: btnPrev.style.display = 'inline-flex'; btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`; btnCalculate.style.display = 'inline-flex'; break;
-            case 4: btnPrev.style.display = 'inline-flex'; btnPrev.innerHTML = `<i class="bi bi-pencil-fill me-1"></i> Volver a Editar`; /*attachInvoiceButton.style.display = 'inline-flex';*/ /*copyButton.style.display = 'inline-flex';*/ btnSave.style.display = 'inline-flex'; break;
-        }
-    };
-
-    const showStep = (stepNum) => {
-        if (stepNum < 1 || stepNum > 4) { return; } currentStep = stepNum;
-        if (wizardSteps) { wizardSteps.forEach(step => { step.style.display = (parseInt(step.dataset.step) === currentStep) ? 'block' : 'none'; }); }
-        if (wizardStepper) { wizardStepper.querySelectorAll('.step').forEach(step => { const stepData = parseInt(step.dataset.step); step.classList.toggle('active', stepData === currentStep); step.classList.toggle('completed', stepData < currentStep); if (stepData >= currentStep) { step.classList.remove('completed'); } }); }
-        updateFooterButtons(currentStep);
-    };
-
-    // --- Lógica de Resumen (¡Aquí está la magia!) ---
+    // --- 5. Lógica de Negocio y Callbacks ---
 
     /**
-     * Controlador principal para el Paso 4.
-     * Decide si mostrar el resumen de "Crear" o el de "Editar".
+     * Valida, calcula precios y muestra el resumen (Paso 4).
+     * Esta es la lógica del botón "Calcular y Revisar".
      */
-    const calculateAndShowSummary = () => {
-        // 1. Obtener todos los valores NUEVOS del formulario
+    function calculateAndShowSummary() {
+        // console.group('🔍 DEBUG: calculateAndShowSummary');
+
+        // 1. Obtener valores NUEVOS (normalizados)
         const costoPorPaquete = parseFloat(costoInput.value) || 0;
         const ganancia = parseFloat(gananciaInput.value) || 0;
         const unidadesEnPaqueteInput = parseInt(unidadesPorPaqueteInput.value) || 0;
         const totalUnidadesRegistrarInput = parseInt(totalUnidadesInput.value);
-        const paquetes = parseInt(paquetesInput.value);
+        const paquetes = parseInt(paquetesInput.value) || 0;
         
-        // 2. Validar campos de cálculo
-        if (costoPorPaquete <= 0 || isNaN(ganancia) || ganancia < 0 || !totalUnidadesRegistrarInput || totalUnidadesRegistrarInput <= 0) {
+        // 2. Validar campos requeridos
+        if (costoPorPaquete <= 0 || ganancia < 0 || !totalUnidadesRegistrarInput || totalUnidadesRegistrarInput <= 0) {
             showToast("Completa Costo(*), Ganancia(*) y Stock(*) con valores válidos.", "warning");
             return false;
         }
 
-        // 3. Obtener valores de texto
-        const nombre = nombreInput.value;
-        const marca = marcaInput.value;
-        const categoria = categoriaSelect.value;
-        const descripcion = descripcionInput.value;
-        const sku = skuInput.value;
-        const barcode = barcodeInput.value;
+        // 3. Obtener valores de texto (normalizados)
+        const nombre = nombreInput.value.trim();
+        const marca = marcaInput.value.trim();
+        const categoria = categoriaSelect.value.trim();
+        const descripcion = descripcionInput.value.trim();
+        const sku = skuInput.value.trim();
+        const barcode = barcodeInput.value.trim();
         const peso = parseFloat(pesoInput.value) || null;
 
         // 4. Calcular precios
         const unidadesParaCalculoPrecio = unidadesEnPaqueteInput > 0 ? unidadesEnPaqueteInput : 1;
-        lastCalculatedPrices = calcularPrecioVenta(costoPorPaquete, ganancia, unidadesParaCalculoPrecio, globalState.settings);
+        lastCalculatedPrices = calcularPrecioVenta(
+            costoPorPaquete, 
+            ganancia, 
+            unidadesParaCalculoPrecio, 
+            globalState.settings
+        );
 
         if (lastCalculatedPrices) {
-            // 5. Empaquetar todos los datos NUEVOS
+            // 5. Empaquetar datos nuevos
             const newData = {
                 nombre, marca, categoria, descripcion, sku, barcode, peso,
                 costo: costoPorPaquete,
@@ -261,595 +282,211 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                 precios: lastCalculatedPrices
             };
 
+            // console.log('newData construido:', newData);
+            // console.groupEnd();
+            
+            // 6. Renderizar el resumen (usando los componentes importados)
             const summaryContainer = element.querySelector('#summary-view');
+            const config = { simboloPrincipal, simboloBase, tasaIVA, tasaCambio };
 
-            // 6. Decidir qué resumen renderizar
             if (isEditMode) {
-                // Modo Edición: Mostrar "diff"
-                summaryContainer.innerHTML = renderEditProductSummary(newData, originalData);
+                summaryContainer.innerHTML = renderEditProductSummary(newData, originalData, config);
             } else {
-                // Modo Creación: Mostrar resumen normal
-                summaryContainer.innerHTML = renderNewProductSummary(newData);
-                // (Se necesitan listeners para el toggle de moneda en el modo "Crear")
+                summaryContainer.innerHTML = renderNewProductSummary(newData, config);
+                // Bindear eventos solo para el resumen de "Crear"
                 bindCurrencyToggleEvents(summaryContainer);
                 bindOfferButtonEvents(summaryContainer);
             }
 
-            showStep(4);
+            // 7. Mover el wizard al paso 4
+            wizardAPI.showStep(4);
             return true;
         } else {
+            // console.groupEnd();
             showToast("Error al calcular precios.", "error");
             return false;
         }
     };
 
     /**
-     * GENERA EL HTML PARA EL RESUMEN DE UN PRODUCTO NUEVO (PASO 4)
+     * Lógica para guardar o actualizar el producto.
+     * Esta es la lógica del botón "Guardar Producto" / "Actualizar Producto".
      */
-    function renderNewProductSummary(data) {
-        // (Esta función no tiene cambios)
-        return `
-            <div class="summary-grid-layout">
-                <div class="summary-column-left">
-                     <section class="summary-section">
-                        <h3><i class="bi bi-info-circle-fill me-1"></i> Información Básica</h3>
-                        <div class="summary-basic-info summary-purchase-info">
-                            <div class="info-item"><span>Nombre:</span> <strong id="summary-nombre">${data.nombre}</strong></div>
-                            <div class="info-item"><span>Marca:</span> <strong id="summary-marca">${data.marca}</strong></div>
-                            <div class="info-item"><span>Categoría:</span> <strong id="summary-categoria">${data.categoria}</strong></div>
-                            <div class="info-item description-item"><span>Descripción:</span> <em id="summary-descripcion">${data.descripcion || 'Ninguna'}</em></div>
-                        </div>
-                    </section>
-                    <section class="summary-section">
-                        <h3><i class="bi bi-receipt me-1"></i> Resumen de Compra</h3>
-                        <div class="summary-purchase-info">
-                            <div class="info-item purchase-item"><span>Costo Paquete:</span> <strong><span id="summary-costo-paquete">${simboloPrincipal}${formatNumber(data.costo)}</span></strong></div>
-                            <div class="info-item purchase-item"><span>Cantidad Paquetes:</span> <strong id="summary-cantidad-paquetes">${data.paquetes || 'N/A'}</strong></div>
-                            <div class="info-item purchase-item"><span>Unidades/Paquete:</span> <strong id="summary-unidades-paquete">${data.unidadesPorPaquete || 'N/A'}</strong></div>
-                            <div class="purchase-item"><span>Stock Inicial (Unidades):</span> <strong id="summary-stock-inicial">${data.totalUnidades}</strong></div>
-                            <div class="total-cost"><span>Costo Total Compra:</span> <strong><span id="summary-costo-total">${simboloPrincipal}${formatNumber(data.costo * (data.paquetes || 1))}</span></strong></div>
-                        </div>
-                    </section>
-                </div>
-                <div class="summary-column-right">
-                    <section class="summary-section prices-section">
-                        <h3><i class="bi bi-tags-fill me-1"></i> Precios de Venta</h3>
-                        <div class="summary-prices-grid">
-                            ${renderPriceCardsHTML(data.precios, data.costo, data.ganancia, (data.unidadesPorPaquete || data.totalUnidades))}
-                        </div>
-                    </section>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * GENERA EL HTML PARA EL RESUMEN DE EDICIÓN (PASO 4)
-     * ¡VERSIÓN 3.0 con Lógica de Alerta y N/A CORREGIDA!
-     */
-    function renderEditProductSummary(newData, originalData) {
-        
-        // --- INICIO DE CORRECCIÓN (Lógica de Alerta y N/A) ---
-
-        // Normaliza valores vacíos/nulos PERO RESPETA EL 0
-        const fNull = (val) => {
-            // Si es null, undefined, NaN, o string vacío -> convertir a ''
-            if (val === null || val === undefined) return '';
-            if (typeof val === 'number' && isNaN(val)) return '';
-            if (typeof val === 'string' && val.trim() === '') return '';
-            // Si es 0 (número válido) -> mantenerlo como 0
-            return val;
-        };
-        
-        // Helper para comparar de forma ULTRA segura
-        const hasChanged = (newVal, oldVal) => {
-            const oldNormalized = fNull(oldVal);
-            const newNormalized = fNull(newVal);
-            
-            // Caso especial: números vs strings
-            // Ej: 0 (number) vs "0" (string) -> NO ha cambiado
-            if (typeof oldNormalized === 'number' && typeof newNormalized === 'number') {
-                return oldNormalized !== newNormalized;
+    async function handleSave() {
+        // Si no estamos en el paso 4, forzar revisión
+        if (wizardAPI.getStep() !== 4) {
+            if (calculateAndShowSummary()) {
+                showToast("Por favor, revisa los cambios y presiona 'Actualizar Producto'", "info");
             }
-            
-            // Convertir ambos a string SOLO si no son números
-            const oldStr = String(oldNormalized).trim();
-            const newStr = String(newNormalized).trim();
-            
-            return oldStr !== newStr;
-        };
-
-        // Helper para formatear texto (respeta 0)
-        const fText = (val) => {
-            const normalized = fNull(val);
-            // Si es 0, mostrarlo como "0"
-            if (normalized === 0) return '0';
-            // Si es string vacío, mostrar N/A
-            if (normalized === '') return 'N/A';
-            return normalized;
-        };
-
-        // Formateadores numéricos (sin cambios)
-        const fCurr = (val) => `${simboloPrincipal}${formatNumber(fNull(val) || 0)}`; // Asegura que sea un número
-        const fPerc = (val) => `${fNull(val)}%`;
-        const fStock = (val) => `${fNull(val)} Unid.`;
-        const fPeso = (val) => val ? `${val} Kg` : 'N/A'; // 'val' aquí puede ser null, por eso fPeso funciona
-
-        // Helper para generar HTML
-        const diff = (label, newVal, oldVal, formatter = fText) => {
-            if (hasChanged(newVal, oldVal)) {
-                // Si cambió
-                return `
-                <div class="diff-item changed">
-                    <span class="diff-label">${label}:</span>
-                    <span class="diff-value">
-                        <span class="diff-old">${formatter(oldVal)}</span>
-                        <i class="bi bi-arrow-right-short"></i>
-                        <span class="diff-new">${formatter(newVal)}</span>
-                    </span>
-                </div>`;
-            } else {
-                // Si no cambió
-                return `
-                <div class="diff-item unchanged">
-                    <span class="diff-label">${label}:</span>
-                    <span class="diff-value">${formatter(newVal)}</span>
-                </div>`;
-            }
-        };
+            return;
+        }
         
-        // Generar los HTML de cambios por secciones
-        const infoChanges = [
-            diff('Nombre', newData.nombre, originalData.nombre),
-            diff('Marca', newData.marca, originalData.marca),
-            diff('Categoría', newData.categoria, originalData.categoria)
-        ].join('');
-        
-        const logisticsChanges = [
-            diff('SKU', newData.sku, originalData.sku),
-            diff('Cód. Barras', newData.barcode, originalData.barcode),
-            diff('Peso', newData.peso, originalData.peso, fPeso)
-        ].join('');
-
-        const costStockChanges = [
-            diff('Costo Paquete', newData.costo, originalData.costo, fCurr),
-            diff('Ganancia', newData.ganancia, originalData.ganancia, fPerc),
-            diff('Unid. p/ Paquete', newData.unidadesPorPaquete, originalData.unidadesPorPaquete, fStock),
-            diff('Stock Total', newData.totalUnidades, originalData.stock, fStock)
-        ].join('');
-
-        const newUnitPrice = newData.precios.precioFinalUnitarioDolar;
-        const newPackagePrice = newData.precios.precioFinalMayorDolar;
-        const priceChanges = [
-            diff('Precio Unitario', newUnitPrice, originalData.precioUnitario, fCurr),
-            diff('Precio Paquete', newPackagePrice, originalData.precioPaquete, fCurr)
-        ].join('');
-        
-        // Comprobar si hubo algún cambio EN CUALQUIER SECCIÓN
-        const anyChanges = [
-            infoChanges, 
-            logisticsChanges, 
-            costStockChanges, 
-            priceChanges
-        ].some(html => html.includes('changed'));
-
-        let alertHTML = '';
-        if (anyChanges) {
-            alertHTML = `
-            <div class="summary-changes-detected">
-                <i class="bi bi-exclamation-triangle-fill me-1"></i> 
-                ¡Atención! Revisa los cambios antes de guardar.
-            </div>`;
-        } else {
-            alertHTML = `
-            <div class="summary-no-changes">
-                <i class="bi bi-info-circle me-1"></i> 
-                No se detectaron cambios en los campos.
-            </div>`;
+        // Si no se han calculado precios, volver al paso 3
+        if (!lastCalculatedPrices) {
+            showToast("Hubo un error al calcular precios. Vuelve al Paso 3.", "warning");
+            wizardAPI.showStep(3);
+            return;
         }
 
-        // Devolver el HTML final con el layout de 2 columnas (sin cambios)
-        return `
-        <div class="summary-diff-view">
-            ${alertHTML}
-            <div class="summary-grid-layout">
-                <div class="summary-column-left">
-                    <section class="summary-section">
-                        <h3><i class="bi bi-info-circle-fill me-1"></i> Información Básica</h3>
-                        ${infoChanges}
-                    </section>
-                    <section class="summary-section">
-                        <h3><i class="bi bi-calculator-fill me-1"></i> Costos y Stock</h3>
-                        ${costStockChanges}
-                    </section>
-                </div>
-                <div class="summary-column-right">
-                    <section class="summary-section">
-                        <h3><i class="bi bi-archive-fill me-1"></i> Inventario y Logística</h3>
-                        ${logisticsChanges}
-                    </section>
-                    <section class="summary-section">
-                        <h3><i class="bi bi-tags-fill me-1"></i> Precios de Venta</h3>
-                        ${priceChanges}
-                    </section>
-                </div>
-            </div>
-        </div>`;
-    }
-
-    /**
-     * Helper para renderizar las tarjetas de precio (para MODO CREAR)
-     */
-    function renderPriceCardsHTML(precios, costo, ganancia, unidadesPaquete) {
-        // (Esta función no tiene cambios)
-        const precioUnidadUSD = precios.precioFinalUnitarioDolar;
-        const precioUnidadVES = precioUnidadUSD * tasaCambio;
-        const precioPaqueteUSD = precios.precioFinalMayorDolar;
-        const precioPaqueteVES = precioPaqueteUSD * tasaCambio;
-        const ofertaDescuento = 0.025;
-        const precioOfertaUSD = precioPaqueteUSD * (1 - ofertaDescuento);
-
-        return `
-            <div class="summary-price-card unit-price">
-                <div class="card-header"><i class="bi bi-box me-1"></i> Precio Unitario</div>
-                <div class="card-body">
-                    <div class="price-header-grid">
-                        <div class="price-cluster">
-                            <span class="price-main currency-toggle" id="summary-precio-unidad-principal" data-usd-value="${precioUnidadUSD}" data-ves-value="${precioUnidadVES}" data-current-currency="usd" title="Clic para cambiar">${simboloPrincipal}${formatNumber(precioUnidadUSD)}</span>
-                            <span class="price-secondary currency-toggle" id="summary-precio-unidad-base" data-usd-value="${precioUnidadUSD}" data-ves-value="${precioUnidadVES}" data-current-currency="ves" title="Clic para cambiar">${simboloBase}${formatNumber(precioUnidadVES)}</span>
-                        </div>
-                        <small class="price-details">
-                            Costo Unitario: <span>${simboloPrincipal}${formatNumber(precios.costoUnitarioDolar, 4)}</span><br/>
-                            Ganancia: <span>${ganancia}</span>% | IVA: ${tasaIVA}%
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="summary-price-card package-price">
-                <div class="card-header"><i class="bi bi-boxes me-1"></i> Precio Paquete (<span>${unidadesPaquete}</span> Unid.)</div>
-                <div class="card-body">
-                    <div class="price-header-grid">
-                        <div class="price-cluster">
-                            <span class="price-main currency-toggle" id="summary-precio-paquete-principal" data-usd-value="${precioPaqueteUSD}" data-ves-value="${precioPaqueteVES}" data-current-currency="usd" title="Clic para cambiar">${simboloPrincipal}${formatNumber(precioPaqueteUSD)}</span>
-                            <span class="price-secondary currency-toggle" id="summary-precio-paquete-base" data-usd-value="${precioPaqueteUSD}" data-ves-value="${precioPaqueteVES}" data-current-currency="ves" title="Clic para cambiar">${simboloBase}${formatNumber(precioPaqueteVES)}</span>
-                        </div>
-                        <small class="price-details">
-                            Costo Paquete: <span>${simboloPrincipal}${formatNumber(costo)}</span><br/>
-                            Ganancia: <span>${ganancia}</span>% | IVA: ${tasaIVA}%
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="summary-price-card package-price">
-                <div class="card-header"><i class="bi bi-star-fill me-1"></i> Precio Paquete Oferta</div>
-                <div class="card-body">
-                    <div class="package-controls-grid">
-                        <div class="discount-suggestion-box">
-                            <div class="discount-header">
-                                <span><i class="bi bi-star-fill"></i> Oferta (2.5%)</span>
-                                <strong id="summary-precio-paquete-oferta">${simboloPrincipal}${formatNumber(precioOfertaUSD)}</strong>
-                            </div>
-                            <button type="button" class="btn-apply-discount" id="btn-apply-package-offer" data-offer-price="${precioOfertaUSD.toFixed(2)}" title="Aplicar precio de oferta">Aplicar</button>
-                        </div>
-                        <div class="manual-input-box" id="manual-package-price-box">
-                            <label for="override-package-price" class="package-price-label" id="manual-package-price-label">
-                                <i class="bi bi-pencil-fill me-1"></i> O establecer manual:
-                            </label>
-                            <div class="input-group input-group-sm override-price-group">
-                                <span class="input-group-text">${simboloPrincipal}</span>
-                                <input type="number" step="0.01" class="form-control form-control-sm" id="override-package-price" placeholder="${formatNumber(precioOfertaUSD, 2)}" title="Opcional: Establecer precio de paquete manualmente">
-                            </div>
-                        </div>
-                    </div>
-                    <span class="package-price-note">
-                        Precio calculado: <span id="summary-paquete-precio-calculado-nota">${simboloPrincipal}${formatNumber(precioPaqueteUSD)}</span>.
-                    </span>
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * Añade listeners a los botones de oferta (MODO CREAR)
-     */
-    function bindOfferButtonEvents(summaryContainer) {
-        // (Esta función no tiene cambios)
-        const manualPriceBox = summaryContainer.querySelector('#manual-package-price-box');
-        const manualPriceLabel = summaryContainer.querySelector('#manual-package-price-label');
-        const overridePackagePriceInput = summaryContainer.querySelector('#override-package-price');
+        // Obtener todos los datos finales (normalizados)
+        const nombre = nombreInput.value.trim();
+        const marca = marcaInput.value.trim();
+        const categoria = categoriaSelect.value.trim();
+        const descripcion = descripcionInput.value.trim();
+        const costo = parseFloat(costoInput.value) || 0;
+        const ganancia = parseFloat(gananciaInput.value) || 0;
+        const totalUnidades = parseInt(totalUnidadesInput.value);
+        const unidadesPorPaquete = parseInt(unidadesPorPaqueteInput.value) || null;
+        const sku = skuInput.value.trim();
+        const barcode = barcodeInput.value.trim();
+        const peso = parseFloat(pesoInput.value) || null;
         
-        const applyButton = summaryContainer.querySelector('#btn-apply-package-offer');
-        if (applyButton) {
-            applyButton.addEventListener('click', (e) => {
-                const button = e.currentTarget;
-                const offerPrice = button.dataset.offerPrice;
-                const isApplied = manualPriceBox.classList.contains('price-applied');
+        // Decidir el precio final del paquete (manual o calculado)
+        const overridePackagePriceInput = element.querySelector('#override-package-price');
+        const precioPaqueteManual = overridePackagePriceInput ? parseFloat(overridePackagePriceInput.value) : NaN;
+        const precioPaqueteFinal = !isNaN(precioPaqueteManual) && precioPaqueteManual > 0 ? precioPaqueteManual : lastCalculatedPrices.precioFinalMayorDolar;
 
-                if (isApplied) {
-                    manualPriceBox.classList.remove('price-applied');
-                    manualPriceLabel.innerHTML = '<i class="bi bi-pencil-fill me-1"></i> Establecer manual:';
-                    button.textContent = 'Aplicar';
-                    button.classList.remove('cancel-mode');
-                    overridePackagePriceInput.value = '';
+        // Poner el botón en modo "ocupado"
+        wizardAPI.setSaveButtonBusy(true);
+
+        // Construir el objeto final
+        const productData = {
+            name: nombre,
+            brand: marca,
+            categoryId: categoria,
+            description: descripcion,
+            sku: sku || null,
+            barcode: barcode || null,
+            isActive: productToEdit?.isActive ?? true,
+            isFeatured: productToEdit?.isFeatured ?? false,
+            
+            dimensions: {
+                weight: peso,
+                weightUnit: 'kg',
+                width: productToEdit?.dimensions?.width || null,
+                height: productToEdit?.dimensions?.height || null,
+                depth: productToEdit?.dimensions?.depth || null,
+                dimensionUnit: productToEdit?.dimensions?.dimensionUnit || 'cm'
+            },
+            stock: { 
+                current: totalUnidades, 
+                minThreshold: productToEdit?.stock?.minThreshold ?? 10, 
+                warehouseId: productToEdit?.stock?.warehouseId ?? 'wh_principal' 
+            }, 
+            pricing: {
+                packageCost: costo,
+                unitsPerPackage: unidadesPorPaquete,
+                taxRatePercentage: tasaIVA,
+                priceLists: [
+                    {
+                        id: "publico",
+                        name: "Precio Público",
+                        marginPercentage: ganancia,
+                        unitSellPrice: lastCalculatedPrices.precioFinalUnitarioDolar,
+                        packageSellPrice: precioPaqueteFinal
+                    }
+                ]
+            },
+            createdAt: productToEdit?.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            supplier: productToEdit?.supplier || null
+        };
+        
+        if (isEditMode) {
+            productData.id = productToEdit.id;
+        }
+        
+        // Guardar en la base de datos
+        try { 
+            if (isEditMode) { 
+                await updateProductInState(globalState, productData.id, productData); 
+                showToast(`Producto "${nombre}" actualizado.`, "success"); 
+            } else { 
+                if (productoExiste(nombre, marca, globalState.products)) { 
+                    showToast("Ya existe producto con nombre y marca.", "error"); 
+                    wizardAPI.showStep(1); 
+                    throw new Error("Producto duplicado"); 
                 } else {
-                    overridePackagePriceInput.value = offerPrice;
-                    manualPriceBox.classList.add('price-applied');
-                    manualPriceLabel.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Precio Aplicado:';
-                    button.textContent = 'Cancelar';
-                    button.classList.add('cancel-mode');
-                }
-            });
+                    await addProductToState(globalState, productData); 
+                    showToast(`Producto "${nombre}" creado.`, "success"); 
+                } 
+            } 
+            modalElementRef.remove(); // Cerrar el modal
+        } catch (error) { 
+            Logger.error("Error al guardar:", error); 
+            if (error.message !== "Producto duplicado") { 
+                showToast("Error al guardar.", "error"); 
+            } 
+        } finally { 
+            wizardAPI.setSaveButtonBusy(false); // Reactivar el botón
         }
-        
-        if (overridePackagePriceInput) {
-            overridePackagePriceInput.addEventListener('input', () => {
-                manualPriceBox.classList.remove('price-applied');
-                manualPriceLabel.innerHTML = '<i class="bi bi-pencil-fill me-1"></i> Establecer manual:';
-                applyButton.textContent = 'Aplicar';
-                applyButton.classList.remove('cancel-mode');
-            });
-        }
-    }
-    
+    };
+
     /**
-     * Añade listeners al toggle de moneda (MODO CREAR)
+     * Lógica de UI simple (ej. auto-cálculo de unidades).
      */
-    function bindCurrencyToggleEvents(summaryContainer) {
-        // (Esta función no tiene cambios)
-        summaryContainer.addEventListener('click', (e) => {
-            const target = e.target.closest('.currency-toggle');
-            if (!target) return;
-            const priceCard = target.closest('.summary-price-card');
-            if (!priceCard) return;
-            
-            const principalElement = priceCard.querySelector('.price-main.currency-toggle');
-            const baseElement = priceCard.querySelector('.price-secondary.currency-toggle');
-            if (!principalElement || !baseElement) return;
-
-            const usdValue = parseFloat(principalElement.dataset.usdValue);
-            const vesValue = parseFloat(principalElement.dataset.vesValue);
-            if (isNaN(usdValue) || isNaN(vesValue)) return;
-            
-            const isPrincipalTarget = target === principalElement;
-            const currentCurrency = target.dataset.currentCurrency;
-            const otherElement = isPrincipalTarget ? baseElement : principalElement;
-
-            if (currentCurrency === 'usd') {
-                target.textContent = `${simboloBase}${formatNumber(vesValue)}`;
-                target.dataset.currentCurrency = 'ves';
-                otherElement.textContent = `${simboloPrincipal}${formatNumber(usdValue)}`;
-                otherElement.dataset.currentCurrency = 'usd';
-            } else {
-                target.textContent = `${simboloPrincipal}${formatNumber(usdValue)}`;
-                target.dataset.currentCurrency = 'usd';
-                otherElement.textContent = `${simboloBase}${formatNumber(vesValue)}`;
-                otherElement.dataset.currentCurrency = 'ves';
-            }
-        });
-    }
-
-    // --- Lógica de Auto-cálculo y Submit ---
-
     const autoCalcularUnidades = () => {
-        // (Esta función no tiene cambios)
         const paquetes = parseInt(paquetesInput.value) || 0;
         const unidadesPorPaquete = parseInt(unidadesPorPaqueteInput.value) || 0;
         if (paquetes > 0 && unidadesPorPaquete > 0) {
             totalUnidadesInput.value = paquetes * unidadesPorPaquete;
         }
     };
-
     paquetesInput.addEventListener('input', autoCalcularUnidades);
     unidadesPorPaqueteInput.addEventListener('input', autoCalcularUnidades);
 
-    // --- Inicialización de Botones del Footer ---
+    
+    // --- 6. Inicialización del Wizard ---
+    // (Se ejecuta después de un breve delay para asegurar que el modal esté en el DOM)
     setTimeout(() => {
-        // (Esta función no tiene cambios en su lógica)
-        const modalFooterContainer = modalElementRef.querySelector('#modal-footer-container');
-        if (!modalFooterContainer) {
-            Logger.error("¡Error fatal! No se encontró #modal-footer-container.");
-            showToast("Error interno al inicializar botones.", "error");
-            return;
-        }
-        modalFooterContainer.innerHTML = '';
         
-        btnPrev = document.createElement('button');
-        btnPrev.type = 'button';
-        btnPrev.id = 'modal-btn-prev';
-        btnPrev.className = 'btn-secondary me-auto';
-        btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`;
-
-        attachInvoiceButton = document.createElement('button');
-        attachInvoiceButton.type = 'button';
-        attachInvoiceButton.id = 'modal-btn-attach-invoice';
-        attachInvoiceButton.className = 'btn-secondary btn-sm me-auto';
-        attachInvoiceButton.innerHTML = `<i class="bi bi-paperclip me-1"></i> Adjuntar Factura`;
-        attachInvoiceButton.disabled = true;
-        attachInvoiceButton.title = 'Adjuntar Factura (Próximamente)';
-        attachInvoiceButton.style.backgroundColor = 'var(--bs-gray-500)';
-
-        copyButton = document.createElement('button');
-        copyButton.type = 'button';
-        copyButton.id = 'modal-btn-copy-summary';
-        copyButton.className = 'btn-secondary btn-sm me-auto';
-        copyButton.innerHTML = `<i class="bi bi-clipboard-check me-1"></i> Copiar`;
-        copyButton.addEventListener('click', () => { /* ... lógica copiar ... */ });
-        
-        btnNext = document.createElement('button');
-        btnNext.type = 'button';
-        btnNext.id = 'modal-btn-next';
-        btnNext.className = 'btn-primary';
-        btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`;
-
-        btnCalculate = document.createElement('button');
-        btnCalculate.type = 'button';
-        btnCalculate.id = 'modal-btn-calculate';
-        btnCalculate.className = 'btn-primary';
-        btnCalculate.innerHTML = `<i class="bi bi-calculator me-1"></i> Calcular y Revisar`;
-
-        btnSave = document.createElement('button');
-        btnSave.type = 'submit';
-        btnSave.id = isEditMode ? 'modal-btn-update' : 'modal-btn-save';
-        btnSave.className = 'btn-primary';
-        btnSave.innerHTML = `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? 'Actualizar Producto' : 'Guardar Producto'}`;
-        btnSave.setAttribute('form', 'product-form');
-
-        modalFooterContainer.append(btnPrev, /*attachInvoiceButton, copyButton,*/ btnCalculate, btnNext, btnSave);
-
-        // Mover stepper al header
-        try {
-            const modalHeader = modalElementRef.querySelector('.modal-header');
-            const closeButton = modalElementRef.querySelector('.modal-header .close');
-            if (modalHeader && wizardStepper && closeButton) {
-                modalHeader.insertBefore(wizardStepper, closeButton);
-            }
-        } catch (error) {
-            Logger.error('[ProductForm] Error al mover el stepper:', error);
-        }
-
-        // Listeners de botones del footer
-        btnPrev.addEventListener('click', () => {
-            if (currentStep === 4) showStep(3);
-            else if (currentStep === 3) showStep(2);
-            else if (currentStep === 2) showStep(1);
-        });
-
-        btnNext.addEventListener('click', () => {
-            if (currentStep === 1) {
-                const nombre = nombreInput.value;
-                const marca = marcaInput.value;
-                const categoria = categoriaSelect.value;
-                if (!validarCamposTexto(nombre, marca, categoria)) {
-                    showToast("Completa Nombre, Marca y Categoría (*).", "warning");
-                    return;
+        // Definir los callbacks que el Wizard ejecutará
+        const wizardCallbacks = {
+            
+            onStepNext: () => {
+                const currentStep = wizardAPI.getStep();
+                if (currentStep === 1) {
+                    // Validar Paso 1
+                    const nombre = nombreInput.value;
+                    const marca = marcaInput.value;
+                    const categoria = categoriaSelect.value;
+                    if (!validarCamposTexto(nombre, marca, categoria)) {
+                        showToast("Completa Nombre, Marca y Categoría (*).", "warning");
+                        return; // No avanzar
+                    }
+                    wizardAPI.showStep(2);
+                } else if (currentStep === 2) {
+                    // Validar Paso 2 (si es necesario)
+                    wizardAPI.showStep(3);
                 }
-                showStep(2);
-            } else if (currentStep === 2) {
-                showStep(3);
+            },
+            
+            onStepPrev: () => {
+                const currentStep = wizardAPI.getStep();
+                if (currentStep === 4) wizardAPI.showStep(3);
+                else if (currentStep === 3) wizardAPI.showStep(2);
+                else if (currentStep === 2) wizardAPI.showStep(1);
+            },
+            
+            onCalculate: () => {
+                calculateAndShowSummary();
+            },
+            
+            onSubmit: () => {
+                handleSave();
             }
+        };
+
+        // Inicializar el controlador del wizard
+        wizardAPI = initProductFormWizard({
+            modalElementRef,
+            wizardStepperEl: wizardStepper,
+            wizardStepsEls: wizardSteps,
+            isEditMode,
+            callbacks: wizardCallbacks
         });
 
-        btnCalculate.addEventListener('click', calculateAndShowSummary);
-
-        // --- Lógica de SUBMIT (Guardar/Actualizar) ---
-        form.addEventListener('submit', async (e) => {
-            // (Esta función no tiene cambios)
-            e.preventDefault();
-            if (currentStep !== 4) {
-                // Si el usuario presiona "Enter" en un paso anterior, lo forzamos a revisar
-                if (calculateAndShowSummary()) {
-                    showToast("Por favor, revisa los cambios y presiona 'Actualizar Producto'", "info");
-                }
-                return;
-            }
-            if (!lastCalculatedPrices) {
-                showToast("Hubo un error al calcular precios. Vuelve al Paso 3.", "warning");
-                showStep(3);
-                return;
-            }
-
-            // Obtener todos los datos finales
-            const nombre = nombreInput.value;
-            const marca = marcaInput.value;
-            const categoria = categoriaSelect.value;
-            const descripcion = descripcionInput.value;
-            const costo = parseFloat(costoInput.value);
-            const ganancia = parseFloat(gananciaInput.value);
-            const totalUnidades = parseInt(totalUnidadesInput.value);
-            const unidadesPorPaquete = parseInt(unidadesPorPaqueteInput.value) || null;
-            const sku = skuInput.value;
-            const barcode = barcodeInput.value;
-            const peso = parseFloat(pesoInput.value) || null;
-            
-            // Decidir el precio final del paquete (manual o calculado)
-            const overridePackagePriceInput = element.querySelector('#override-package-price');
-            const precioPaqueteManual = overridePackagePriceInput ? parseFloat(overridePackagePriceInput.value) : NaN;
-            const precioPaqueteFinal = !isNaN(precioPaqueteManual) && precioPaqueteManual > 0 ? precioPaqueteManual : lastCalculatedPrices.precioFinalMayorDolar;
-
-            btnSave.disabled = true;
-            btnSave.innerHTML = `<i class="bi bi-hourglass-split me-1"></i> Guardando...`;
-
-            // Construir el objeto final (estructura ideal)
-            const productData = {
-                name: nombre,
-                brand: marca,
-                categoryId: categoria,
-                description: descripcion,
-                sku: sku || null,
-                barcode: barcode || null,
-                isActive: productToEdit?.isActive ?? true,
-                isFeatured: productToEdit?.isFeatured ?? false,
-                
-                dimensions: {
-                    weight: peso,
-                    weightUnit: 'kg',
-                    width: productToEdit?.dimensions?.width || null,
-                    height: productToEdit?.dimensions?.height || null,
-                    depth: productToEdit?.dimensions?.depth || null,
-                    dimensionUnit: productToEdit?.dimensions?.dimensionUnit || 'cm'
-                },
-
-                stock: { 
-                    current: totalUnidades, 
-                    minThreshold: productToEdit?.stock?.minThreshold ?? 10, 
-                    warehouseId: productToEdit?.stock?.warehouseId ?? 'wh_principal' 
-                }, 
-
-                pricing: {
-                    packageCost: costo,
-                    unitsPerPackage: unidadesPorPaquete,
-                    taxRatePercentage: tasaIVA,
-                    priceLists: [
-                        {
-                            id: "publico",
-                            name: "Precio Público",
-                            marginPercentage: ganancia,
-                            unitSellPrice: lastCalculatedPrices.precioFinalUnitarioDolar,
-                            packageSellPrice: precioPaqueteFinal
-                        }
-                    ]
-                },
-
-                createdAt: productToEdit?.createdAt || new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                supplier: productToEdit?.supplier || null // (Campo 'proveedor' aún no está implementado)
-            };
-            
-            if (isEditMode) {
-                productData.id = productToEdit.id;
-            }
-            
-            try { 
-                if (isEditMode) { 
-                    await updateProductInState(globalState, productData.id, productData); 
-                    showToast(`Producto "${nombre}" actualizado.`, "success"); 
-                } else { 
-                    if (productoExiste(nombre, marca, globalState.products)) { 
-                        showToast("Ya existe producto con nombre y marca.", "error"); 
-                        showStep(1); 
-                        throw new Error("Producto duplicado"); 
-                    } else {
-                        // NOTA: 'addProductToState' AÚN NO CREA LA SUB-COLECCIÓN 'inventory_lots'
-                        // Eso lo haremos con un WriteBatch en el futuro.
-                        await addProductToState(globalState, productData); 
-                        showToast(`Producto "${nombre}" creado.`, "success"); 
-                    } 
-                } 
-                modalElementRef.remove(); 
-            } catch (error) { 
-                Logger.error("Error al guardar:", error); 
-                if (error.message !== "Producto duplicado") { 
-                    showToast("Error al guardar.", "error"); 
-                } 
-            } finally { 
-                btnSave.disabled = false; 
-                btnSave.innerHTML = `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? 'Actualizar Producto' : 'Guardar Producto'}`; 
-            }
-        });
-
-        // Mostrar el primer paso
-        updateFooterButtons(currentStep);
-    }, 50);
+    }, 50); // 50ms de espera
 
     return element;
 }
