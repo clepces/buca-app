@@ -29,7 +29,7 @@ export function initProductFormWizard(config) {
     let btnCalculate = null;
     let btnSave = null;
 
-    // --- MEJORA: Definimos los handlers para poder removerlos en cleanup() ---
+    // --- IMPORTANTE: Definimos los listeners aquí para poder removerlos ---
     const handlePrev = () => callbacks.onStepPrev();
     const handleNext = () => callbacks.onStepNext();
     const handleCalculate = () => callbacks.onCalculate();
@@ -44,11 +44,13 @@ export function initProductFormWizard(config) {
             return; 
         }
         
+        // Ocultar todos primero
         btnPrev.style.display = 'none'; 
         btnNext.style.display = 'none'; 
         btnCalculate.style.display = 'none'; 
         btnSave.style.display = 'none';
 
+        // Mostrar según el paso
         switch (stepNum) {
             case 1: 
                 btnNext.style.display = 'inline-flex'; 
@@ -100,6 +102,7 @@ export function initProductFormWizard(config) {
             } 
         }); 
 
+        // Actualizar botones del footer
         updateFooterButtons(currentStep);
     };
 
@@ -114,6 +117,7 @@ export function initProductFormWizard(config) {
         }
         modalFooterContainer.innerHTML = '';
         
+        // --- Crear Botones ---
         btnPrev = document.createElement('button');
         btnPrev.type = 'button';
         btnPrev.id = 'modal-btn-prev';
@@ -131,17 +135,18 @@ export function initProductFormWizard(config) {
         btnCalculate.innerHTML = `<i class="bi bi-calculator me-1"></i> Calcular y Revisar`;
 
         btnSave = document.createElement('button');
-        btnSave.type = 'button';
+        btnSave.type = 'button'; // Es 'button' para prevenir submit del form
         btnSave.id = isEditMode ? 'modal-btn-update' : 'modal-btn-save';
         btnSave.className = 'btn-primary';
         btnSave.innerHTML = `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? 'Actualizar Producto' : 'Guardar Producto'}`;
 
-        // Asignar Callbacks (referenciados)
+        // --- Asignar Callbacks (CORREGIDO) ---
         btnPrev.addEventListener('click', handlePrev);
         btnNext.addEventListener('click', handleNext);
         btnCalculate.addEventListener('click', handleCalculate);
         btnSave.addEventListener('click', handleSubmit);
 
+        // Añadir botones al DOM
         modalFooterContainer.append(btnPrev, btnCalculate, btnNext, btnSave);
     }
 
@@ -153,6 +158,7 @@ export function initProductFormWizard(config) {
             const modalHeader = modalElementRef.querySelector('.modal-header');
             const closeButton = modalElementRef.querySelector('.modal-header .close');
             if (modalHeader && wizardStepperEl && closeButton) {
+                // Inserta el stepper antes del botón de cerrar
                 modalHeader.insertBefore(wizardStepperEl, closeButton);
             }
         } catch (error) {
@@ -165,6 +171,8 @@ export function initProductFormWizard(config) {
      */
     function cleanup() {
         // console.log("Limpiando listeners del wizard...");
+        
+        // --- CORREGIDO: Ahora sí se pueden remover ---
         btnPrev?.removeEventListener('click', handlePrev);
         btnNext?.removeEventListener('click', handleNext);
         btnCalculate?.removeEventListener('click', handleCalculate);
@@ -181,10 +189,6 @@ export function initProductFormWizard(config) {
         showStep,
         cleanup,
         getStep: () => currentStep,
-        /**
-         * Pone el botón de guardar en estado de "ocupado" o "listo".
-         * @param {boolean} isBusy - True para "Guardando...", false para "Guardar".
-         */
         setSaveButtonBusy: (isBusy = true) => {
             if (btnSave) {
                 btnSave.disabled = isBusy;

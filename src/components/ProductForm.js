@@ -102,33 +102,43 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                 <div class="wizard-step" data-step="1" style="display: block;">
                      <div class="form-grid-layout">
                         <div class="form-column-left">
-                            <section class="form-section">
-                                <h3><i class="bi bi-info-circle-fill me-1"></i> Información Básica</h3>
-                                <div class="form-group">
-                                    <label for="producto">Nombre <span class="text-danger">*</span></label>
-                                    <input type="text" id="producto" required value="${originalData.nombre}">
+                            <div class="summary-card-premium">
+                                <div class="card-premium-header">
+                                    <i class="bi bi-info-circle-fill"></i> 
+                                    <span>Información Básica</span>
                                 </div>
-                                <div class="form-group">
-                                    <label for="marca">Marca <span class="text-danger">*</span></label>
-                                    <input type="text" id="marca" required value="${originalData.marca}">
+                                <div class="card-premium-body">
+                                    <div class="form-group">
+                                        <label for="producto">Nombre <span class="text-danger">*</span></label>
+                                        <input type="text" id="producto" required value="${originalData.nombre}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="marca">Marca <span class="text-danger">*</span></label>
+                                        <input type="text" id="marca" required value="${originalData.marca}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="categoria">Categoría <span class="text-danger">*</span></label>
+                                        <select id="categoria" required>
+                                            <option value="">Selecciona</option>
+                                           ${categories.map(cat => `<option value="${cat}" ${originalData.categoria === cat ? 'selected' : ''}>${cat}</option>`).join('')}
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="categoria">Categoría <span class="text-danger">*</span></label>
-                                    <select id="categoria" required>
-                                        <option value="">Selecciona</option>
-                                       ${categories.map(cat => `<option value="${cat}" ${originalData.categoria === cat ? 'selected' : ''}>${cat}</option>`).join('')}
-                                    </select>
-                                </div>
-                            </section>
+                            </div>
                         </div>
                         <div class="form-column-right">
-                            <section class="form-section">
-                                <h3><i class="bi bi-pencil-square me-1"></i> Detalles</h3>
-                                <div class="form-group">
-                                    <label for="descripcion">Descripción</label>
-                                    <textarea id="descripcion" placeholder="Detalles del producto (opcional)" rows="8">${originalData.descripcion}</textarea>
+                            <div class="summary-card-premium">
+                                <div class="card-premium-header">
+                                    <i class="bi bi-pencil-square"></i> 
+                                    <span>Detalles</span>
                                 </div>
-                            </section>
+                                <div class="card-premium-body">
+                                    <div class="form-group">
+                                        <label for="descripcion">Descripción</label>
+                                        <textarea id="descripcion" placeholder="Detalles del producto (opcional)" rows="8">${originalData.descripcion}</textarea>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -136,30 +146,40 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                 <div class="wizard-step" data-step="2" style="display: none;">
                     <div class="form-grid-layout">
                          <div class="form-column-left">
-                            <section class="form-section">
-                                <h3><i class="bi bi-archive-fill me-1"></i> Identificadores</h3>
-                                <div class="form-group">
-                                    <label for="sku">SKU</label>
-                                    <input type="text" id="sku" placeholder="Código único (Opcional)" value="${originalData.sku}">
+                            <div class="summary-card-premium">
+                                <div class="card-premium-header">
+                                    <i class="bi bi-archive-fill"></i> 
+                                    <span>Identificadores</span>
                                 </div>
-                                <div class="form-group">
-                                    <label for="barcode">Código de Barras</label>
-                                    <input type="text" id="barcode" placeholder="Ej: 759..." value="${originalData.barcode}">
+                                <div class="card-premium-body">
+                                    <div class="form-group">
+                                        <label for="sku">SKU</label>
+                                        <input type="text" id="sku" placeholder="Código único (Opcional)" value="${originalData.sku}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="barcode">Código de Barras</label>
+                                        <input type="text" id="barcode" placeholder="Ej: 759..." value="${originalData.barcode}">
+                                    </div>
                                 </div>
-                            </section>
+                            </div>
                         </div>
                         <div class="form-column-right">
-                             <section class="form-section">
-                                <h3><i class="bi bi-truck me-1"></i> Logística</h3>
-                                <div class="form-group">
-                                    <label for="proveedor">Proveedor</label>
-                                    <select disabled id="proveedor"><option value="">Selecciona (Próximamente)</option></select>
+                            <div class="summary-card-premium">
+                                <div class="card-premium-header">
+                                    <i class="bi bi-truck"></i> 
+                                    <span>Logística</span>
                                 </div>
-                                <div class="form-group">
-                                    <label for="peso">Peso (Kg)</label>
-                                    <input type="number" id="peso" step="0.01" placeholder="Opcional" value="${originalData.peso || ''}">
+                                <div class="card-premium-body">
+                                    <div class="form-group">
+                                        <label for="proveedor">Proveedor</label>
+                                        <select disabled id="proveedor"><option value="">Selecciona (Próximamente)</option></select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="peso">Peso (Kg)</label>
+                                        <input type="number" id="peso" step="0.01" placeholder="Opcional" value="${originalData.peso || ''}">
+                                    </div>
                                 </div>
-                            </section>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -167,43 +187,52 @@ export function ProductForm(productToEdit = null, modalElementRef) {
                 <div class="wizard-step" data-step="3" style="display: none;">
                      <div class="form-grid-layout">
                          <div class="form-column-left">
-                             <section class="form-section">
-                                <h3><i class="bi bi-calculator-fill me-1"></i> Cálculo de Precios</h3>
-                                <div class="form-group">
-                                    <label for="costo">Costo Paquete (${simboloPrincipal}) <span class="text-danger">*</span></label>
-                                    <input type="number" id="costo" step="0.01" required value="${originalData.costo}">
+                            <div class="summary-card-premium">
+                                <div class="card-premium-header">
+                                    <i class="bi bi-calculator-fill"></i> 
+                                    <span>Cálculo de Precios</span>
                                 </div>
-                                <div class="form-group">
-                                    <label for="ganancia">Ganancia (%) <span class="text-danger">*</span></label>
-                                    <input type="number" id="ganancia" step="0.1" required value="${originalData.ganancia}">
+                                <div class="card-premium-body">
+                                    <div class="form-group">
+                                        <label for="costo">Costo Paquete (${simboloPrincipal}) <span class="text-danger">*</span></label>
+                                        <input type="number" id="costo" step="0.01" required value="${originalData.costo}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ganancia">Ganancia (%) <span class="text-danger">*</span></label>
+                                        <input type="number" id="ganancia" step="0.1" required value="${originalData.ganancia}">
+                                    </div>
                                 </div>
-                             </section>
+                            </div>
                          </div>
                          <div class="form-column-right">
-                            <section class="form-section">
-                                <h3><i class="bi bi-box-seam me-1"></i> Inventario Inicial</h3>
-                                <div class="input-group" style="display: flex; gap: 1rem;">
-                                    <div style="flex: 1;" class="form-group">
-                                        <label for="paquetes">Paquetes</label>
-                                        <input type="number" id="paquetes" placeholder="Opc." min="1">
+                            <div class="summary-card-premium">
+                                <div class="card-premium-header">
+                                    <i class="bi bi-box-seam"></i> 
+                                    <span>Inventario Inicial</span>
+                                </div>
+                                <div class="card-premium-body">
+                                    <div class="input-group" style="display: flex; gap: 1rem;">
+                                        <div style="flex: 1;" class="form-group">
+                                            <label for="paquetes">Paquetes</label>
+                                            <input type="number" id="paquetes" placeholder="Opc." min="1">
+                                        </div>
+                                        <div style="flex: 1;" class="form-group">
+                                            <label for="unidades-por-paquete">Unid./Paquete</label>
+                                            <input type="number" id="unidades-por-paquete" placeholder="Opc." min="1" value="${originalData.unidadesPorPaquete || ''}">
+                                        </div>
                                     </div>
-                                    <div style="flex: 1;" class="form-group">
-                                        <label for="unidades-por-paquete">Unid./Paquete</label>
-                                        <input type="number" id="unidades-por-paquete" placeholder="Opc." min="1" value="${originalData.unidadesPorPaquete || ''}">
+                                    <div class="form-group" style="margin-bottom: 0;"> <label for="unidades">Stock ${isEditMode ? 'Total' : 'Inicial'} (Unidades) <span class="text-danger">*</span></label>
+                                        <input type="number" id="unidades" required min="1" value="${originalData.stock}">
                                     </div>
                                 </div>
-                                <div class="form-group" style="margin-bottom: 3.5rem;">
-                                    <label for="unidades">Stock ${isEditMode ? 'Total' : 'Inicial'} (Unidades) <span class="text-danger">*</span></label>
-                                    <input type="number" id="unidades" required min="1" value="${originalData.stock}">
-                                </div>
-                            </section>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="wizard-step" data-step="4" style="display: none;">
-                     <div class="product-summary-view" id="summary-view">
-                     </div>
+                    <div class="product-summary-view" id="summary-view">
+                    </div>
                 </div>
             </form>
         </div>
@@ -291,10 +320,10 @@ export function ProductForm(productToEdit = null, modalElementRef) {
 
             if (isEditMode) {
                 summaryContainer.innerHTML = renderEditProductSummary(newData, originalData, config);
-            } else {
+           } else {
                 summaryContainer.innerHTML = renderNewProductSummary(newData, config);
                 // Bindear eventos solo para el resumen de "Crear"
-                bindCurrencyToggleEvents(summaryContainer);
+                bindCurrencyToggleEvents(summaryContainer, config); // <--- Pasar 'config'
                 bindOfferButtonEvents(summaryContainer);
             }
 
@@ -435,7 +464,121 @@ export function ProductForm(productToEdit = null, modalElementRef) {
     paquetesInput.addEventListener('input', autoCalcularUnidades);
     unidadesPorPaqueteInput.addEventListener('input', autoCalcularUnidades);
 
-    
+    /**
+     * Manejador de clics para la Edición Rápida (Inline Edit) - VERSIÓN PREMIUM
+     * Se activa al hacer clic en un botón con [data-action="inline-edit"].
+     */
+    function handleInlineEditClick(e) {
+        // 🎨 CAMBIO: Ahora buscamos el botón en lugar del span
+        const button = e.target.closest('[data-action="inline-edit"]');
+        if (!button) return;
+
+        // Prevenir si ya hay otro input activo
+        if (element.querySelector('.inline-edit-input')) return;
+
+        const label = button.dataset.fieldLabel;
+        const currentValue = button.dataset.currentValue;
+        
+        // Mapeo de etiquetas a IDs de inputs
+        const fieldMap = {
+            'Nombre': { id: '#producto', type: 'text' },
+            'Marca': { id: '#marca', type: 'text' },
+            'Categoría': { id: '#categoria', type: 'select' },
+            'Descripción': { id: '#descripcion', type: 'textarea' },
+            'SKU': { id: '#sku', type: 'text' },
+            'Cód. Barras': { id: '#barcode', type: 'text' },
+            'Peso': { id: '#peso', type: 'number' },
+            'Costo Paquete': { id: '#costo', type: 'number' },
+            'Ganancia': { id: '#ganancia', type: 'number' },
+            'Unid. p/ Paquete': { id: '#unidades-por-paquete', type: 'number' },
+            'Stock Total': { id: '#unidades', type: 'number' }
+        };
+
+        const fieldInfo = fieldMap[label];
+        if (!fieldInfo) return;
+
+        let input;
+
+        if (fieldInfo.type === 'textarea') {
+            input = document.createElement('textarea');
+            input.rows = 3;
+        } else if (fieldInfo.type === 'select' && fieldInfo.id === '#categoria') {
+            input = document.createElement('select');
+            const optionsHTML = categories.map(cat => 
+                `<option value="${cat}" ${currentValue === cat ? 'selected' : ''}>${cat}</option>`
+            ).join('');
+            input.innerHTML = `<option value="">Selecciona</option>${optionsHTML}`;
+        } else {
+            input = document.createElement('input');
+            input.type = fieldInfo.type === 'number' ? 'number' : 'text';
+            if (fieldInfo.type === 'number') {
+                input.step = (fieldInfo.id === '#ganancia') ? '0.1' : '0.01';
+                if (fieldInfo.id === '#unidades' || fieldInfo.id === '#unidades-por-paquete') {
+                    input.step = '1';
+                }
+            }
+        }
+
+        input.className = 'inline-edit-input';
+        input.value = currentValue;
+        
+        // 🎨 CAMBIO: Buscamos el contenedor del valor (.diff-value-premium)
+        const valueContainer = button.closest('.diff-value-premium');
+        if (!valueContainer) return;
+
+        // Guardamos el HTML original para poder restaurarlo
+        const originalHTML = valueContainer.innerHTML;
+        
+        // Reemplazamos TODO el contenido con el input
+        valueContainer.innerHTML = '';
+        valueContainer.appendChild(input);
+        input.focus();
+        
+        if (input.select) {
+            input.select();
+        }
+
+        // Guardar función
+        const saveEdit = () => {
+            const newValue = input.value;
+            
+            // Actualizar el input oculto del formulario
+            const originalFormInput = element.querySelector(fieldInfo.id);
+            if (originalFormInput) {
+                originalFormInput.value = newValue;
+            }
+            
+            // Remover listeners
+            input.removeEventListener('blur', saveEdit);
+            input.removeEventListener('keydown', onKeydown);
+
+            // Recalcular el resumen
+            calculateAndShowSummary();
+        };
+
+        const onKeydown = (e) => {
+            if (e.key === 'Enter' && fieldInfo.type !== 'textarea') {
+                e.preventDefault();
+                saveEdit();
+            } else if (e.key === 'Escape') {
+                // Cancelar: restauramos el HTML original
+                input.removeEventListener('blur', saveEdit);
+                input.removeEventListener('keydown', onKeydown);
+                valueContainer.innerHTML = originalHTML;
+                
+                // 🎨 IMPORTANTE: Re-bindear el evento al botón restaurado
+                const restoredButton = valueContainer.querySelector('[data-action="inline-edit"]');
+                if (restoredButton) {
+                    restoredButton.addEventListener('click', handleInlineEditClick);
+                }
+            }
+        };
+
+        input.addEventListener('blur', saveEdit, { once: true });
+        input.addEventListener('keydown', onKeydown);
+    }
+
+
     // --- 6. Inicialización del Wizard ---
     // (Se ejecuta después de un breve delay para asegurar que el modal esté en el DOM)
     setTimeout(() => {
@@ -485,6 +628,13 @@ export function ProductForm(productToEdit = null, modalElementRef) {
             isEditMode,
             callbacks: wizardCallbacks
         });
+
+        // --- INICIO DE LA MEJORA: Añadir Listener (Paso 3) ---
+        const wizardContent = element.querySelector('.wizard-content');
+        if (wizardContent) {
+            wizardContent.addEventListener('click', handleInlineEditClick);
+        }
+        // --- FIN DE LA MEJORA ---
 
     }, 50); // 50ms de espera
 

@@ -2,13 +2,13 @@
 // ARCHIVO: src/components/ProductFormSummary.js
 // Propósito: Funciones de renderizado para el Paso 4
 // (Resumen) del ProductForm.
+// VERSIÓN PREMIUM - UI MEJORADA
 // ======================================================
 
 import { diff, fText, fCurr, fPerc, fStock, fPeso } from '../utils/productFormHelpers.js';
 
 /**
- * Helper local para formatear números, ya que es usado por
- * renderPriceCardsHTML y fCurr (que está en helpers).
+ * Helper local para formatear números
  */
 const formatNumber = (num, decimals = 2) => new Intl.NumberFormat('es-VE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
 
@@ -16,7 +16,6 @@ const formatNumber = (num, decimals = 2) => new Intl.NumberFormat('es-VE', { min
  * Renderiza el HTML para las tarjetas de precio (usado en MODO CREAR).
  */
 function renderPriceCardsHTML(precios, costo, ganancia, unidadesPaquete, config) {
-    // Extraemos la configuración de moneda y tasas
     const { simboloPrincipal, simboloBase, tasaIVA, tasaCambio } = config;
 
     const precioUnidadUSD = precios.precioFinalUnitarioDolar;
@@ -88,9 +87,6 @@ function renderPriceCardsHTML(precios, costo, ganancia, unidadesPaquete, config)
 
 /**
  * GENERA EL HTML PARA EL RESUMEN DE UN PRODUCTO NUEVO (PASO 4)
- * @param {object} data - El objeto newData con toda la información.
- * @param {object} config - Objeto con { simboloPrincipal, simboloBase, tasaIVA, tasaCambio }
- * @returns {string} El HTML del resumen.
  */
 export function renderNewProductSummary(data, config) {
     const { simboloPrincipal } = config;
@@ -130,21 +126,12 @@ export function renderNewProductSummary(data, config) {
 }
 
 /**
- * GENERA EL HTML PARA EL RESUMEN DE EDICIÓN (PASO 4)
- * @param {object} newData - El objeto con los datos del formulario.
- * @param {object} originalData - El objeto con los datos originales.
- * @param {object} config - Objeto con { simboloPrincipal }
- * @returns {string} El HTML del resumen.
+ * 🎨 VERSIÓN PREMIUM - GENERA EL HTML PARA EL RESUMEN DE EDICIÓN (PASO 4)
+ * Con UI mejorada: badges, glassmorphism, animaciones
  */
 export function renderEditProductSummary(newData, originalData, config) {
     const { simboloPrincipal } = config;
 
-    // console.group('🔍 DEBUG: renderEditProductSummary');
-    // console.log('📦 newData recibido:', newData);
-    // console.log('📦 originalData recibido:', originalData);
-    
-    // console.log('--- Generando secciones ---');
-    
     // Genera el HTML para cada sección de comparación
     const infoChanges = [
         diff('Nombre', newData.nombre, originalData.nombre, fText),
@@ -177,69 +164,94 @@ export function renderEditProductSummary(newData, originalData, config) {
         diff('Precio Paquete', newPackagePrice, originalData.precioPaquete, fCurr, simboloPrincipal)
     ].join('');
     
-    /*
-    // --- INICIO DE LOGS DE DEPURACIÓN ---
-    console.log('--- Inputs para .some() ---');
-    console.log('infoChanges contiene "changed":', infoChanges.includes('diff-item changed'), infoChanges);
-    console.log('logisticsChanges contiene "changed":', logisticsChanges.includes('diff-item changed'), logisticsChanges);
-    console.log('costStockChanges contiene "changed":', costStockChanges.includes('diff-item changed'), costStockChanges);
-    console.log('priceChanges contiene "changed":', priceChanges.includes('diff-item changed'), priceChanges);
-    // --- FIN DE LOGS DE DEPURACIÓN ---
-    */
-    
     // Detectar si hay cambios
-    // ¡BUG CORREGIDO! Buscamos la clase exacta 'diff-item changed'
     const anyChanges = [
         infoChanges, 
         logisticsChanges, 
         costStockChanges, 
         priceChanges
-    ].some(html => html.includes('diff-item changed')); 
+    ].some(html => html.includes('diff-item-premium changed')); 
 
-    // console.log('✅ ¿Hay cambios?:', anyChanges);
-    // console.groupEnd();
+    // Contar cambios para estadísticas
+    const changeCount = [infoChanges, logisticsChanges, costStockChanges, priceChanges]
+        .reduce((count, html) => count + (html.match(/diff-item-premium changed/g) || []).length, 0);
 
-    // Renderiza la alerta de cabecera
+    // Renderiza la alerta de cabecera con estadísticas
     let alertHTML = '';
     if (anyChanges) {
         alertHTML = `
-        <div class="summary-changes-detected">
-            <i class="bi bi-exclamation-triangle-fill me-1"></i> 
-            ¡Atención! Revisa los cambios antes de guardar.
+        <div class="summary-alert-premium warning">
+            <div class="alert-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="alert-content">
+                <div class="alert-title">¡Atención! Hay cambios pendientes</div>
+                <div class="alert-subtitle">${changeCount} campo${changeCount > 1 ? 's modificado' : ' modificado'}. Revisa antes de guardar.</div>
+            </div>
+            <div class="alert-badge">${changeCount}</div>
         </div>`;
     } else {
         alertHTML = `
-        <div class="summary-no-changes">
-            <i class="bi bi-info-circle me-1"></i> 
-            No se detectaron cambios en los campos.
+        <div class="summary-alert-premium info">
+            <div class="alert-icon">
+                <i class="bi bi-info-circle-fill"></i>
+            </div>
+            <div class="alert-content">
+                <div class="alert-title">Sin cambios detectados</div>
+                <div class="alert-subtitle">Puedes editar cualquier campo haciendo clic en el ícono <i class="bi bi-pencil-fill"></i></div>
+            </div>
         </div>`;
     }
 
-    // Devuelve el HTML final
+    // Layout premium con 2 columnas fluidas
     return `
-    <div class="summary-diff-view">
+    <div class="summary-diff-view-premium">
         ${alertHTML}
-        <div class="summary-grid-layout">
-            <div class="summary-column-left">
-                <section class="summary-section">
-                    <h3><i class="bi bi-info-circle-fill me-1"></i> Información Básica</h3>
+        
+        <div class="summary-grid-premium">
+            
+            <!-- Columna Izquierda -->
+            <div class="summary-card-premium">
+                <div class="card-premium-header">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>Información Básica</span>
+                </div>
+                <div class="card-premium-body">
                     ${infoChanges}
-                </section>
-                <section class="summary-section">
-                    <h3><i class="bi bi-calculator-fill me-1"></i> Costos y Stock</h3>
+                </div>
+            </div>
+            
+            <div class="summary-card-premium">
+                <div class="card-premium-header">
+                    <i class="bi bi-calculator-fill"></i>
+                    <span>Costos y Stock</span>
+                </div>
+                <div class="card-premium-body">
                     ${costStockChanges}
-                </section>
+                </div>
             </div>
-            <div class="summary-column-right">
-                <section class="summary-section">
-                    <h3><i class="bi bi-archive-fill me-1"></i> Inventario y Logística</h3>
+            
+            <!-- Columna Derecha -->
+            <div class="summary-card-premium">
+                <div class="card-premium-header">
+                    <i class="bi bi-archive-fill"></i>
+                    <span>Inventario y Logística</span>
+                </div>
+                <div class="card-premium-body">
                     ${logisticsChanges}
-                </section>
-                <section class="summary-section">
-                    <h3><i class="bi bi-tags-fill me-1"></i> Precios de Venta</h3>
-                    ${priceChanges}
-                </section>
+                </div>
             </div>
+            
+            <div class="summary-card-premium">
+                <div class="card-premium-header">
+                    <i class="bi bi-tags-fill"></i>
+                    <span>Precios de Venta</span>
+                </div>
+                <div class="card-premium-body">
+                    ${priceChanges}
+                </div>
+            </div>
+
         </div>
     </div>`;
 }
@@ -260,14 +272,12 @@ export function bindOfferButtonEvents(summaryContainer) {
             const isApplied = manualPriceBox.classList.contains('price-applied');
 
             if (isApplied) {
-                // Modo "Cancelar"
                 manualPriceBox.classList.remove('price-applied');
                 manualPriceLabel.innerHTML = '<i class="bi bi-pencil-fill me-1"></i> Establecer manual:';
                 button.textContent = 'Aplicar';
                 button.classList.remove('cancel-mode');
                 overridePackagePriceInput.value = '';
             } else {
-                // Modo "Aplicar"
                 overridePackagePriceInput.value = offerPrice;
                 manualPriceBox.classList.add('price-applied');
                 manualPriceLabel.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Precio Aplicado:';
@@ -277,7 +287,6 @@ export function bindOfferButtonEvents(summaryContainer) {
         });
     }
     
-    // Si el usuario escribe manualmente, se desactiva el modo "Aplicado"
     if (overridePackagePriceInput) {
         overridePackagePriceInput.addEventListener('input', () => {
             manualPriceBox.classList.remove('price-applied');
@@ -291,7 +300,7 @@ export function bindOfferButtonEvents(summaryContainer) {
 /**
  * Añade listeners al toggle de moneda (MODO CREAR)
  */
-export function bindCurrencyToggleEvents(summaryContainer) {
+export function bindCurrencyToggleEvents(summaryContainer, config) {
     summaryContainer.addEventListener('click', (e) => {
         const target = e.target.closest('.currency-toggle');
         if (!target) return;
@@ -302,23 +311,21 @@ export function bindCurrencyToggleEvents(summaryContainer) {
         const baseElement = priceCard.querySelector('.price-secondary.currency-toggle');
         if (!principalElement || !baseElement) return;
 
-        // Leer valores de los atributos data-*
         const usdValue = parseFloat(principalElement.dataset.usdValue);
         const vesValue = parseFloat(principalElement.dataset.vesValue);
         if (isNaN(usdValue) || isNaN(vesValue)) return;
         
-        // Determinar qué moneda se está mostrando actualmente
         const isPrincipalTarget = target === principalElement;
         const currentCurrency = target.dataset.currentCurrency;
         const otherElement = isPrincipalTarget ? baseElement : principalElement;
 
-        // Obtener símbolos de la configuración global (pasada en config)
-        // Nota: Este helper es simple y asume que config está disponible en un scope superior
-        // O mejor, extraemos los símbolos de los elementos
-        const simboloPrincipal = principalElement.textContent.startsWith('$') ? '$' : (baseElement.textContent.startsWith('$') ? '$' : 'ERR');
-        const simboloBase = baseElement.textContent.startsWith('Bs') ? 'Bs.' : (principalElement.textContent.startsWith('Bs') ? 'Bs.' : 'ERR');
+        const { simboloPrincipal, simboloBase } = config;
+        
+        if (simboloPrincipal === 'ERR' || simboloBase === 'ERR') {
+            console.error("Símbolos de moneda no recibidos en config");
+            return;
+        }
 
-        // Intercambiar
         if (currentCurrency === 'usd') {
             target.textContent = `${simboloBase}${formatNumber(vesValue)}`;
             target.dataset.currentCurrency = 'ves';
