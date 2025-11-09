@@ -13,7 +13,7 @@ import { logout, tracedLoadUserData } from './services/auth.service.js';
 import { loadBusinessData } from './services/storage.service.js';
 import { initRouter } from './router/index.js';
 import { Logger } from './services/logger.service.js';
-import { LoginView } from './views/LoginView.js';
+import { LoginView } from './views/Authorization/LoginView.js';
 import { Header } from './components/Header.js';
 import { MainNav } from './components/MainNav.js';
 import { Footer } from './components/Footer.js';

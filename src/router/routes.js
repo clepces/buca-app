@@ -12,17 +12,10 @@ import { MODULES } from '../services/modules.config.js';
 // VISTAS: SUPER ADMIN, PROPIETARIO, OPERADOR, CAJA
 const DashboardView = () => import('../views/Dashboard/DashboardView.js').then(m => m.DashboardView);
 const CompaniesDashboardView = () => import('../views/Companies/CompaniesView.js').then(m => m.CompaniesView);
-
-// VISTAS: PROPIETARIO, OPERADOR
-const InventoryDashboardView = () => import('../views/Inventory/DashboardView.js').then(m => m.InventoryDashboardView);
+const InventoryDashboardView = () => import('../views/Inventory/InventoryView.js').then(m => m.InventoryDashboardView);
 const ProductsView = () => import('../views/Inventory/products/ProductsView.js').then(m => m.ProductsView);
-
-// VISTAS: PROPIERARIO, CAJA
-const PosView = () => import('../views/PosView.js').then(m => m.PosView);
-
-// VISTAS: PROPIETARIO, OPERADOR, CAJA -> limitado  
-const ClientsView = () => import('../views/ClientsView.js').then(m => m.ClientsView);
-
+const PosView = () => import('../views/Pos/PosView.js').then(m => m.PosView);
+const ClientsView = () => import('../views/People/ClientsView.js').then(m => m.ClientsView);
 
 export const routes = [
     // --- Módulo CORE ---
