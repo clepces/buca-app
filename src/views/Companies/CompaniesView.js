@@ -116,6 +116,7 @@ export function CompaniesView(element, state) {
         const companyLocation = '180';
 
         element.innerHTML = `
+        <div class="view-panel-content">
             <div class="view-header align-items-center mb-4">
                 <div>
                     <h2 class="view-title mb-1">
@@ -179,6 +180,7 @@ export function CompaniesView(element, state) {
                 <div class="pagination-container" id="companies-pagination-container">
                     </div>
             </div>
+        </div>
         `;
         
         // Inicializar Tooltips (solo una vez)
