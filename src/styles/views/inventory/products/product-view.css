@@ -1,0 +1,315 @@
+/* ======================================================
+// ARCHIVO: src/styles/views/product-view.css
+// PROPÓSITO: Estilos para la vista de Tarjetas de Producto.
+// (Anotación Y-11: Rediseño completo de tarjeta)
+// ====================================================== */
+
+/* --- 1. Contenedor Principal (Ya no es necesario) --- */
+/* .view-panel-content se define en products.css */
+
+.product-list-container {
+    width: 100%;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* --- 2. Grid de Tarjetas --- */
+.product-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem; /* 24px */
+}
+
+/* --- 3. Tarjeta de Producto (Product Card) --- */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px; 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; 
+    overflow: hidden; /* Importante */
+}
+
+.product-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: var(--primary-light);
+}
+
+/* --- 4. Placeholder de Imagen y Superposición (Overlay) --- */
+.card-image-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9; 
+    background-color: var(--bs-gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* Contenedor para el overlay */
+}
+
+.card-image-placeholder .placeholder-icon {
+    font-size: 3rem;
+    color: var(--bs-gray-300);
+}
+
+[data-bs-theme="dark"] .card-image-placeholder {
+    background-color: var(--bs-gray-700);
+}
+[data-bs-theme="dark"] .card-image-placeholder .placeholder-icon {
+    color: var(--bs-gray-500);
+}
+
+.card-header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0.75rem 0.5rem 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    /* Gradiente para que el texto sea legible sobre cualquier imagen */
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 100%);
+}
+
+.card-category-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* Para que no se vea afectado por el clic del menú */
+    position: relative;
+    z-index: 11;
+}
+
+.product-category {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    background-color: var(--bs-gray-100);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    /* Evitar que la categoría sea demasiado larga */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.btn-expand-image {
+    background-color: var(--bs-gray-100);
+    color: var(--bs-heading-color);
+    padding: 0.25rem 1rem;
+}
+.btn-expand-image:hover {
+    background-color: var(--bs-white);
+    color: var(--primary-color);
+}
+
+/* --- 5. Cuerpo de la Tarjeta --- */
+.product-card .card-body {
+    padding: 1rem 1.25rem; /* Más padding para el cuerpo */
+    flex-grow: 1; 
+}
+
+/* --- CORRECCIÓN DE DESBORDAMIENTO --- */
+.product-name, .product-brand {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    margin-bottom: 0.25rem;
+}
+
+.product-brand {
+    font-size: 0.9rem;
+    color: var(--bs-gray-500);
+    margin: 0;
+}
+
+/* --- 6. Footer de la Tarjeta (Estadísticas) --- */
+.product-card .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--bs-border-color);
+    background-color: var(--bs-gray-50);
+    gap: 0.5rem;
+}
+
+[data-bs-theme="dark"] .product-card .card-footer {
+    background-color: rgba(55, 65, 81, 0.3);
+}
+
+.product-stat {
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Permite que el flex item se encoja */
+}
+
+.product-stat .stat-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--bs-gray-500);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+/* --- CORRECCIÓN DE DESBORDAMIENTO --- */
+.product-stat .stat-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-stat .stat-value small {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-gray-600);
+}
+
+.product-stat.stock {
+    align-items: flex-start;
+}
+
+.product-stat.price {
+    align-items: flex-end; 
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    margin: -0.25rem -0.5rem; 
+    border-radius: var(--bs-border-radius-sm);
+    transition: background-color var(--transition-fast);
+}
+
+.product-stat.price:hover {
+    background-color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] .product-stat.price:hover {
+    background-color: var(--bs-gray-700);
+}
+
+.product-stat.price .stat-value {
+    color: var(--bs-success);
+    text-align: right; 
+}
+
+.product-stat.stock.stock-low .stat-value {
+    color: var(--warning-color);
+}
+.product-stat.stock.stock-out .stat-value {
+    color: var(--error-color);
+}
+
+/* --- 6.5: Grupo de Precios (NUEVO) --- */
+.price-group {
+    display: flex;
+    align-items: flex-start; /* Se alinea por las etiquetas (label) */
+    gap: 0.75rem; /* Espacio entre los dos precios */
+    min-width: 0; /* Permite que el grupo se encoja */
+}
+
+/* --- 7. Menú de Acciones (Dropdown) --- */
+.product-actions-menu {
+    position: relative;
+    z-index: 10;
+}
+
+/* Botón de 3 puntos (en el overlay) */
+.product-actions-menu .btn-icon-round {
+    background-color: var(--bs-gray-100);
+    color: var(--bs-heading-color);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+}
+
+.product-actions-menu .btn-icon-round:hover {
+    background-color: var(--bs-white);
+    color: var(--primary-color);
+}
+
+/* El menú desplegable */
+.product-card .menu-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 160px;
+    padding: 0.5rem;
+    animation: fadeIn 0.15s ease-out;
+    margin-top: 0.5rem; 
+}
+
+.product-card.menu-open .menu-dropdown {
+    display: block; 
+}
+
+.menu-dropdown .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: none;
+    background: transparent;
+    border-radius: var(--bs-border-radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    color: var(--bs-heading-color);
+    cursor: pointer;
+}
+
+.menu-dropdown .menu-item i {
+    font-size: 0.9rem;
+    width: 16px;
+    text-align: center;
+    color: var(--bs-gray-500);
+}
+
+.menu-dropdown .menu-item:hover {
+    background-color: var(--bs-gray-100);
+}
+
+[data-bs-theme="dark"] .menu-dropdown .menu-item:hover {
+    background-color: var(--bs-gray-700);
+}
+
+.menu-dropdown .menu-item.text-danger {
+    color: var(--error-color);
+}
+.menu-dropdown .menu-item.text-danger i {
+    color: var(--error-color);
+}
+.menu-dropdown .menu-item.text-danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error-dark);
+}
+
+.menu-dropdown .menu-divider {
+    height: 1px;
+    background-color: var(--bs-border-color);
+    margin: 0.5rem;
+}

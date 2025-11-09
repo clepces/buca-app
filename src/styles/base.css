@@ -254,10 +254,20 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+/* REGLA NUEVA (CORREGIDA) */
 input:disabled, button:disabled, select:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background-color: var(--bs-heading-color);
+    background-color: var(--bs-gray-100); /* Color gris claro */
+}
+
+/* Y AÑADE LA VERSIÓN PARA TEMA OSCURO */
+[data-bs-theme="dark"] input:disabled, 
+[data-bs-theme="dark"] button:disabled, 
+[data-bs-theme="dark"] select:disabled {
+    background-color: var(--bs-gray-700); /* Color gris oscuro */
+    color: var(--bs-gray-400);
+    border-color: var(--bs-gray-600);
 }
 
 .toggle-password {

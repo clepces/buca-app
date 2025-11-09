@@ -1,12 +1,94 @@
+/* ======================================================
+// ARCHIVO: src/styles/components/products.css
+// PROPÓSITO: Estilos para el layout de la vista
+// de Productos/Inventario.
+// (Anotación Y-11)
+// ====================================================== */
+
 .view-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
-    flex-wrap: wrap; /* Para que el botón se mueva abajo en pantallas pequeñas */
+    flex-wrap: wrap;
     gap: 1rem;
 }
 
 .view-header .view-title {
-    margin-bottom: 0; /* Quitamos margen inferior al título cuando está en el header */
+    margin-bottom: 0;
+}
+
+/* --- INICIO DE MEJORA (Y-11) --- */
+/* Este es el panel blanco unificado que pediste */
+.view-panel-content {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    padding: 1.5rem;
+    width: 100%;
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Ajusta el header DENTRO del panel */
+.view-panel-content .view-header {
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+/* --- FIN DE MEJORA --- */
+
+.view-header-actions {
+    display: flex;
+    flex-wrap: wrap; /* Permite que los botones pasen abajo en pantallas pequeñas */
+    align-items: center;
+    justify-content: flex-end; /* Alinea todo a la derecha */
+    gap: 0.75rem; /* Espacio entre los elementos */
+    flex-grow: 1; /* Hace que ocupe el espacio restante */
+    margin-left: 1.5rem; /* Espacio mínimo del título */
+}
+
+/* --- Contenedor del Input de Búsqueda --- */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    /* El input de búsqueda crecerá si hay espacio */
+    flex-grow: 1; 
+    /* Pero no será más grande que 350px */
+    max-width: 350px; 
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.85rem;
+    color: var(--bs-gray-500);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.search-container input.form-control {
+    padding-left: 2.5rem;
+    height: 40px; /* Altura estándar */
+}
+
+/* En pantallas pequeñas, la búsqueda ocupa todo el ancho */
+@media (max-width: 768px) {
+    .view-header-actions {
+        /* Hacemos que la búsqueda esté en una línea y los botones en otra */
+        flex-direction: column;
+        align-items: stretch; /* Ocupar todo el ancho */
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .search-container {
+        max-width: none; /* Ocupa todo el ancho disponible */
+        order: 1; /* Poner la búsqueda primero */
+    }
+    
+    .view-header-actions .btn-secondary,
+    .view-header-actions .btn-primary {
+        order: 2; /* Poner los botones después */
+    }
 }

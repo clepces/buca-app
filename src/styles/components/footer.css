@@ -1,15 +1,16 @@
-/* ==========================================================================
-   FOOTER COMPONENT
-   ========================================================================== */
+/* ======================================================
+// ARCHIVO: src/styles/components/footer.css
+// PROPÓSITO: Estilos para el footer de 3 columnas.
+// (Anotación Y-11 - Versión Corregida)
+// ====================================================== */
 
 .footer {
-    padding: 1.5rem 1rem;
+    padding: 1rem 1.5rem;
     margin-top: auto;
     background-color: var(--bs-card-bg);
     border-top: 1px solid var(--bs-border-color);
-    text-align: center;
     color: var(--bs-gray-600);
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
@@ -17,10 +18,10 @@
     max-width: 1400px;
     margin: 0 auto;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap; /* PERMITE QUE EL TEXTO SE DIVIDA EN VARIAS LÍNEAS */
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .footer a {
@@ -33,4 +34,55 @@
 .footer a:hover {
     color: var(--primary-dark);
     text-decoration: underline;
+}
+
+/* Estilos para las 3 columnas */
+.site-footer-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap; /* Permitir que se rompa en pantallas pequeñas */
+}
+
+.footer-separator {
+    width: 1px;
+    height: 14px;
+    background-color: var(--bs-border-color);
+    margin: 0 0.5rem;
+}
+
+.status-active {
+    width: 8px;
+    height: 8px;
+    background-color: var(--bs-success);
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 4px;
+}
+
+/* (NUEVO) Estilo para el bloque de copyright */
+.footer-copyright {
+    display: flex;
+    gap: 0.25rem; /* Pequeño espacio entre los spans y el link */
+    justify-content: center;
+    flex-wrap: wrap; /* Permitir que se rompa */
+    text-align: center; /* Centrar en móvil */
+}
+
+/* (ACTUALIZADO) Responsividad del Footer */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .site-footer-row.is-start,
+    .site-footer-row.is-end {
+        order: 3; /* Se van al final */
+        justify-content: center;
+    }
+    
+    .footer-copyright {
+        order: 2; /* Queda en medio */
+    }
 }
