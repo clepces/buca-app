@@ -24,6 +24,7 @@ export function AdminDashboard(element, state) {
     };
 
     element.innerHTML = `
+    <div class="view-panel-content">
         <div class="view-header align-items-start mb-4">
             <div>
                 <h2 class="view-title"><i class="bi bi-bar-chart-line-fill me-2"></i> Panel de Control</h2>
@@ -177,6 +178,7 @@ export function AdminDashboard(element, state) {
             </div>
             
         </div>
+    </div>
     `;
 
     // --- INICIO DE LÓGICA DE GRÁFICOS Y TOOLTIPS ---

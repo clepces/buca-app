@@ -4,8 +4,8 @@
 // CORRECCIÓN: Actualizar iconos a Bootstrap Icons
 // ======================================================
 
-import { EmptyState } from '../components/EmptyState.js';
-import { Logger } from '../services/logger.service.js';
+import { EmptyState } from '../../components/EmptyState.js';
+import { Logger } from '../../services/logger.service.js';
 
 export function ClientsView(element, state) {
     element.innerHTML = `
