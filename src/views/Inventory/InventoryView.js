@@ -5,6 +5,9 @@
 // 2. Añade 4 tarjetas de estadísticas (incluyendo Ganancia).
 // 3. Añade botones de acción (Reportes, Abastecer).
 // 4. Añade layout de 2 columnas para futuros gráficos y listas.
+//
+// MEJORA 2 (BASADA EN TU SUGERENCIA):
+// 1. Los placeholders ahora son para "Más Vendidos" y "Bajo Stock".
 // ======================================================
 
 import { EmptyState } from '../../components/EmptyState.js';
@@ -86,12 +89,15 @@ export function InventoryDashboardView(element, state) {
                 
                 <div class="dashboard-card">
                     <div class="dashboard-card-header">
-                        <h4 class="dashboard-card-title">Valor por Categoría</h4>
-                    </div>
+                        <h4 class="dashboard-card-title">Productos Más Vendidos</h4>
+                        <a href="#" class="view-all-link" data-action="view-top-selling">Ver Todos</a>
+                        </div>
                     <div class="dashboard-card-body">
                         ${EmptyState({
-                            icon: 'bi-pie-chart',
-                            message: 'Gráfico de categorías próximamente.'
+                            /* *** INICIO DE CAMBIO *** */
+                            icon: 'bi-graph-up',
+                            message: 'Lista de productos más vendidos próximamente.'
+                            /* *** FIN DE CAMBIO *** */
                         })}
                     </div>
                 </div>
