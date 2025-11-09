@@ -1,0 +1,361 @@
+/* ======================================================
+   ARCHIVO: src/styles/components/stat-cards-premium.css
+   PROPÓSITO: Estilos premium para StatCards con glassmorphism
+   VERSIÓN: 1.0.0 - Premium UI
+   NOTA: Este archivo SOBRESCRIBE los estilos de panel.css
+   ====================================================== */
+
+/* ==============================================
+   1. GRID MEJORADO (Sobrescribe panel.css)
+   ============================================== */
+   .panel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* ==============================================
+   2. STAT-CARD PREMIUM (Sobrescribe panel.css)
+   ============================================== */
+.stat-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-height: 100px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    animation: scaleIn 0.4s ease-out backwards;
+}
+
+/* Animación en cascada */
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.15s; }
+.stat-card:nth-child(3) { animation-delay: 0.2s; }
+.stat-card:nth-child(4) { animation-delay: 0.25s; }
+
+/* Efecto glassmorphism sutil */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary-light);
+}
+
+[data-bs-theme="dark"] .stat-card {
+    background: rgba(31, 41, 55, 0.6);
+    backdrop-filter: blur(10px);
+}
+
+/* ==============================================
+   3. CONTENEDOR PRINCIPAL (Mejora layout)
+   ============================================== */
+.stat-card-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    flex-grow: 1;
+    overflow: hidden;
+    padding: 0.50rem;
+}
+
+/* ==============================================
+   4. ICONO PREMIUM (Con gradiente)
+   ============================================== */
+.stat-card-icon {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-white);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-card-icon {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card-icon i.bi {
+    font-size: 1.75rem;
+    line-height: 1;
+    z-index: 1;
+}
+
+/* Gradiente de fondo para el ícono */
+.stat-card-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, currentColor 0%, transparent 100%);
+    opacity: 0.2;
+}
+
+/* ==============================================
+   5. INFO SECTION (Título y Valor)
+   ============================================== */
+.stat-card-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.stat-card-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bs-gray-600);
+    margin: 0;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+[data-bs-theme="dark"] .stat-card-title {
+    color: var(--bs-gray-400);
+}
+
+.stat-card-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s ease;
+}
+
+.stat-card:hover .stat-card-value {
+    color: var(--primary-color);
+}
+
+.stat-card-value.negative {
+    color: var(--error-color);
+}
+
+.stat-card:hover .stat-card-value.negative {
+    color: var(--error-color);
+}
+
+/* ==============================================
+   6. MINI GRÁFICO (Opcional)
+   ============================================== */
+.stat-card-mini-graph {
+    flex-shrink: 0;
+    width: 90px;
+    height: 50px;
+    display: flex;
+    align-items: flex-end;
+    margin-left: auto;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.stat-card:hover .stat-card-mini-graph {
+    opacity: 1;
+}
+
+.stat-card-mini-graph svg {
+    width: 100%;
+    height: 100%;
+}
+
+.stat-card-mini-graph .graph-bar {
+    fill: var(--bs-gray-300);
+    transition: fill 0.3s ease;
+}
+
+.stat-card:hover .graph-bar {
+    fill: var(--primary-color);
+}
+
+[data-bs-theme="dark"] .stat-card-mini-graph .graph-bar {
+    fill: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .stat-card:hover .graph-bar {
+    fill: var(--primary-light);
+}
+
+/* ==============================================
+   7. FOOTER (Change % indicator)
+   ============================================== */
+.stat-card-footer {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bs-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.stat-card-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+.stat-card-change i {
+    font-size: 0.9em;
+}
+
+.stat-card-change.positive {
+    background: linear-gradient(135deg, rgba(23, 198, 83, 0.15) 0%, rgba(23, 198, 83, 0.05) 100%);
+    color: var(--bs-success);
+    border: 1px solid rgba(23, 198, 83, 0.3);
+}
+
+.stat-card-change.negative {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(220, 38, 38, 0.05) 100%);
+    color: var(--error-color);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.stat-card-footer-text {
+    font-size: 0.75rem;
+    color: var(--bs-gray-500);
+    flex-grow: 1;
+    text-align: right;
+}
+
+[data-bs-theme="dark"] .stat-card-footer-text {
+    color: var(--bs-gray-400);
+}
+
+/* ==============================================
+   8. COLORES DE ICONOS (Gradientes)
+   ============================================== */
+.stat-card.productos .stat-card-icon {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.stat-card.inversion .stat-card-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.stat-card.stock .stat-card-icon {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.stat-card.ganancia .stat-card-icon {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+/* ==============================================
+   9. ANIMACIONES
+   ============================================== */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* ==============================================
+   10. RESPONSIVIDAD
+   ============================================== */
+@media (max-width: 768px) {
+    .panel-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        min-height: 120px;
+        padding: 1.25rem;
+    }
+    
+    .stat-card-icon {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .stat-card-icon i.bi {
+        font-size: 1.5rem;
+    }
+    
+    .stat-card-value {
+        font-size: 1.75rem;
+    }
+    
+    .stat-card-mini-graph {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card-main {
+        gap: 1rem;
+    }
+    
+    .stat-card-value {
+        font-size: 1.5rem;
+    }
+}

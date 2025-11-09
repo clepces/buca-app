@@ -62,13 +62,13 @@ export function InventoryDashboardView(element, state) {
                     className: 'productos' 
                  })}
                  ${StatCard({ 
-                    title: 'Inversión Total (Costo)', 
+                    title: 'Inversión Total', 
                     value: formatCurrency(stats.totalInvestment), 
                     icon: 'bi-cash-coin', 
                     className: 'inversion' 
                  })}
                  ${StatCard({ 
-                    title: 'Valor Total del Stock', 
+                    title: 'Valor de Stock', 
                     value: formatCurrency(stats.totalStockValue), 
                     icon: 'bi-box-seam', 
                     className: 'stock' 

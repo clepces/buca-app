@@ -1,0 +1,475 @@
+/* ======================================================
+   ARCHIVO: src/styles/components/dashboard-premium.css
+   PROPÓSITO: Estilos premium para layouts de dashboards
+   VERSIÓN: 1.0.0 - Premium UI
+   COMPATIBLE CON: AdminDashboard.js, InventoryView.js
+   ====================================================== */
+
+/* ==============================================
+   1. LAYOUTS DE DASHBOARD
+   ============================================== */
+
+/* Grid de 2 columnas (para gráficos y listas) */
+.dashboard-grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@media (min-width: 992px) {
+    .dashboard-grid-2-col {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+/* Grid de acciones rápidas (3-4 columnas) */
+.dashboard-actions {
+    margin-top: 2rem;
+}
+
+.dashboard-actions .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Grid de analytics (2 columnas iguales) */
+.dashboard-analytics {
+    margin-top: 2rem;
+}
+
+.dashboard-analytics .row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ==============================================
+   2. TARJETAS DE DASHBOARD PREMIUM
+   ============================================== */
+.dashboard-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    animation: scaleIn 0.4s ease-out backwards;
+}
+
+.dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+.dashboard-card:nth-child(2) { animation-delay: 0.15s; }
+
+.dashboard-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: var(--primary-light);
+}
+
+[data-bs-theme="dark"] .dashboard-card {
+    background: rgba(31, 41, 55, 0.6);
+    backdrop-filter: blur(10px);
+}
+
+/* Header de tarjeta */
+.dashboard-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    background: linear-gradient(135deg, var(--bs-gray-50) 0%, var(--bs-card-bg) 100%);
+}
+
+[data-bs-theme="dark"] .dashboard-card-header {
+    background: linear-gradient(135deg, rgba(55, 65, 81, 0.5) 0%, rgba(31, 41, 55, 0.3) 100%);
+}
+
+.dashboard-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dashboard-card-title i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+/* Body de tarjeta */
+.dashboard-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==============================================
+   3. ACCIONES RÁPIDAS (Quick Actions)
+   ============================================== */
+.quick-action-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    animation: scaleIn 0.4s ease-out backwards;
+}
+
+.quick-action-card:nth-child(1) { animation-delay: 0.3s; }
+.quick-action-card:nth-child(2) { animation-delay: 0.35s; }
+.quick-action-card:nth-child(3) { animation-delay: 0.4s; }
+.quick-action-card:nth-child(4) { animation-delay: 0.45s; }
+
+.quick-action-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary-light);
+}
+
+[data-bs-theme="dark"] .quick-action-card {
+    background: rgba(31, 41, 55, 0.6);
+    backdrop-filter: blur(10px);
+}
+
+.quick-action-card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.quick-action-card h4 i {
+    color: var(--primary-color);
+}
+
+.quick-action-card p {
+    font-size: 0.875rem;
+    color: var(--bs-gray-600);
+    margin-bottom: 1rem;
+}
+
+[data-bs-theme="dark"] .quick-action-card p {
+    color: var(--bs-gray-400);
+}
+
+.quick-action-card .btn {
+    width: 100%;
+    margin-top: auto;
+}
+
+/* ==============================================
+   4. ANALYTICS CARDS
+   ============================================== */
+.analytics-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: scaleIn 0.4s ease-out backwards;
+}
+
+.analytics-card:nth-child(1) { animation-delay: 0.5s; }
+.analytics-card:nth-child(2) { animation-delay: 0.55s; }
+
+.analytics-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: var(--primary-light);
+}
+
+[data-bs-theme="dark"] .analytics-card {
+    background: rgba(31, 41, 55, 0.6);
+    backdrop-filter: blur(10px);
+}
+
+.analytics-card h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.analytics-card h4 i {
+    color: var(--primary-color);
+}
+
+.analytics-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.analytics-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+}
+
+.analytics-label {
+    font-size: 0.875rem;
+    color: var(--bs-gray-600);
+    font-weight: 500;
+}
+
+[data-bs-theme="dark"] .analytics-label {
+    color: var(--bs-gray-400);
+}
+
+.analytics-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+}
+
+.analytics-value.positive {
+    color: var(--bs-success);
+}
+
+.analytics-value.negative {
+    color: var(--error-color);
+}
+
+.analytics-value.neutral {
+    color: var(--bs-gray-600);
+}
+
+.analytics-value.status-active {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    background: rgba(23, 198, 83, 0.15);
+    color: var(--bs-success);
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.analytics-value.status-active::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--bs-success);
+    border-radius: 50%;
+}
+
+/* ==============================================
+   5. SUBTÍTULO DEL DASHBOARD
+   ============================================== */
+.dashboard-subtitle {
+    font-size: 1rem;
+    color: var(--bs-gray-600);
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+[data-bs-theme="dark"] .dashboard-subtitle {
+    color: var(--bs-gray-400);
+}
+
+/* ==============================================
+   6. LISTAS DE DASHBOARD
+   ============================================== */
+.dashboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dashboard-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    transition: background-color 0.2s ease;
+    border-radius: var(--bs-border-radius);
+}
+
+.dashboard-list-item:not(:last-child) {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.dashboard-list-item:hover {
+    background-color: var(--bs-gray-50);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+[data-bs-theme="dark"] .dashboard-list-item:hover {
+    background-color: rgba(55, 65, 81, 0.3);
+}
+
+.list-item-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.list-item-title,
+.list-item-subtitle {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.list-item-title {
+    font-weight: 600;
+    color: var(--bs-heading-color);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.list-item-subtitle {
+    font-size: 0.8rem;
+    color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .list-item-subtitle {
+    color: var(--bs-gray-400);
+}
+
+.list-item-subtitle strong {
+    color: var(--warning-color);
+    font-weight: 700;
+}
+
+.list-item-value {
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+.list-item-value.is-action {
+    font-size: 0.9rem;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.list-item-value.is-action:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* ==============================================
+   7. LINK "VER TODOS"
+   ============================================== */
+.view-all-link {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.view-all-link:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+.view-all-link::after {
+    content: '\f054';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.view-all-link:hover::after {
+    transform: translateX(3px);
+}
+
+/* ==============================================
+   8. ANIMACIONES
+   ============================================== */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ==============================================
+   9. RESPONSIVIDAD
+   ============================================== */
+@media (max-width: 768px) {
+    .dashboard-grid-2-col {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-actions .row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .dashboard-analytics .row {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-card-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .dashboard-card-body {
+        padding: 1.25rem;
+    }
+    
+    .quick-action-card,
+    .analytics-card {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-card-title {
+        font-size: 1rem;
+    }
+    
+    .analytics-grid {
+        gap: 0.75rem;
+    }
+    
+    .analytics-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
