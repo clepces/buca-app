@@ -32,7 +32,7 @@ export function AdminDashboard(element, state) {
             </div>
             <div class="ms-auto text-end">
                  <div class="dashboard-date-picker">
-                    <i class="bi bi-calendar3 me-1"></i>
+                    <i class="bi bi-calendar-range me-1"></i>
                     <input type="text" id="admin-datepicker" placeholder="Seleccionar rango...">
                  </div>
             </div>

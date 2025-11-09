@@ -117,3 +117,45 @@
     max-width: 80%;
     overflow-wrap: break-word;
 }
+
+
+/* ==========================================================================
+   3. ESTADO VACÍO GENÉRICO (.empty-state)
+   (AÑADIDO PARA CORREGIR BUG)
+   ========================================================================== */
+
+   .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--bs-gray-500);
+    font-size: 1rem;
+    font-weight: 500;
+    background-color: transparent;
+    border-radius: var(--bs-border-radius);
+    border: 2px dashed var(--bs-border-color);
+    transition: all var(--transition-normal);
+    margin-top: 1rem;
+}
+
+.empty-state:hover {
+    background-color: var(--bs-gray-50);
+    border-color: var(--primary-light);
+}
+
+.empty-state .empty-state-icon {
+    font-size: 2.5rem;
+    color: var(--bs-gray-400);
+    margin-bottom: 1rem;
+    transition: all var(--transition-fast);
+    display: block; /* Asegura que el icono esté centrado arriba */
+}
+
+.empty-state:hover .empty-state-icon {
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.empty-state .empty-state-message {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}

@@ -9,6 +9,8 @@ import { Logger } from '../../services/logger.service.js';
 
 export function ClientsView(element, state) {
     element.innerHTML = `
+    <div class="view-panel-content">
+
         <div class="view-header align-items-center mb-4">
             <div>
                 <h2 class="view-title"><i class="bi bi-people-fill me-2"></i> Clientes</h2>
@@ -23,6 +25,8 @@ export function ClientsView(element, state) {
             // icon: 'bi-person-plus-fill',
             message: 'La gestión de clientes estará disponible próximamente.'
         })}
+    
+    </div>
     `;
 
     return () => {

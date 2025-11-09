@@ -9,15 +9,25 @@ import { Logger } from '../../services/logger.service.js';
 
 export function PosView(element, state) {
     element.innerHTML = `
-        <div class="view-header">
-            <h2 class="view-title"><i class="bi bi-printer-fill me-2"></i> Punto de Venta (POS)</h2>
+    <div class="view-panel-content">
 
+        <div class="view-header align-items-start mb-4">
+            <div>
+                <h2 class="view-title">
+                    <i class="bi bi-printer-fill me-2"></i> Punto de Venta (POS)
+                </h2>
+            </div>
+            <div class="ms-auto text-end">
+                {btn-add}
+            </div>
         </div>
 
         ${EmptyState({
              // icon: 'bi-cart-plus-fill',
             message: 'La interfaz principal de ventas se construirá aquí.'
         })}
+    
+    </div>
     `;
 
     return () => {
