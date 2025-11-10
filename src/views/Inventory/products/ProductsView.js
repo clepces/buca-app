@@ -162,7 +162,7 @@ export function ProductsView(element, state) {
                     </div>
                 </div>
                 
-                <div class="product-list-container">
+                <div class="product-list-container mb-4 pb-4">
                     ${EmptyState({ icon: 'bi-hourglass-split', message: 'Cargando productos...' })}
                 </div>
                 
