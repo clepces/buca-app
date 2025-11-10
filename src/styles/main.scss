@@ -1,11 +1,7 @@
-/*
-// ======================================================
+/* ======================================================
 // ARCHIVO: src/styles/main.scss
-// VERSIÓN: 4.0 - Con CSS Premium integrado
-// CAMBIOS: Se añaden stat-cards-premium.css y dashboard-premium.css
-// NOTA: calculator.css puede ser eliminado (duplicado)
-// ======================================================
-*/
+// VERSIÓN CORREGIDA: Limpia la confusión de 'panel.css'
+// ====================================================== */
 
 /* 1. Reseteo y Estilos Base */
 @import './reset.css';
@@ -19,7 +15,7 @@
 @import './components/buttons.css';
 @import './components/forms.css';
 @import './components/modal.css';
-/* @import './components/calculator.css'; */ /* ⚠️ OBSOLETO - Duplica product-form.css */
+/* @import './components/calculator.css'; */ /* ⚠️ OBSOLETO */
 @import './components/toast.css';
 @import './components/loader.css';
 @import './components/login.css';
@@ -29,18 +25,18 @@
 @import './components/header.css';
 @import './components/nav.css';
 @import './components/footer.css';
-// @import './components/panel.css'; /* ⚠️ Será sobrescrito por stat-cards-premium.css */
+/* ⚠️ 'panel.css' ELIMINADO COMPLETAMENTE DE AQUÍ ⚠️ */
 @import './components/products.css';
 @import './components/table.css';
 @import './components/pagination.css';
 @import './components/pos.css';
 @import './components/tabs.css';
 @import './components/historial.css';
-@import './components/product-form.css'; /* ✅ Ya tiene estilos premium integrados */
+@import './components/product-form.css';
 
-/* 5. 🆕 ESTILOS PREMIUM (Añadidos) */
-@import './components/stat-cards-premium.css'; /* Sobrescribe panel.css */
-@import './components/dashboard-premium.css'; /* Estilos para dashboards */
+/* 5. 🆕 ESTILOS PREMIUM (Correctos) */
+@import './components/stat-cards-premium.css'; /* ✅ ESTE ES EL CORRECTO */
+@import './components/dashboard-premium.css'; 
 
 /* 6. Otros y Media Queries */
 @import './components/message.css';

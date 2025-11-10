@@ -127,8 +127,8 @@ export function InventoryDashboardView(element, state) {
         Logger.info('Limpiando InventoryDashboardView...');
         // --- ¡INICIO DE MEJORA! ---
         // Limpiamos el CSS al salir de la vista
-        const link = document.querySelector('link[href="src/styles/views/inventory/inventory.css"]');
-        if (link) link.remove();
+        // const link = document.querySelector('link[href="src/styles/views/inventory/inventory.css"]');
+        // if (link) link.remove();
         // --- FIN DE MEJORA ---
     };
 }

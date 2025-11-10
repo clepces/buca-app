@@ -10,8 +10,12 @@
 .product-list-container {
     width: 100%;
     animation: fadeIn 0.4s ease-out;
+    transition: opacity 0.15s ease-in-out;
 }
 
+.product-list-container.fade-out {
+    opacity: 0;
+}
 /* --- 2. Grid de Tarjetas --- */
 .product-card-grid {
     display: grid;

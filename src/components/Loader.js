@@ -13,7 +13,7 @@ export function LoaderComponent() {
         <div class="loader-content">
             <div class="buca-logo-animation">
                 <svg viewBox="0 0 640 640" class="logo-svg">
-                    <use href="/icons/logo-buca.svg#fire-path" class="logo-fire"/>
+                    <use href="/assets/icons/logo-buca.svg#fire-path" class="logo-fire"/>
                 </svg>
                 <div class="logo-text">
                     <span class="char" style="--i:1;">B</span>

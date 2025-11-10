@@ -133,9 +133,11 @@ export function AdminDashboard(element, state) {
                          ${EmptyState({ icon: 'bi-list-ul', message: 'Lista de transacciones recientes próximamente.' })}
                     </div>
                 </div>
+                
             </div>
             
             <div class="d-flex flex-column gap-3">
+
                 <div class="dashboard-card">
                     <div class="dashboard-card-header">
                         <h4 class="dashboard-card-title">Información General</h4>
@@ -159,7 +161,9 @@ export function AdminDashboard(element, state) {
                  <div class="dashboard-card">
                     <div class="dashboard-card-header">
                         <h4 class="dashboard-card-title">Descripción de Clientes</h4>
-                         <button class="btn-secondary btn-icon-sm" data-tippy-content="Hoy">Hoy <i class="bi bi-chevron-down ms-1"></i></button>
+                        <button class="btn-secondary btn-icon-sm" data-tippy-content="Hoy">
+                            Hoy <i class="bi bi-chevron-down ms-1"></i>
+                        </button>
                     </div>
                     <div class="dashboard-card-body">
                          <div id="admin-customer-chart" class="chart-placeholder"></div>
@@ -178,6 +182,7 @@ export function AdminDashboard(element, state) {
             </div>
             
         </div>
+
     </div>
     `;
 

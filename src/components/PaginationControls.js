@@ -1,7 +1,7 @@
 // ======================================================
-// ARCHIVO NUEVO: src/components/PaginationControls.js
+// ARCHIVO: src/components/PaginationControls.js
+// VERSIÓN CORREGIDA: Oculta botones si totalPages <= 1
 // ======================================================
-
 /**
  * Renderiza los controles de paginación para una tabla.
  * @param {object} props
@@ -49,6 +49,21 @@ export function PaginationControls({
         return pagesHTML;
     }
 
+    // --- INICIO DE NUEVA LÓGICA ---
+    // Renderiza los botones de control solo si hay más de una página
+    const paginationControlsHTML = totalPages > 1 ? `
+        <button class="btn-icon" id="btn-prev-page" ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <span class="pagination-pages">
+            ${renderPageNumbers()}
+        </span>
+        <button class="btn-icon" id="btn-next-page" ${currentPage === totalPages ? 'disabled' : ''}>
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    ` : ''; // Si no, devuelve un string vacío
+    // --- FIN DE NUEVA LÓGICA ---
+
     return `
         <div class="pagination-info">
             <span>Row Per Page:</span>
@@ -62,15 +77,7 @@ export function PaginationControls({
             <span>${showingText}</span>
         </div>
         <div class="pagination-controls">
-            <button class="btn-icon" id="btn-prev-page" ${currentPage === 1 ? 'disabled' : ''}>
-                <i class="bi bi-chevron-left"></i>
-            </button>
-            <span class="pagination-pages">
-                ${renderPageNumbers()}
-            </span>
-            <button class="btn-icon" id="btn-next-page" ${currentPage === totalPages ? 'disabled' : ''}>
-                <i class="bi bi-chevron-right"></i>
-            </button>
+            ${paginationControlsHTML} 
         </div>
     `;
 }

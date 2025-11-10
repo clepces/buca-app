@@ -473,3 +473,36 @@
         gap: 0.5rem;
     }
 }
+
+/* ==============================================
+   10. DATE PICKER
+   ============================================== */
+   .dashboard-date-picker {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    padding: 0.5rem 0.75rem;
+    box-shadow: var(--shadow-sm);
+}
+.dashboard-date-picker i {
+    color: var(--bs-gray-500);
+    font-size: 1rem;
+    margin-right: 0.5rem; /* Reemplaza me-1 para consistencia */
+}
+.dashboard-date-picker input {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--bs-heading-color);
+}
+.dashboard-date-picker input:focus {
+    outline: none;
+    box-shadow: none;
+}
+[data-bs-theme="dark"] .dashboard-date-picker input {
+    color: var(--bs-gray-200);
+}

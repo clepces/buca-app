@@ -1,8 +1,6 @@
 // ======================================================
 // ARCHIVO: src/views/Inventory/products/ProductsView.js
-// MEJORA: (Anotación Y-13)
-// 1. Lógica de renderizado de tarjetas movida a 
-//    './cards/ProductCards.js' para limpiar el código.
+// VERSIÓN CORREGIDA: Separa 'change' de 'click'
 // ======================================================
 
 import { deleteProduct } from '../../../store/actions.js';
@@ -62,30 +60,35 @@ export function ProductsView(element, state) {
         const totalPages = getTotalPages(viewState.totalItems, viewState.itemsPerPage);
 
         // 1. Actualizar las tarjetas
-        // --- ¡INICIO DE LA CORRECCIÓN! ---
-        // Cambiamos '#' (ID) por '.' (clase) para que coincida con el HTML
         const cardsContainer = element.querySelector(".product-list-container");
-        // --- ¡FIN DE LA CORRECCIÓN! ---
         
         if (cardsContainer) {
-            if (paginatedProducts.length > 0) {
-                // ¡Llamamos a la función importada!
-                cardsContainer.innerHTML = renderProductCards(paginatedProducts, globalState.settings);
-            } else if (viewState.searchTerm) {
-                cardsContainer.innerHTML = EmptyState({
-                    icon: 'bi-search',
-                    message: 'No se encontraron productos',
-                    instructions: 'Intenta con un término de búsqueda diferente.'
-                });
-            } else {
-                cardsContainer.innerHTML = EmptyState({
-                    icon: 'bi-box-seam',
-                    message: 'Aún no has añadido ningún producto.',
-                    instructions: 'Haz clic en "Añadir Producto" para empezar.'
-                });
-            }
+
+            // --- INICIO DE MODIFICACIÓN ---
+            cardsContainer.classList.add('fade-out'); // 1. Ocultar
+            
+            // 2. Esperar que termine la animación
+            setTimeout(() => { 
+                if (paginatedProducts.length > 0) {
+                    cardsContainer.innerHTML = renderProductCards(paginatedProducts, globalState.settings);
+                } else if (viewState.searchTerm) {
+                    cardsContainer.innerHTML = EmptyState({
+                        icon: 'bi-search',
+                        message: 'No se encontraron productos',
+                        instructions: 'Intenta con un término de búsqueda diferente.'
+                    });
+                } else {
+                    cardsContainer.innerHTML = EmptyState({
+                        icon: 'bi-box-seam',
+                        message: 'Aún no has añadido ningún producto.',
+                        instructions: 'Haz clic en "Añadir Producto" para empezar.'
+                    });
+                }
+                cardsContainer.classList.remove('fade-out'); // 3. Mostrar
+            }, 150); // 150ms (coincide con la transición CSS)
+            // --- FIN DE MODIFICACIÓN ---
+            
         } else {
-            // Este log te dirá si el contenedor sigue sin encontrarse
             Logger.error("[ProductsView] No se pudo encontrar '.product-list-container' para actualizar las tarjetas.");
         }
 
@@ -98,8 +101,7 @@ export function ProductsView(element, state) {
                 totalItems: viewState.totalItems,
                 itemsPerPage: viewState.itemsPerPage
             });
-            // Ocultar paginación si no hay resultados o solo hay una página
-            paginationContainer.style.display = totalPages > 1 ? 'flex' : 'none';
+            paginationContainer.style.display = viewState.totalItems > 0 ? 'flex' : 'none';
         }
         
         // 3. Actualizar contador del título
@@ -109,12 +111,10 @@ export function ProductsView(element, state) {
         }
     };
     
-    // Renderizado con Debounce para la búsqueda
     const debouncedSearchHandler = debounce(() => {
         updateCardsAndPagination();
     }, 300);
 
-    // Cargar el CSS específico de esta vista
     const loadCSS = () => {
         const viewCSS = 'src/styles/views/inventory/products/product-view.css';
         if (!document.querySelector(`link[href="${viewCSS}"]`)) {
@@ -125,12 +125,11 @@ export function ProductsView(element, state) {
         }
     };
 
-    // --- RENDERIZADO INICIAL DEL LAYOUT ---
     const renderMainContent = () => {
         Logger.trace('[ProductsView] renderMainContent ejecutado (Layout).');
         
-        applyFilters(); // Aplicar filtros iniciales
-        viewState.totalItems = filteredProducts.length; // Establecer total
+        applyFilters(); 
+        viewState.totalItems = filteredProducts.length; 
         const canCreate = can(PERMISSIONS.CREATE_PRODUCT);
         
         element.innerHTML = `
@@ -139,7 +138,9 @@ export function ProductsView(element, state) {
                     <h2 class="view-title">
                         <i class="bi bi-boxes me-2"></i> 
                         Productos
-                        <span class="badge bg-primary-subtle text-primary-emphasis ms-2" id="view-title-counter">${viewState.totalItems}</span>
+                        <span class="badge bg-primary-subtle text-primary-emphasis ms-2" id="view-title-counter">
+                            ${viewState.totalItems}
+                        </span>
                     </h2>
                     <div class="view-header-actions">
                         <div class="search-container" style="min-width: 250px;">
@@ -153,6 +154,7 @@ export function ProductsView(element, state) {
                         <button class="btn-secondary" data-action="export-products" disabled>
                             <i class="bi bi-download me-1"></i> Exportar
                         </button>
+
                         ${canCreate ? `
                         <button id="btn-add-product" class="btn-primary" data-action="add-product">
                             <i class="bi bi-plus-circle-fill me-1"></i> Añadir Producto
@@ -197,21 +199,24 @@ export function ProductsView(element, state) {
             }
         }
 
-        if (target.id === 'items-per-page') {
-            viewState.itemsPerPage = parseInt(target.value, 10);
-            viewState.currentPage = 1; // Resetear a página 1
-            needsUpdate = true;
-        }
-        
         if (needsUpdate) {
             updateCardsAndPagination();
+        }
+    };
+    
+    // --- ✅ NUEVO MANEJADOR PARA EL EVENTO 'CHANGE' ---
+    const handleItemsPerPageChange = (e) => {
+        if (e.target.id === 'items-per-page') {
+            viewState.itemsPerPage = parseInt(e.target.value, 10);
+            viewState.currentPage = 1; // Resetear a página 1
+            updateCardsAndPagination(); // Actualizar la vista
         }
     };
     
     const handleSearch = (e) => {
         if (e.target.id === 'search-products') {
             viewState.searchTerm = e.target.value;
-            viewState.currentPage = 1; // Resetear a página 1
+            viewState.currentPage = 1; 
             debouncedSearchHandler();
         }
     };
@@ -222,23 +227,20 @@ export function ProductsView(element, state) {
 
         const action = actionElement.dataset.action;
 
-        // --- Acciones que NO necesitan ID de producto ---
         if (action === 'add-product') {
              if (can(PERMISSIONS.CREATE_PRODUCT)) {
                  const modalClosed = await openProductModal(null);
                  if (modalClosed) {
-                     updateCardsAndPagination(); // Refrescar la vista
+                     updateCardsAndPagination(); 
                  }
              }
              else { Logger.warn("Intento de añadir producto sin permiso."); }
              return;
         }
 
-        // --- Acciones de Tarjeta (necesitan ID) ---
         const card = actionElement.closest('.product-card');
         const productId = card?.dataset.productId;
 
-        // Manejar el menú desplegable
         if (action === 'menu-toggle') {
             e.stopPropagation();
             card.classList.toggle('menu-open');
@@ -248,7 +250,6 @@ export function ProductsView(element, state) {
             return;
         }
         
-        // Intercambio de moneda
         if (action === 'toggle-currency') {
             e.stopPropagation();
             const priceStats = card.querySelectorAll('.product-stat.price .stat-value[data-currency]');
@@ -260,7 +261,6 @@ export function ProductsView(element, state) {
             return;
         }
 
-        // Botón de expandir imagen
         if (action === 'expand-image') {
             e.stopPropagation();
             Logger.info('Acción: Expandir Imagen (Próximamente)');
@@ -268,17 +268,15 @@ export function ProductsView(element, state) {
             return;
         }
 
-        // Si no hay ID de producto para las acciones restantes, salir
         if (!productId) return;
 
-        // Acciones que requieren ID
         if (action === 'editar') {
              if (can(PERMISSIONS.EDIT_PRODUCT)) {
                  const productToEdit = globalState.products.find(p => p.id === productId);
                  if (productToEdit) {
                      const modalClosed = await openProductModal(productToEdit);
                      if (modalClosed) {
-                         updateCardsAndPagination(); // Refrescar la vista
+                         updateCardsAndPagination(); 
                      }
                  }
                  else { Logger.error(`Producto ${productId} no encontrado para editar.`); }
@@ -296,7 +294,7 @@ export function ProductsView(element, state) {
                          async () => {
                              Logger.trace(`[ProductsView] Confirmada eliminación de ${productId}`);
                              await deleteProduct(globalState, productId);
-                             updateCardsAndPagination(); // Refrescar la vista
+                             updateCardsAndPagination(); 
                          },
                          { icon: 'bi bi-trash3-fill text-danger', confirmText: 'Sí, eliminar', confirmButtonClass: 'btn-danger' }
                      );
@@ -313,15 +311,15 @@ export function ProductsView(element, state) {
 
     // --- INICIALIZACIÓN ---
     loadCSS();
-    renderMainContent(); // Renderiza el layout
-    updateCardsAndPagination(); // Puebla el layout con los datos iniciales
+    renderMainContent(); 
+    updateCardsAndPagination(); 
 
-    // Adjuntar listeners
+    // --- ✅ LISTENERS ACTUALIZADOS ---
     element.addEventListener('click', handleActions);
-    element.addEventListener('click', handlePagination);
-    element.addEventListener('input', handleSearch);
+    element.addEventListener('click', handlePagination); // Solo para botones de pág.
+    element.addEventListener('input', handleSearch); // Para búsqueda
+    element.addEventListener('change', handleItemsPerPageChange); // Para el <select>
 
-    // Listener global para cerrar menús
     const closeAllMenus = (e) => {
         if (!e.target.closest('.product-actions-menu')) {
             document.querySelectorAll('.product-card.menu-open').forEach(card => {
@@ -335,11 +333,14 @@ export function ProductsView(element, state) {
     // --- LIMPIEZA ---
     return () => {
         Logger.info('Limpiando ProductsView...');
+        // --- ✅ LISTENERS ACTUALIZADOS ---
         element.removeEventListener('click', handleActions);
         element.removeEventListener('click', handlePagination);
         element.removeEventListener('input', handleSearch);
+        element.removeEventListener('change', handleItemsPerPageChange);
+        
         document.removeEventListener('click', closeAllMenus);
-        const link = document.querySelector('link[href="src/styles/views/inventory/products/product-view.css"]');
-        if (link) link.remove();
+        // const link = document.querySelector('link[href="src/styles/views/inventory/products/product-view.css"]');
+        // if (link) link.remove();
     };
 }
