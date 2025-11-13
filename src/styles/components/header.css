@@ -220,9 +220,46 @@
     }
 }
 
-
-
 .bcv-updater .input-group {
     display: flex;
     align-items: center; /* ¡Esta es la propiedad clave que alinea todo! */
+}
+
+/* ==========================================================================
+   6. TASA DE CAMBIO CLICKEABLE (AÑADIDO)
+   ========================================================================== */
+
+   .stat-item.stat-item-clickable {
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: var(--bs-border-radius-sm);
+    padding: 0.25rem 0.5rem; /* Añadir un poco de padding para el hover */
+    margin: -0.25rem -0.5rem; /* Compensar el padding */
+    transition: background-color var(--transition-fast);
+    /* Resetea los estilos de <button> */
+    text-align: right;
+    color: var(--bs-white);
+    font-family: var(--bs-font-sans-serif);
+}
+
+.stat-item.stat-item-clickable:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.stat-item.stat-item-clickable .stat-label {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Alinear a la derecha */
+}
+
+.stat-item.stat-item-clickable .stat-label i {
+    font-size: 0.65rem;
+    margin-left: 0.35rem;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.stat-item.stat-item-clickable:hover .stat-label i {
+    opacity: 0.7;
 }

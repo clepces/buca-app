@@ -24,6 +24,9 @@ import { PERMISSIONS } from './services/roles.config.js';
 import { routes } from './router/routes.js';
 import { MODULES } from './services/modules.config.js';
 import { ROLES } from './services/roles.config.js';
+import { initRateService } from './services/rate.service.js'; 
+import { showToast } from './services/toast.service.js';
+import { openRateUpdateModal } from './services/modal.service.js';
 
 export default class App {
 
@@ -42,8 +45,34 @@ export default class App {
     async init() {
         Logger.info('App: Inicializando...');
         registerRerender(this.render.bind(this));
+        
+        // --- ¡NUEVO! Iniciamos los escuchadores de red ---
+        this.initConnectivityListeners();
     }
 
+    // --- ¡NUEVA FUNCIÓN! ---
+    initConnectivityListeners() {
+        // 1. Detectar cuando se pierde la conexión
+        window.addEventListener('offline', () => {
+            Logger.warn('App: Conexión perdida. Pasando a modo offline.');
+            showToast('Sin conexión a internet. Trabajando en modo local.', 'warning', 5000);
+            document.body.classList.add('is-offline'); // Útil si quieres estilos CSS específicos
+            
+            // Opcional: Actualizar el estado global para que otros componentes sepan
+            // state.ui.isOffline = true; 
+        });
+
+        // 2. Detectar cuando vuelve la conexión
+        window.addEventListener('online', () => {
+            Logger.info('App: Conexión restablecida.');
+            showToast('Conexión restablecida. Sincronizando...', 'success', 3000);
+            document.body.classList.remove('is-offline');
+            
+            // Opcional: Recargar datos críticos
+            // this.refreshCurrentView(); 
+        });
+    }
+    
     async handleAuthStateChange(user) {
         if (user) {
             if (!this.root.contains(this.mainLoader.element)) {
@@ -67,6 +96,13 @@ export default class App {
                     role: sessionData.user.role
                 });
 
+                this.mainLoader.updateMessage('Obteniendo tasas de cambio...');
+                await delay(500); // Pequeña pausa visual
+                const rateInfo = await initRateService();
+                
+                // Actualizamos el estado (initRateService ya lo hizo, pero esto re-asegura)
+                state.settings.currencies.principal.rate = rateInfo.rate;
+                
                 if (state.session.business.id === 'admin_view') {
                     this.mainLoader.updateMessage('Bienvenido, Administrador');
                     state.products = [];
@@ -81,7 +117,22 @@ export default class App {
                     }
                 }
                 await delay(1500);
-                this.bootAuthenticatedApp(sessionData); 
+                this.bootAuthenticatedApp(sessionData); // Arranca la app principal
+                
+                // --- 4. MOSTRAR ALERTAS (DESPUÉS DE CARGAR LA UI) ---
+                // Mostramos las alertas *después* de que la app arranque
+                // para que el toast sea visible sobre la UI.
+                await delay(1000); // Espera a que la UI esté pintada
+                
+                if (rateInfo.isOffline) {
+                    showToast(`Modo Offline: Usando tasa guardada (Bs. ${rateInfo.rate})`, 'warning', 5000);
+                }
+                if (rateInfo.requiresManualUpdate) {
+                    // Esta alerta es pegajosa (15 seg) porque es crítica
+                    showToast('¡No se encontró tasa! Debes actualizarla manualmente.', 'error', 15000);
+                }
+                // --- FIN DE ALERTAS ---
+
             } else {
                 Logger.warn('No se pudo cargar sesión. Mostrando login.');
                 await logout(); 
@@ -193,7 +244,7 @@ export default class App {
         // onAuthStateChanged(null) se encargará de llamar a showLogin()
     }
 
-    handleGlobalActions(e) {
+    async handleGlobalActions(e) {
         // 1. Manejador de Clics de Navegación (movido desde el router)
         const link = e.target.closest('a[data-route]');
         if (link) {
@@ -220,17 +271,27 @@ export default class App {
             this.handleLogoutSequence();
         } else {
             switch (action) {
+                // --- ¡INICIO DE NUEVA LÓGICA! ---
+                case 'open-rate-modal':
+                    openRateUpdateModal();
+                    break;
+                // --- ¡FIN DE NUEVA LÓGICA! ---
+
                 case 'open-config':
                     Logger.info('Abrir config...');
                     break;
-                case 'toggle-actions-menu':
-                    dropdown?.classList.toggle('show');
-                    break;
+                
                 case 'toggle-theme':
-                    this.toggleTheme();
+                        this.toggleTheme();
                     break;
+
                 default:
-                    Logger.warn(`Acción desconocida: ${action}`);
+                    // (Manejo de 'toggle-actions-menu' si es necesario o dejarlo fuera)
+                     if (action === 'toggle-actions-menu') {
+                        dropdown?.classList.toggle('show');
+                    } else {
+                        Logger.warn(`Acción desconocida: ${action}`);
+                    }
             }
         }
     }

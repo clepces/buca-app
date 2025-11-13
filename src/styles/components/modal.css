@@ -1,52 +1,44 @@
 /* ==========================================================================
    MODAL COMPONENT
-   Estilos para todas las ventanas emergentes, incluyendo configuración,
-   login, edición, confirmación y abastecimiento.
+   Estilos para ventanas emergentes, configuración y paneles de tasa.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. ESTILOS GENERALES DEL MODAL (Contenedor y Fondo)
--------------------------------------------------------------------------- */
+   1. ESTILOS GENERALES DEL MODAL (BASE)
+   -------------------------------------------------------------------------- */
 .modal {
-    display: none; /* Oculto por defecto */
+    display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(7, 20, 55, 0.7);
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(7, 20, 55, 0.7); /* Fondo oscuro semitransparente */
     z-index: 10000;
     backdrop-filter: blur(5px);
-    padding: 1rem; /* Mantiene un espacio alrededor */
+    padding: 1rem;
     justify-content: center;
-    align-items: center; /* Centra el .modal-content verticalmente */
+    align-items: center;
 }
 
 .modal-content {
     background-color: var(--bs-body-bg);
-    margin: auto; /* Centra horizontalmente, auto verticalmente con align-items: center */
-    border-radius: var(--bs-border-radius-lg);
+    margin: auto;
+    border-radius: 16px; /* Bordes más redondeados */
     box-shadow: var(--shadow-lg);
-    width: 100%; /* El ancho se controla con max-width */
-    max-width: 960px; /* Ancho máximo */
-    max-height: 95vh; /* Altura máxima para dejar espacio arriba/abajo */
+    width: 100%;
+    max-width: 980px; /* Un poco más ancho para el grid */
+    max-height: 95vh;
     display: flex;
     flex-direction: column;
-    animation: scaleInUp 0.3s ease-out forwards; /* Nueva animación */
-    overflow: hidden; /* Importante para que los bordes redondeados funcionen */
-
+    animation: scaleInUp 0.3s ease-out forwards;
+    overflow: hidden;
 }
 
-/* --------------------------------------------------------------------------
-   2. HEADER, BODY Y FOOTER DEL MODAL
--------------------------------------------------------------------------- */
 .modal-header {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--bs-border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0; /* Evita que el header se encoja */
+    flex-shrink: 0;
 }
 
 .modal-header .modal-title {
@@ -58,6 +50,7 @@
     align-items: center;
     gap: 0.75rem;
 }
+
 .modal-header .modal-title i {
     color: var(--primary-color);
 }
@@ -71,439 +64,417 @@
     border: none;
     padding: 0;
 }
+
 .modal-header .close:hover {
     color: var(--bs-heading-color);
 }
 
 .modal-body {
-    padding: 0rem 1.5rem 0rem 1.5rem;
-    flex-grow: 1; /* Ocupa el espacio disponible */
+    padding: 0 1.5rem;
+    flex-grow: 1;
     display: flex;
-    overflow-y: auto; /* Scroll interno si el contenido es muy largo */
-    /* Añadimos la clase para scrollbars personalizados */
-    /* Necesitas asegurarte de que base.css o similar tenga la definición de .custom-scrollbar */
-    /* class="modal-body custom-scrollbar" (Añadir en Modal.js si quieres) */
+    overflow-y: auto;
+}
+
+/* Ajuste específico para el cuerpo del modal de tasas */
+#rate-update-modal .modal-body {
+    background-color: var(--bs-gray-50);
+    padding: 1.5rem;
 }
 
 .modal-footer {
     padding: 1rem 1.5rem;
     border-top: 1px solid var(--bs-border-color);
     display: flex;
-    justify-content: flex-end; /* Alinea botones a la derecha */
-    gap: 0.75rem; /* Espacio entre botones */
-    background-color: var(--bs-gray-50); /* Fondo ligeramente distinto */
-    border-radius: 0 0 var(--bs-border-radius-lg) var(--bs-border-radius-lg); /* Bordes inferiores redondeados */
-    flex-shrink: 0; /* Evita que el footer se encoja */
-}
-
-/* Tema oscuro para el footer */
-[data-bs-theme="dark"] .modal-footer {
-    background-color: var(--bs-body-bg); /* O un color ligeramente más claro que el body */
-    border-top-color: var(--bs-border-color);
-}
-
-/* --------------------------------------------------------------------------
-   3. ESTILOS ESPECÍFICOS: MODAL DE CONFIGURACIÓN
--------------------------------------------------------------------------- */
-.config-sidebar {
-    width: 220px;
-    border-right: 1px solid var(--bs-border-color);
-    padding-right: 1rem;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background-color: var(--bs-gray-50);
+    border-radius: 0 0 var(--bs-border-radius-lg) var(--bs-border-radius-lg);
     flex-shrink: 0;
 }
+.modal-footer {
+    padding: 1.25rem 1.5rem;
+    background-color: var(--bs-card-bg);
+    border-top: 1px solid var(--bs-border-color);
+    border-radius: 0 0 16px 16px;
+}
 
-.config-tab {
+/* IMPORTANTE: Asegurar que el contenedor interno tenga gap */
+#modal-footer-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem !important; /* Forzar separación */
     width: 100%;
-    padding: 0.75rem 1rem;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--bs-gray-700);
-    border-left: 3px solid transparent;
-    font-weight: 500;
-    background-color: transparent;
-    border-radius: var(--bs-border-radius-sm);
-    margin-bottom: 0.25rem;
 }
-.config-tab:hover {
-    background-color: var(--primary-light); /* Un azul un poco más claro */
-    color: var(--bs-white); /* ¡Aquí está la magia! Texto blanco */
-}
-
-.config-tab.active {
-    background-color: var(--primary-color); /* Azul principal sólido */
-    color: var(--bs-white); /* Texto blanco */
-    border-left-color: var(--primary-dark);
-    font-weight: 600;
-}
-
-.config-main {
-    flex-grow: 1;
-    padding-left: 1.5rem;
-}
-
-.tab-content h4 {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    font-size: 1.15rem;
-    border-bottom: 1px solid var(--bs-border-color);
-    padding-bottom: 0.75rem;
-}
-.tab-content { display: none; }
-.tab-content.active { display: block; }
 
 
 /* --------------------------------------------------------------------------
-   4. ESTILOS ESPECÍFICOS: MODAL DE ABASTECIMIENTO
--------------------------------------------------------------------------- */
-#restockModal .modal-body {
-    flex-direction: column;
-    gap: 1.5rem;
-}
-.product-info-summary {
-    background-color: var(--bs-gray-50);
-    border-radius: var(--bs-border-radius);
-    padding: 1.5rem;
-    border: 1px solid var(--bs-border-color);
-}
-.summary-title { 
-    font-size: 1.25rem; 
-    font-weight: 600; 
-    margin-bottom: 1rem; 
-    padding-bottom: 1rem;
+   2. HEADER CON RELOJ Y WIFI
+   -------------------------------------------------------------------------- */
+   .modal-header {
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--bs-border-color);
-    color: var(--bs-heading-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bs-card-bg);
 }
-.summary-card-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+.modal-title-group {
+    display: flex;
+    align-items: center;
     gap: 1rem;
 }
-.summary-card {
-    background-color: var(--bs-card-bg);
-    border-radius: var(--bs-border-radius);
-    border: 1px solid var(--bs-border-color);
-}
-.summary-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-weight: 600;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--bs-border-color);
-    font-size: 0.9rem;
-    color: var(--primary-color);
-}
-.summary-card-body {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    font-size: 0.9rem;
-}
-.summary-card-body > div {
-    display: flex;
-    justify-content: space-between;
-}
-.summary-card-body span { 
-    color: var(--bs-gray-600); 
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    display: flex; align-items: center; gap: 0.5rem;
 }
 
-.managed-item {
+/* Widget de estado en el header */
+.header-status-widget {
     display: flex;
-    justify-content: space-between;
-    align-items: center; /* <-- AÑADE ESTA LÍNEA */
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--bs-border-radius-mini);
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.85rem;
+    background-color: var(--bs-gray-50);
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid var(--bs-border-color);
+}
+
+.status-clock { font-variant-numeric: tabular-nums; color: var(--bs-gray-600); font-weight: 500; }
+.status-wifi { font-size: 1rem; }
+.status-wifi.online { color: var(--bs-success); filter: drop-shadow(0 0 2px rgba(23, 198, 83, 0.4)); }
+.status-wifi.offline { color: var(--error-color); }
+
+.close {
+    color: var(--bs-gray-400); font-size: 1.5rem; cursor: pointer; background: none; border: none; padding: 0; transition: color 0.2s;
+}
+.close:hover { color: var(--error-color); }
+
+/* --------------------------------------------------------------------------
+   2. LAYOUT DE TASAS (GRID SYSTEM)
+   -------------------------------------------------------------------------- */
+.rate-modal-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 1.25rem;
+    align-items: stretch;
+    height: 100%;
+}
+
+.rate-control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 /* --------------------------------------------------------------------------
-   5. DISEÑO RESPONSIVO
-   ANÁLISIS: Se mueven los estilos responsivos aquí desde media.css
--------------------------------------------------------------------------- */
-@media (max-width: 768px) {
-    .modal-body {
-        flex-direction: column;
-    }
+   3. TARJETAS DE CONTROL (IZQUIERDA)
+   -------------------------------------------------------------------------- */
 
-    /* Ajustes para el modal de configuración en móvil */
-    .config-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--bs-border-color);
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto; /* Permite scroll horizontal de las pestañas */
-        padding: 0;
-        margin-bottom: 1.5rem;
-    }
-    .config-tab {
-        border-left: none;
-        border-bottom: 3px solid transparent;
-        justify-content: center;
-        white-space: nowrap; /* Evita que el texto de la pestaña se rompa */
-        padding: 0.75rem 1rem;
-        margin-bottom: -1px; /* Alinea el borde inferior con el borde del contenedor */
-        border-radius: 0;
-    }
-    .config-tab.active {
-        border-bottom-color: var(--primary-color);
-    }
-    .config-main {
-        padding-left: 0;
-    }
+/* Tarjeta Tasa Automática */
+.rate-display-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+}
+
+.rate-display-card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--bs-cyan));
+}
+#rate-update-modal .modal-body {
+    background-color: var(--bs-gray-50); /* Contraste con las tarjetas blancas */
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.rate-modal-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr; /* Balanceado */
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* Columna Izquierda */
+.rate-control-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* --- TARJETA TASA AUTOMÁTICA (HERO) --- */
+.rate-hero-card {
+    background: var(--bs-card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--bs-border-color);
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    position: relative;
+    overflow: hidden;
+}
+/* Línea decorativa superior */
+.rate-hero-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+    background: linear-gradient(90deg, var(--primary-color), var(--bs-cyan));
+}
+
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    background-color: var(--primary-color); color: white;
+    padding: 0.3rem 0.8rem; border-radius: 20px; margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);
+}
+
+.hero-amount {
+    font-size: 3.5rem; font-weight: 800; color: var(--bs-heading-color);
+    line-height: 1; letter-spacing: -1px; margin-bottom: 0.5rem;
+}
+
+.hero-date { font-size: 0.9rem; color: var(--bs-gray-500); font-weight: 500; }
+.source-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--bs-gray-100); background: var(--primary-light-hover);
+    padding: 4px 10px; border-radius: 20px; margin-bottom: 0.5rem;
+}
+
+.display-amount {
+    font-size: 3.2rem; font-weight: 800; color: var(--bs-heading-color);
+    letter-spacing: -1px; line-height: 1.1; margin: 0.5rem 0;
+}
+
+.display-subtext {
+    font-size: 0.85rem; color: var(--bs-gray-500);
+}
+
+/* Tarjeta Tasa Manual */
+.manual-input-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column; gap: 0.75rem;
+    height: 100%;
+}
+
+.manual-label {
+    font-size: 0.9rem; font-weight: 600; color: var(--bs-gray-700);
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+/* --- TARJETA TASA MANUAL --- */
+.manual-input-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.manual-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
+}
+.manual-header h5 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--bs-gray-700); display: flex; align-items: center; gap: 0.5rem; }
+
+.fintech-input-wrapper {
+    position: relative;
+}
+
+.fintech-input-wrapper span {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    font-weight: 600; color: var(--bs-gray-400); font-size: 1.1rem;
+}
+
+.fintech-input-wrapper input {
+    width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem;
+    font-size: 1.25rem; font-weight: 600; color: var(--bs-heading-color);
+    border: 2px solid var(--bs-border-color); border-radius: 12px;
+    background-color: var(--bs-gray-50);
+    transition: all 0.2s ease;
+}
+
+.fintech-input-wrapper input:focus {
+    background-color: var(--bs-card-bg); border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;
+}
+
+.fintech-input-group { position: relative; }
+.fintech-input-group span {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    font-size: 1.2rem; font-weight: 600; color: var(--bs-gray-400);
+}
+.fintech-input-group input {
+    width: 100%; padding: 0.8rem 1rem 0.8rem 2.5rem;
+    font-size: 1.4rem; font-weight: 700; color: var(--bs-heading-color);
+    background-color: var(--bs-gray-50); border: 2px solid var(--bs-gray-200);
+    border-radius: 12px; transition: all 0.2s ease;
+}
+.fintech-input-group input:focus {
+    background-color: var(--bs-card-bg); border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none;
+}
+
+/* --------------------------------------------------------------------------
+   4. PANEL DE HISTORIAL (DERECHA)
+   -------------------------------------------------------------------------- */
+.history-panel-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    height: 100%;
+    display: flex; flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.history-header-panel {
+    padding: 1.25rem; border-bottom: 1px solid var(--bs-border-color);
+    background-color: rgba(249, 250, 251, 0.5);
+}
+.history-header-panel h5 { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--bs-gray-600); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.history-list {
+    list-style: none; padding: 0; margin: 0;
+    overflow-y: auto; max-height: 350px; /* Altura controlada */
+}
+
+.history-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    position: relative;
+    transition: background-color 0.2s;
+}
+.history-item:last-child { border-bottom: none; }
+
+/* Resaltar el día "activo/mañana" */
+.history-item.is-active-day {
+    background-color: rgba(37, 99, 235, 0.03); /* Azul muy suave */
+}
+.history-item.is-active-day::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background-color: var(--primary-color);
+}
+
+.history-header {
+    padding: 1.25rem; border-bottom: 1px solid var(--bs-border-color);
+    background-color: rgba(249, 250, 251, 0.5);
+}
+
+.history-header h5 {
+    margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--bs-gray-700);
+    display: flex; align-items: center; gap: 0.5rem;
+}
+
+.history-list-scroll {
+    padding: 0; margin: 0; list-style: none;
+    overflow-y: auto;
+}
+
+.history-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    transition: background-color 0.2s;
+}
+
+.history-row:last-child { border-bottom: none; }
+.history-row:hover { background-color: var(--bs-gray-50); }
+
+.h-date-group { display: flex; flex-direction: column; }
+.h-day { font-weight: 600; font-size: 0.9rem; color: var(--bs-heading-color); text-transform: capitalize; }
+.h-date { font-size: 0.75rem; color: var(--bs-gray-500); }
+
+.h-value-group { text-align: right; }
+.h-val { font-weight: 700; font-size: 1rem; color: var(--bs-heading-color); display: block; }
+
+/* Badges de porcentaje */
+.h-change {
+    font-size: 0.75rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 2px;
+    padding: 2px 6px; border-radius: 6px;
+}
+.h-change.positive { color: var(--bs-success); background-color: rgba(23, 198, 83, 0.1); }
+.h-change.negative { color: var(--error-color); background-color: rgba(220, 38, 38, 0.1); }
+.h-change.neutral { color: var(--bs-gray-500); background-color: var(--bs-gray-100); }
+
+
+.date-col { display: flex; flex-direction: column; gap: 0.15rem; }
+.day-name { font-weight: 700; color: var(--bs-heading-color); font-size: 0.95rem; text-transform: capitalize; }
+.full-date { font-size: 0.75rem; color: var(--bs-gray-500); }
+
+/* Badges de estado del día */
+.day-badge {
+    font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; margin-left: 0.5rem; vertical-align: middle;
+}
+.day-badge.tomorrow { background-color: var(--bs-indigo); color: white; }
+.day-badge.today { background-color: var(--bs-success); color: white; }
+
+.val-col { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; }
+.rate-val { font-family: 'Roboto Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--bs-heading-color); }
+.rate-change { font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 2px; }
+.rate-change.positive { color: var(--bs-success); }
+.rate-change.negative { color: var(--error-color); }
+.rate-change.neutral { color: var(--bs-gray-400); }
+
+/* --------------------------------------------------------------------------
+   5. RESPONSIVIDAD
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .rate-modal-grid { grid-template-columns: 1fr; }
+    .modal-body { padding: 1rem; }
 }
 
 @media (max-width: 480px) {
-    .modal-footer {
-        flex-direction: column;
-    }
-    .modal-footer button {
-        width: 100%;
-    }
+    .modal-footer { flex-direction: column; }
+    .modal-footer button { width: 100%; }
 }
 
 /* --------------------------------------------------------------------------
-   6. AJUSTES FINALES PARA MODAL DE ABASTECIMIENTO
--------------------------------------------------------------------------- */
-.purchase-history-item {
-    background-color: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius-sm);
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
-}
-.history-item-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    padding: 0.25rem 0;
-}
-.history-item-row span {
-    color: var(--bs-gray-600);
-}
-.history-item-row strong {
-    color: var(--bs-heading-color);
-    display: flex;
-    align-items: center;
-}
+   6. TEMA OSCURO
+   -------------------------------------------------------------------------- */
+[data-bs-theme="dark"] .modal-content { background-color: var(--bs-card-bg); border: 1px solid var(--bs-border-color); }
+[data-bs-theme="dark"] .modal-header { border-bottom-color: var(--bs-border-color); }
+[data-bs-theme="dark"] .modal-footer { background-color: var(--bs-body-bg); border-top-color: var(--bs-border-color); }
 
+/* Overrides Modal Tasas */
+[data-bs-theme="dark"] #rate-update-modal .modal-body { background-color: #1a1c23; }
+[data-bs-theme="dark"] .rate-display-card, 
+[data-bs-theme="dark"] .manual-input-card, 
+[data-bs-theme="dark"] .history-panel-card { background-color: var(--bs-card-bg); }
+[data-bs-theme="dark"] .history-header { background-color: rgba(255,255,255,0.02); }
+[data-bs-theme="dark"] .fintech-input-wrapper input { background-color: rgba(0,0,0,0.2); border-color: var(--bs-border-color); }
 
-.form-section {
-    /* margin-bottom: 1.5rem; */
-    /* padding-bottom: 1.5rem; */
-    /* border-bottom: 1px dashed var(--bs-border-color); */
-}
-.form-section:last-child {
-    /*border-bottom: none;*/
-    /* margin-bottom: 0rem; */
-    /* padding-bottom: 0rem; */
-}
-.form-section-title {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--bs-gray-800);
-    margin-bottom: 0.75rem;
-}
-[data-bs-theme="dark"] .form-section-title {
-    color: var(--bs-gray-200);
-}
-.currency-item-static,
-.currency-item-principal,
-.currency-item-secondary {
-    display: grid;
-    gap: 0.75rem;
-    align-items: center;
-    grid-template-columns: 100px 100px 1fr auto;
-}
-.currency-item-static span,
-.currency-item-principal span {
-    font-size: 0.85rem;
-    color: var(--bs-gray-600);
-    grid-column: 1 / -1;
-    margin-top: -0.25rem;
-    padding-top: 0.5rem;
-}
-.currency-actions {
-    display: flex;
-    justify-content: flex-end;
-}
-.currency-item-static,
-.currency-item-principal {
-    padding: 1rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: var(--bs-border-radius);
-}
-.currency-item-static {
-    background-color: var(--bs-gray-100);
-}
-.currency-item-static input {
-    background-color: var(--bs-gray-200);
-    cursor: not-allowed;
-    font-weight: 500;
-}
-.currency-item-principal {
-    background-color: var(--bs-gray-50);
-}
-[data-bs-theme="dark"] .currency-item-static {
-    background-color: #1a1c23;
-}
-[data-bs-theme="dark"] .currency-item-static input {
-    background-color: #272a37;
-}
-[data-bs-theme="dark"] .currency-item-principal {
-    background-color: var(--bs-body-bg);
-}
-@media (max-width: 540px) {
-    .currency-item-static,
-    .currency-item-principal {
-        grid-template-columns: 1fr 1fr;
-    }
-   
-.currency-item-static span,
-.currency-item-principal span,
-.currency-item-principal input:nth-of-type(3) {
-    grid-column: 1 / -1;
-}
-    .currency-item-secondary {
-        position: relative;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
-        padding: 1rem;
-        padding-top: 2.5rem;
-        border: 1px solid var(--bs-border-color);
-        border-radius: var(--bs-border-radius);
-        background-color: var(--bs-gray-50);
-        margin-bottom: 1rem;
-    }
-    [data-bs-theme="dark"] .currency-item-secondary {
-        background-color: var(--bs-body-bg);
-    }
-    .currency-item-secondary input:nth-of-type(3) {
-        grid-column: 1 / -1;
-    }
-    .currency-item-secondary .currency-actions {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-    }
-}
-.currency-item-secondary .btn-remove-currency {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background-color: var(--error-color);
-    color: var(--bs-white);
-    opacity: 0.9;
-    font-size: 1.2rem;
-    font-weight: bold;
-    line-height: 1;
-}
-.currency-item-secondary .btn-remove-currency:hover {
-    opacity: 1;
-    transform: scale(1.05);
-    box-shadow: var(--shadow-md);
-}
-
-/* EN: 2.9.2/css/components/modal.css (AÑADIR AL FINAL) */
-.category-manager .tasa-input-group {
-    display: flex;
-    align-items: stretch;
-}
-.category-manager .tasa-input-group input {
-    flex-grow: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-}
-.category-manager .tasa-input-group button {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-}
-
-/* Estilo específico para el modal de configuración en modo full-screen */
-.modal#configModal .modal-content {
-    max-width: 95vw; /* Ocupa el 95% del ancho de la ventana */
-    height: 95vh;   /* Ocupa el 95% de la altura de la ventana */
-    margin: auto;     /* Centra el modal perfectamente */
-}
-
-/* Hacemos que el sidebar sea un poco más ancho en la vista de escritorio */
-.modal#configModal .config-sidebar {
-    width: 240px;
-}
-
-/* En pantallas pequeñas, mantenemos el comportamiento responsivo actual */
-@media (max-width: 768px) {
-    .modal#configModal .modal-content {
-        max-width: 100%;
-        height: 100%;
-        border-radius: 0;
-    }
-}
-
-/* Mejoras para tema oscuro en modales */
-[data-bs-theme="dark"] .modal-content {
+/* Dark Mode */
+[data-bs-theme="dark"] .modal-header, 
+[data-bs-theme="dark"] .modal-footer, 
+[data-bs-theme="dark"] .rate-hero-card, 
+[data-bs-theme="dark"] .manual-input-card, 
+[data-bs-theme="dark"] .history-panel-card {
     background-color: var(--bs-card-bg);
-    border: 1px solid var(--bs-border-color);
 }
-
-[data-bs-theme="dark"] .modal-header {
-    border-bottom-color: var(--bs-border-color);
+[data-bs-theme="dark"] #rate-update-modal .modal-body {
+    background-color: #15171e;
 }
-
-/*[data-bs-theme="dark"] .modal-footer {
-    background-color: var(--bs-gray-800);
-    border-top-color: var(--bs-border-color);
-}*/
-
-[data-bs-theme="dark"] .config-tab {
-    color: var(--bs-gray-300);
+[data-bs-theme="dark"] .header-status-widget,
+[data-bs-theme="dark"] .history-header-panel {
+    background-color: rgba(255,255,255,0.05);
 }
-
-[data-bs-theme="dark"] .config-tab:hover {
-    background-color: var(--primary-light);
-    color: var(--bs-white);
-}
-
-[data-bs-theme="dark"] .config-tab.active {
-    background-color: var(--primary-color);
-    color: var(--bs-white);
-}
-
-[data-bs-theme="dark"] .product-info-summary {
-    background-color: var(--bs-gray-800);
-    border-color: var(--bs-border-color);
-}
-
-[data-bs-theme="dark"] .summary-card {
-    background-color: var(--bs-gray-700);
-    border-color: var(--bs-border-color);
-}
-
-[data-bs-theme="dark"] .summary-card-header {
-    border-bottom-color: var(--bs-border-color);
-}
-
-[data-bs-theme="dark"] .summary-card-body span {
-    color: var(--bs-gray-400);
-}
-
-[data-bs-theme="dark"] .purchase-history-item {
-    background-color: var(--bs-gray-800);
-    border-color: var(--bs-border-color);
-}
-
-[data-bs-theme="dark"] .history-item-row span {
-    color: var(--bs-gray-400);
-}
-
-[data-bs-theme="dark"] .history-item-row strong {
-    color: var(--bs-gray-200);
+[data-bs-theme="dark"] .fintech-input-group input {
+    background-color: rgba(0,0,0,0.2); border-color: var(--bs-gray-700);
 }

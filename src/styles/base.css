@@ -404,3 +404,13 @@ body.modal-open {
         grid-template-columns: 1fr;
     }
 }
+
+/* Indicador visual de modo Offline */
+body.is-offline .top-nav {
+    border-bottom: 3px solid var(--warning-color);
+}
+
+/* Opcional: Hacer las cosas un poco grisáceas para indicar desconexión */
+body.is-offline main {
+    filter: grayscale(0.5); 
+}

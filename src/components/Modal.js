@@ -1,10 +1,10 @@
 // src/components/Modal.js
 
-export function Modal({ title, contentElement, id = 'genericModal' }) { // Quitamos footerElement
+export function Modal({ title, contentElement, id = 'genericModal' }) {
     const modalElement = document.createElement('div');
     modalElement.className = 'modal';
     modalElement.id = id;
-    modalElement.style.display = 'flex'; // Asegura que esté visible al crearlo
+    modalElement.style.display = 'flex';
 
     modalElement.innerHTML = `
         <div class="modal-content">
