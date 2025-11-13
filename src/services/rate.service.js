@@ -1,6 +1,7 @@
 // ======================================================
 // ARCHIVO: src/services/rate.service.js
-// MEJORA: Cálculo de tendencia (Subida/Bajada)
+// CORRECCIÓN CRÍTICA: Normalización de decimales (2 dígitos)
+// para evitar discrepancias financieras.
 // ======================================================
 
 import { Logger } from './logger.service.js';
@@ -29,7 +30,6 @@ export async function fetchRateHistory(limit = 5) {
         const response = await fetch(API_URL_HISTORY);
         if (!response.ok) throw new Error(`API History Error: ${response.status}`);
         const data = await response.json();
-        // Corrección: Priorizar 'rates'
         const historyList = Array.isArray(data) ? data : (data.rates || data.items || []);
         return historyList.slice(0, limit);
     } catch (error) {
@@ -42,43 +42,43 @@ export async function initRateService() {
     try {
         // 1. Obtener Tasa Actual
         const ratesData = await fetchCurrentRates();
-        const currentRate = parseFloat(ratesData.current.usd);
+        const rawRate = parseFloat(ratesData.current.usd);
 
-        if (isNaN(currentRate)) throw new Error('Tasa inválida');
+        if (isNaN(rawRate)) throw new Error('Tasa inválida');
 
-        // 2. Obtener Historial para comparar (ayer vs hoy)
+        // --- ¡CORRECCIÓN FINANCIERA! ---
+        // Forzamos el redondeo a 2 decimales EXACTOS.
+        // Esto asegura que 233.5576 se convierta matemáticamente en 233.56
+        // antes de hacer cualquier operación de precio.
+        const currentRate = Number(rawRate.toFixed(2)); 
+        // ------------------------------
+
+        // 2. Historial
         const history = await fetchRateHistory(2);
-        let trend = 'neutral'; // 'up', 'down', 'neutral'
+        let trend = 'neutral'; 
         let diffPercent = 0;
 
         if (history.length >= 2) {
-            // Asumiendo que history[0] es hoy/reciente y history[1] es ayer
-            // A veces la API pone el actual en el historial, a veces no. 
-            // Comparamos el currentRate con el último distinto almacenado o el segundo de la lista.
-            const previousRate = parseFloat(history[1].usd);
-            
+            const previousRate = parseFloat(history[1].usd); // El historial lo dejamos crudo para % preciso
             if (currentRate > previousRate) trend = 'up';
             else if (currentRate < previousRate) trend = 'down';
-            
             diffPercent = ((currentRate - previousRate) / previousRate) * 100;
         }
 
         // 3. Guardar en Estado Global
         state.settings.currencies.principal.rate = currentRate;
-        state.settings.currencies.principal.trend = trend; // Guardamos la tendencia
+        state.settings.currencies.principal.trend = trend; 
         state.settings.currencies.principal.diff = diffPercent;
 
         localStorage.setItem(LOCAL_STORAGE_KEY_USD, currentRate.toString());
-        Logger.info(`Tasa: ${currentRate} | Tendencia: ${trend} (${diffPercent.toFixed(2)}%)`);
+        Logger.info(`Tasa Financiera Aplicada: ${currentRate} (Raw: ${rawRate})`);
         
         return { rate: currentRate, isOffline: false };
 
     } catch (error) {
         Logger.warn(`Fallo API Tasas: ${error.message}`);
-        // Fallback Offline...
         const lastRate = parseFloat(localStorage.getItem(LOCAL_STORAGE_KEY_USD)) || 1.00;
-        state.settings.currencies.principal.rate = lastRate;
-        state.settings.currencies.principal.trend = 'neutral';
+        state.settings.currencies.principal.rate = lastRate; // Ya debería estar guardado con 2 decimales
         return { rate: lastRate, isOffline: true, requiresManualUpdate: true };
     }
 }
