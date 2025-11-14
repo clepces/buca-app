@@ -14,9 +14,8 @@ import { showToast } from '../../../services/toast.service.js';
 import { PaginationControls } from '../../../components/PaginationControls.js';
 import { paginate, getTotalPages } from '../../../services/pagination.service.js';
 import { debounce } from '../../../utils/debounce.js';
-
-// --- ¡IMPORTACIÓN ACTUALIZADA! ---
 import { renderProductCards } from './cards/ProductCards.js';
+import { initTippy, destroyTippy } from '../../../utils/tippy-helper.js';
 
 
 export function ProductsView(element, state) {
@@ -63,11 +62,8 @@ export function ProductsView(element, state) {
         const cardsContainer = element.querySelector(".product-list-container");
         
         if (cardsContainer) {
-
-            // --- INICIO DE MODIFICACIÓN ---
-            cardsContainer.classList.add('fade-out'); // 1. Ocultar
+            cardsContainer.classList.add('fade-out');
             
-            // 2. Esperar que termine la animación
             setTimeout(() => { 
                 if (paginatedProducts.length > 0) {
                     cardsContainer.innerHTML = renderProductCards(paginatedProducts, globalState.settings);
@@ -84,10 +80,14 @@ export function ProductsView(element, state) {
                         instructions: 'Haz clic en "Añadir Producto" para empezar.'
                     });
                 }
-                cardsContainer.classList.remove('fade-out'); // 3. Mostrar
-            }, 150); // 150ms (coincide con la transición CSS)
-            // --- FIN DE MODIFICACIÓN ---
-            
+                
+                cardsContainer.classList.remove('fade-out');
+                
+                // ✅ NUEVO: Inicializar Tippy después de renderizar
+                initTippy(cardsContainer);
+                
+            }, 150);
+
         } else {
             Logger.error("[ProductsView] No se pudo encontrar '.product-list-container' para actualizar las tarjetas.");
         }
@@ -333,12 +333,14 @@ export function ProductsView(element, state) {
     // --- LIMPIEZA ---
     return () => {
         Logger.info('Limpiando ProductsView...');
-        // --- ✅ LISTENERS ACTUALIZADOS ---
+        
+        // ✅ NUEVO: Destruir instancias de Tippy
+        destroyTippy(element);
+        
         element.removeEventListener('click', handleActions);
         element.removeEventListener('click', handlePagination);
         element.removeEventListener('input', handleSearch);
         element.removeEventListener('change', handleItemsPerPageChange);
-        
         document.removeEventListener('click', closeAllMenus);
         // const link = document.querySelector('link[href="src/styles/views/inventory/products/product-view.css"]');
         // if (link) link.remove();

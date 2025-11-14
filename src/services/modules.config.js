@@ -4,12 +4,9 @@
 // CORRECCIÓN: (Anotación E-3) Eliminado 'modulesConfig'
 //             que era código muerto.
 // ======================================================
-
 export const MODULES = {
     CORE: 'core',
     SGA_SCM: 'sga_scm',
     POS: 'pos',
     CRM: 'crm'
 };
-
-// --- 'modulesConfig' (array) ELIMINADO ---

@@ -67,7 +67,23 @@ function renderSingleProductCard(product, settings) {
     const unitDisplayVal = `${simboloPrincipal} ${formatNumberAbbreviated(pvp_unit)}`;
     const paqDisplayVal = `${simboloPrincipal} ${formatNumberAbbreviated(pvp_paq)}`;
 
-    // HTML (sin cambios en estructura)
+    // ✅ Tooltips mejorados con HTML
+    const unitTooltip = `
+        <div style="text-align: center;">
+            <strong style="color: var(--primary-color);">${simboloPrincipal}${pvp_unit}</strong> 
+            × <strong>${tasaCambio.toFixed(4)}</strong><br>
+            = <strong style="color: var(--bs-success);">${simboloBase}${formatMoney(pvp_unit_base)}</strong>
+        </div>
+    `;
+    
+    const paqTooltip = `
+        <div style="text-align: center;">
+            <strong style="color: var(--primary-color);">${simboloPrincipal}${pvp_paq}</strong> 
+            × <strong>${tasaCambio.toFixed(4)}</strong><br>
+            = <strong style="color: var(--bs-success);">${simboloBase}${formatMoney(pvp_paq_base)}</strong>
+        </div>
+    `;
+
     return `
         <div class="product-card" data-product-id="${product.id}" data-action="editar">
             <div class="card-image-placeholder">
@@ -76,14 +92,23 @@ function renderSingleProductCard(product, settings) {
                         <span class="product-category">${product.categoryId ?? 'Sin Categoría'}</span>
                     </div>
                     <div class="product-actions-menu">
-                        <button type="button" class="btn-icon-round" data-action="menu-toggle">
+                        <button type="button" 
+                                class="btn-icon-round" 
+                                data-action="menu-toggle"
+                                data-tippy-content="Más opciones">
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                         <div class="menu-dropdown">
-                            <button class="menu-item" data-action="editar"><i class="bi bi-pencil-fill"></i> Editar</button>
-                            <button class="menu-item" data-action="abastecer"><i class="bi bi-box-arrow-in-down"></i> Abastecer</button>
+                            <button class="menu-item" data-action="editar">
+                                <i class="bi bi-pencil-fill"></i> Editar
+                            </button>
+                            <button class="menu-item" data-action="abastecer">
+                                <i class="bi bi-box-arrow-in-down"></i> Abastecer
+                            </button>
                             <div class="menu-divider"></div>
-                            <button class="menu-item text-danger" data-action="eliminar"><i class="bi bi-trash3-fill"></i> Eliminar</button>
+                            <button class="menu-item text-danger" data-action="eliminar">
+                                <i class="bi bi-trash3-fill"></i> Eliminar
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -91,8 +116,14 @@ function renderSingleProductCard(product, settings) {
             </div>
 
             <div class="card-body">
-                <h3 class="product-name" title="${product.name}">${product.name}</h3>
-                <p class="product-brand" title="${product.brand ?? ''}">${product.brand ?? 'Generico'}</p>
+                <h3 class="product-name" 
+                    data-tippy-content="${product.name}">
+                    ${product.name}
+                </h3>
+                <p class="product-brand" 
+                   data-tippy-content="${product.brand ?? 'Marca genérica'}">
+                   ${product.brand ?? 'Generico'}
+                </p>
             </div>
             
             <div class="card-footer">
@@ -102,23 +133,28 @@ function renderSingleProductCard(product, settings) {
                 </div>
                 
                 <div class="price-group">
-                    <div class="product-stat price" data-action="toggle-currency" title="Clic para cambiar moneda">
+                    <div class="product-stat price" 
+                         data-action="toggle-currency" 
+                         data-tippy-content="${unitTooltip}"
+                         data-tippy-placement="bottom">
                         <span class="stat-label">Unitario</span>
                         <span class="stat-value"
                               data-currency="principal"
                               data-principal-val="${unitDisplayVal}"
-                              data-base-val="${simboloBase} ${formatNumberAbbreviated(pvp_unit_base)}"
-                              title="${unitTooltipTitle}">
+                              data-base-val="${simboloBase} ${formatNumberAbbreviated(pvp_unit_base)}">
                             ${unitDisplayVal}
                         </span>
                     </div>
-                    <div class="product-stat price" data-action="toggle-currency" title="Clic para cambiar moneda">
+                    
+                    <div class="product-stat price" 
+                         data-action="toggle-currency" 
+                         data-tippy-content="${paqTooltip}"
+                         data-tippy-placement="bottom">
                         <span class="stat-label">Paquete</span>
                         <span class="stat-value"
                               data-currency="principal"
                               data-principal-val="${paqDisplayVal}"
-                              data-base-val="${simboloBase} ${formatNumberAbbreviated(pvp_paq_base)}"
-                              title="${paqTooltipTitle}">
+                              data-base-val="${simboloBase} ${formatNumberAbbreviated(pvp_paq_base)}">
                             ${paqDisplayVal}
                         </span>
                     </div>
@@ -127,7 +163,6 @@ function renderSingleProductCard(product, settings) {
         </div>
     `;
 }
-
 
 export function renderProductCards(products, settings) {
     if (!products || products.length === 0) {

@@ -13,6 +13,7 @@ import { can } from '../../services/permissions.service.js';
 import { PERMISSIONS } from '../../services/roles.config.js';
 import { debounce } from '../../utils/debounce.js';
 import { paginate, getTotalPages } from '../../services/pagination.service.js';
+import { initTippy, destroyTippy } from '../../utils/tippy-helper.js';
 
 export function CompaniesView(element, state) {
     const canCreate = can(PERMISSIONS.CREATE_COMPANY);
@@ -172,11 +173,7 @@ export function CompaniesView(element, state) {
         `;
         
         setTimeout(() => {
-            if (typeof tippy !== 'undefined') {
-                tippy('[data-tippy-content]');
-            } else {
-                Logger.warn('Tippy.js no está definido.');
-            }
+            initTippy(element);
         }, 100);
     };
     
@@ -295,7 +292,10 @@ export function CompaniesView(element, state) {
 
     return () => {
         Logger.info('Limpiando CompaniesView y sus listeners...');
-        // --- ✅ LISTENERS ACTUALIZADOS ---
+        
+        // ✅ NUEVO: Destruir Tippy
+        destroyTippy(element);
+        
         element.removeEventListener('click', handleActions);
         element.removeEventListener('click', handlePagination);
         element.removeEventListener('input', handleSearch);
