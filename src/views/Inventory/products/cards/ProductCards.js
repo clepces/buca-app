@@ -27,46 +27,47 @@ const fullFormat = (num, symbol) => {
 };
 
 function renderSingleProductCard(product, settings) {
-    // --- 1. Lógica de Monedas y Precios ---
     const { symbol: simboloPrincipal } = settings.currencies.principal;
     const { symbol: simboloBase } = settings.currencies.base;
     
-    // CORRECCIÓN CRÍTICA: Aseguramos que la tasa tenga solo 2 decimales para el cálculo
-    // Esto evita que 233.56999 use los decimales ocultos.
-    const tasaCambio = Number(settings.currencies.principal.rate.toFixed(2));
+    // ✅ CORRECCIÓN: Usamos la tasa SIN redondear
+    const tasaCambio = settings.currencies.principal.rate; // <-- Sin toFixed()
 
     const stock = product.stock?.current ?? 0;
     const stockMin = product.stock?.minThreshold ?? 10;
     
-    // Precios base en USD (también aseguramos que sean números)
+    // Precios base en USD
     const pvp_paq = Number(product.pricing?.priceLists?.[0]?.packageSellPrice ?? 0);
     const pvp_unit = Number(product.pricing?.priceLists?.[0]?.unitSellPrice ?? 0);
     
-    // CÁLCULO MATEMÁTICO EXACTO
-    // Ejemplo: 1.21 * 233.56 = 282.6076 -> ToFixed(2) -> "282.61"
-    const pvp_paq_base = pvp_paq * tasaCambio;
-    const pvp_unit_base = pvp_unit * tasaCambio;
+    // ✅ CÁLCULO PRECISO: Multiplicamos con toda la precisión
+    // Ejemplo: 19.91 × 234.8765 = 4,676.2617
+    const pvp_paq_base_raw = pvp_paq * tasaCambio;
+    const pvp_unit_base_raw = pvp_unit * tasaCambio;
+    
+    // ✅ REDONDEAMOS SOLO EL RESULTADO FINAL (para visualización)
+    const pvp_paq_base = Number(pvp_paq_base_raw.toFixed(2));
+    const pvp_unit_base = Number(pvp_unit_base_raw.toFixed(2));
 
-    // ... (resto de lógica de stock igual) ...
+    // Stock status logic (sin cambios)
     let stockStatus = 'stock-ok';
     if (stock === 0) stockStatus = 'stock-out';
     else if (stock <= stockMin) stockStatus = 'stock-low';
 
-    // --- 2. FORMATEADORES CON PRECISIÓN ---
-    // Usamos maximumFractionDigits: 2 para mostrar exactamente lo que vale
+    // ✅ Formateadores: Ahora muestran el valor YA redondeado
     const formatMoney = (val) => new Intl.NumberFormat('es-VE', { 
         minimumFractionDigits: 2, 
         maximumFractionDigits: 2 
     }).format(val);
 
-    // Tooltips mostrando el cálculo real
-    const unitTooltipTitle = `${simboloPrincipal} ${formatMoney(pvp_unit)} x ${tasaCambio} = ${simboloBase} ${formatMoney(pvp_unit_base)}`;
-    const paqTooltipTitle = `${simboloPrincipal} ${formatMoney(pvp_paq)} x ${tasaCambio} = ${simboloBase} ${formatMoney(pvp_paq_base)}`;
+    // ✅ Tooltips mostrando el cálculo EXACTO
+    const unitTooltipTitle = `${simboloPrincipal}${pvp_unit} × ${tasaCambio.toFixed(4)} = ${simboloBase}${formatMoney(pvp_unit_base)}`;
+    const paqTooltipTitle = `${simboloPrincipal}${pvp_paq} × ${tasaCambio.toFixed(4)} = ${simboloBase}${formatMoney(pvp_paq_base)}`;
     
     const unitDisplayVal = `${simboloPrincipal} ${formatNumberAbbreviated(pvp_unit)}`;
     const paqDisplayVal = `${simboloPrincipal} ${formatNumberAbbreviated(pvp_paq)}`;
 
-    // ... (resto del HTML igual) ...
+    // HTML (sin cambios en estructura)
     return `
         <div class="product-card" data-product-id="${product.id}" data-action="editar">
             <div class="card-image-placeholder">
@@ -126,6 +127,7 @@ function renderSingleProductCard(product, settings) {
         </div>
     `;
 }
+
 
 export function renderProductCards(products, settings) {
     if (!products || products.length === 0) {

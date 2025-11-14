@@ -26,7 +26,8 @@ export function Header(state) {
 
     const totalProductos = state.products.length;
     const tasaBcv = state.settings.currencies.principal.rate;
-    
+    const tasaDisplay = tasaBcv.toFixed(4).replace(/\.?0+$/, ''); // Elimina ceros finales
+
     // --- ¡CORRECCIÓN AQUÍ! ---
     // Recuperamos el símbolo principal ($) que faltaba
     const simboloPrincipal = state.settings.currencies.principal.symbol || '$';
@@ -52,12 +53,12 @@ export function Header(state) {
     const rateStatHTML = canEditRate ? `
         <button class="stat-item stat-item-clickable" data-action="open-rate-modal" title="Actualizar Tasa">
             <span class="stat-label">Tasa BCV ${trendIcon}</span>
-            <span class="stat-value ${trendClass}">Bs. ${tasaBcv.toFixed(2)}</span>
+            <span class="stat-value ${trendClass}">Bs. ${tasaDisplay}</span>
         </button>
     ` : `
         <div class="stat-item">
             <span class="stat-label">Tasa BCV ${trendIcon}</span>
-            <span class="stat-value ${trendClass}">Bs. ${tasaBcv.toFixed(2)}</span>
+            <span class="stat-value ${trendClass}">Bs. ${tasaDisplay}</span>
         </div>
     `;
 

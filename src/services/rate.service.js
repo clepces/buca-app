@@ -40,18 +40,14 @@ export async function fetchRateHistory(limit = 5) {
 
 export async function initRateService() {
     try {
-        // 1. Obtener Tasa Actual
         const ratesData = await fetchCurrentRates();
         const rawRate = parseFloat(ratesData.current.usd);
 
         if (isNaN(rawRate)) throw new Error('Tasa inválida');
 
-        // --- ¡CORRECCIÓN FINANCIERA! ---
-        // Forzamos el redondeo a 2 decimales EXACTOS.
-        // Esto asegura que 233.5576 se convierta matemáticamente en 233.56
-        // antes de hacer cualquier operación de precio.
-        const currentRate = Number(rawRate.toFixed(2)); 
-        // ------------------------------
+        // ✅ CORRECCIÓN: Guardamos la tasa SIN redondear
+        // Solo normalizamos a un número limpio
+        const currentRate = Number(rawRate); // <-- Sin .toFixed(2)
 
         // 2. Historial
         const history = await fetchRateHistory(2);
@@ -59,26 +55,29 @@ export async function initRateService() {
         let diffPercent = 0;
 
         if (history.length >= 2) {
-            const previousRate = parseFloat(history[1].usd); // El historial lo dejamos crudo para % preciso
+            const previousRate = parseFloat(history[1].usd);
             if (currentRate > previousRate) trend = 'up';
             else if (currentRate < previousRate) trend = 'down';
             diffPercent = ((currentRate - previousRate) / previousRate) * 100;
         }
 
-        // 3. Guardar en Estado Global
+        // 3. Guardar en Estado Global CON PRECISIÓN COMPLETA
         state.settings.currencies.principal.rate = currentRate;
         state.settings.currencies.principal.trend = trend; 
         state.settings.currencies.principal.diff = diffPercent;
 
+        // 4. Guardar en localStorage con precisión completa
         localStorage.setItem(LOCAL_STORAGE_KEY_USD, currentRate.toString());
-        Logger.info(`Tasa Financiera Aplicada: ${currentRate} (Raw: ${rawRate})`);
+        
+        Logger.info(`✅ Tasa Aplicada: ${currentRate} (Precisión completa)`);
         
         return { rate: currentRate, isOffline: false };
 
     } catch (error) {
         Logger.warn(`Fallo API Tasas: ${error.message}`);
         const lastRate = parseFloat(localStorage.getItem(LOCAL_STORAGE_KEY_USD)) || 1.00;
-        state.settings.currencies.principal.rate = lastRate; // Ya debería estar guardado con 2 decimales
+        state.settings.currencies.principal.rate = lastRate;
         return { rate: lastRate, isOffline: true, requiresManualUpdate: true };
     }
 }
+
