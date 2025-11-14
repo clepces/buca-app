@@ -414,3 +414,37 @@ body.is-offline .top-nav {
 body.is-offline main {
     filter: grayscale(0.5); 
 }
+
+/* ======================================================
+   AÑADIR AL FINAL DE: src/styles/base.css
+   ====================================================== */
+
+/* Tema personalizado para Tippy.js */
+.tippy-box[data-theme~='light-border'] {
+    background-color: var(--bs-card-bg);
+    color: var(--bs-body-color);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 0.875rem;
+    padding: 6px 10px;
+}
+
+.tippy-box[data-theme~='light-border'] .tippy-arrow {
+    color: var(--bs-card-bg);
+}
+
+.tippy-box[data-theme~='light-border'] .tippy-arrow::before {
+    border-top-color: var(--bs-border-color);
+}
+
+/* Tema oscuro */
+[data-bs-theme="dark"] .tippy-box[data-theme~='light-border'] {
+    background-color: var(--bs-gray-800);
+    color: var(--bs-gray-100);
+    border-color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .tippy-box[data-theme~='light-border'] .tippy-arrow {
+    color: var(--bs-gray-800);
+}

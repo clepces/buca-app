@@ -1,17 +1,10 @@
 // ======================================================
 // ARCHIVO: src/utils/tippy-helper.js
-// PROPÓSITO: Helper global para inicializar Tippy.js
+// VERSIÓN CORREGIDA
 // ======================================================
 
 import { Logger } from '../services/logger.service.js';
 
-/**
- * Inicializa Tippy.js en todos los elementos con [data-tippy-content]
- * dentro de un contenedor específico.
- * 
- * @param {HTMLElement} container - El contenedor donde buscar elementos
- * @param {Object} options - Opciones personalizadas de Tippy
- */
 export function initTippy(container = document.body, options = {}) {
     if (typeof tippy === 'undefined') {
         Logger.warn('Tippy.js no está cargado. Los tooltips no funcionarán.');
@@ -22,15 +15,17 @@ export function initTippy(container = document.body, options = {}) {
         animation: 'scale-subtle',
         theme: 'light-border',
         arrow: true,
-        delay: [200, 0], // [show, hide]
+        delay: [400, 0], // [show, hide] - Aumentado para evitar tooltips molestos
         duration: [200, 150],
         placement: 'top',
-        allowHTML: true, // Permite HTML en los tooltips
+        allowHTML: true, // ✅ Permite HTML (necesario si usas Opción 2)
+        maxWidth: 300,
+        interactive: false, // Los tooltips no son interactivos (no se puede hacer clic)
         ...options
     };
 
     try {
-        // Inicializar en elementos con data-tippy-content
+        // 1. Inicializar en elementos con data-tippy-content
         const elements = container.querySelectorAll('[data-tippy-content]');
         
         if (elements.length > 0) {
@@ -38,20 +33,20 @@ export function initTippy(container = document.body, options = {}) {
             Logger.trace(`✅ Tippy inicializado en ${elements.length} elemento(s)`);
         }
 
-        // También inicializar en elementos con title="" (legacy)
+        // 2. Convertir elementos con title="" legacy
         const legacyElements = container.querySelectorAll('[title]:not([data-tippy-content])');
         
         if (legacyElements.length > 0) {
             legacyElements.forEach(el => {
                 const titleText = el.getAttribute('title');
-                if (titleText) {
+                if (titleText && titleText.trim()) {
                     el.setAttribute('data-tippy-content', titleText);
-                    el.removeAttribute('title'); // Eliminar title nativo
+                    el.removeAttribute('title');
                 }
             });
             
             tippy(legacyElements, defaultOptions);
-            Logger.trace(`✅ Tippy inicializado en ${legacyElements.length} elemento(s) legacy`);
+            Logger.trace(`✅ Tippy convertido de ${legacyElements.length} title(s) legacy`);
         }
 
     } catch (error) {
@@ -59,15 +54,12 @@ export function initTippy(container = document.body, options = {}) {
     }
 }
 
-/**
- * Destruye todas las instancias de Tippy en un contenedor
- * (útil para cleanup de vistas)
- */
 export function destroyTippy(container = document.body) {
-    const elements = container.querySelectorAll('[data-tippy-content]');
+    const elements = container.querySelectorAll('[data-tippy-content], [title]');
     elements.forEach(el => {
         if (el._tippy) {
             el._tippy.destroy();
         }
     });
+    Logger.trace('✅ Instancias de Tippy destruidas');
 }

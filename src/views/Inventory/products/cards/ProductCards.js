@@ -29,60 +29,35 @@ const fullFormat = (num, symbol) => {
 function renderSingleProductCard(product, settings) {
     const { symbol: simboloPrincipal } = settings.currencies.principal;
     const { symbol: simboloBase } = settings.currencies.base;
-    
-    // ✅ CORRECCIÓN: Usamos la tasa SIN redondear
-    const tasaCambio = settings.currencies.principal.rate; // <-- Sin toFixed()
+    const tasaCambio = settings.currencies.principal.rate;
 
     const stock = product.stock?.current ?? 0;
     const stockMin = product.stock?.minThreshold ?? 10;
     
-    // Precios base en USD
     const pvp_paq = Number(product.pricing?.priceLists?.[0]?.packageSellPrice ?? 0);
     const pvp_unit = Number(product.pricing?.priceLists?.[0]?.unitSellPrice ?? 0);
     
-    // ✅ CÁLCULO PRECISO: Multiplicamos con toda la precisión
-    // Ejemplo: 19.91 × 234.8765 = 4,676.2617
     const pvp_paq_base_raw = pvp_paq * tasaCambio;
     const pvp_unit_base_raw = pvp_unit * tasaCambio;
     
-    // ✅ REDONDEAMOS SOLO EL RESULTADO FINAL (para visualización)
     const pvp_paq_base = Number(pvp_paq_base_raw.toFixed(2));
     const pvp_unit_base = Number(pvp_unit_base_raw.toFixed(2));
 
-    // Stock status logic (sin cambios)
     let stockStatus = 'stock-ok';
     if (stock === 0) stockStatus = 'stock-out';
     else if (stock <= stockMin) stockStatus = 'stock-low';
 
-    // ✅ Formateadores: Ahora muestran el valor YA redondeado
     const formatMoney = (val) => new Intl.NumberFormat('es-VE', { 
         minimumFractionDigits: 2, 
         maximumFractionDigits: 2 
     }).format(val);
 
-    // ✅ Tooltips mostrando el cálculo EXACTO
-    const unitTooltipTitle = `${simboloPrincipal}${pvp_unit} × ${tasaCambio.toFixed(4)} = ${simboloBase}${formatMoney(pvp_unit_base)}`;
-    const paqTooltipTitle = `${simboloPrincipal}${pvp_paq} × ${tasaCambio.toFixed(4)} = ${simboloBase}${formatMoney(pvp_paq_base)}`;
+    // ✅ TOOLTIPS SIMPLES (sin HTML, solo texto)
+    const unitTooltip = `${simboloPrincipal}${pvp_unit} × ${tasaCambio.toFixed(4)} = ${simboloBase}${formatMoney(pvp_unit_base)}`;
+    const paqTooltip = `${simboloPrincipal}${pvp_paq} × ${tasaCambio.toFixed(4)} = ${simboloBase}${formatMoney(pvp_paq_base)}`;
     
     const unitDisplayVal = `${simboloPrincipal} ${formatNumberAbbreviated(pvp_unit)}`;
     const paqDisplayVal = `${simboloPrincipal} ${formatNumberAbbreviated(pvp_paq)}`;
-
-    // ✅ Tooltips mejorados con HTML
-    const unitTooltip = `
-        <div style="text-align: center;">
-            <strong style="color: var(--primary-color);">${simboloPrincipal}${pvp_unit}</strong> 
-            × <strong>${tasaCambio.toFixed(4)}</strong><br>
-            = <strong style="color: var(--bs-success);">${simboloBase}${formatMoney(pvp_unit_base)}</strong>
-        </div>
-    `;
-    
-    const paqTooltip = `
-        <div style="text-align: center;">
-            <strong style="color: var(--primary-color);">${simboloPrincipal}${pvp_paq}</strong> 
-            × <strong>${tasaCambio.toFixed(4)}</strong><br>
-            = <strong style="color: var(--bs-success);">${simboloBase}${formatMoney(pvp_paq_base)}</strong>
-        </div>
-    `;
 
     return `
         <div class="product-card" data-product-id="${product.id}" data-action="editar">
