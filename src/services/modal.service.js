@@ -132,46 +132,64 @@ export function openRateUpdateModal() {
     const content = document.createElement('div');
     content.style.width = '100%';
 
+    // HTML Estructura
     content.innerHTML = `
         <div id="temp-header-widget" style="display:none;">
             <div class="header-status-widget">
-                <span class="status-wifi online" id="wifi-status-icon" title="Conexión Estable">
-                    <i class="bi bi-wifi"></i>
+                <span class="status-wifi" id="wifi-status-icon" title="Comprobando...">
+                    <i class="bi bi-question-circle"></i>
                 </span>
                 <span class="status-clock" id="live-clock">--:--:--</span>
             </div>
         </div>
 
         <div class="rate-modal-grid">
+            
             <div class="rate-control-panel">
+                
                 <div class="rate-hero-card">
                     <span class="hero-badge"><i class="bi bi-lightning-charge-fill"></i> Tasa Automática</span>
-                    <div class="hero-amount" id="hero-rate-display">${simboloBase} ${currentRate.toFixed(2)}</div>
-                    <div class="hero-date" id="hero-rate-date">Sincronizando...</div>
+                    <div class="hero-amount" id="hero-rate-display">
+                        ${simboloBase} ${currentRate.toFixed(2)}
+                    </div>
+                    <div class="hero-date" id="hero-rate-date">
+                        Verificando conexión...
+                    </div>
                     <div id="api-loading-spinner" style="display:none; margin-top:0.5rem; color: var(--primary-color);">
-                        <small><i class="bi bi-arrow-repeat animate-spin"></i> Buscando actualización...</small>
+                        <small><i class="bi bi-arrow-repeat animate-spin"></i> Sincronizando...</small>
                     </div>
                 </div>
+
                 <div class="manual-input-card">
-                    <div class="manual-header"><h5><i class="bi bi-sliders"></i> Ajuste Manual</h5></div>
+                    <div class="manual-header">
+                        <h5><i class="bi bi-sliders"></i> Ajuste Manual</h5>
+                    </div>
                     <div class="fintech-input-group">
                         <span>${simboloBase}</span>
-                        <input type="number" step="0.01" id="manual-rate-input" value="${currentRate.toFixed(2)}" placeholder="0.00">
+                        <input type="number" step="0.01" id="manual-rate-input" 
+                               value="${currentRate.toFixed(2)}" placeholder="0.00">
                     </div>
                     <div style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--bs-gray-500);">
-                        <i class="bi bi-info-circle-fill me-1"></i> Se usará para todos los cálculos.
+                        <i class="bi bi-info-circle-fill me-1"></i> 
+                        Este valor prevalecerá para todos los cálculos.
                     </div>
                 </div>
+
             </div>
+
             <div class="history-panel-card">
-                <div class="history-header-panel"><h5><i class="bi bi-graph-up"></i> Tendencia</h5></div>
+                <div class="history-header-panel">
+                    <h5><i class="bi bi-graph-up"></i> Tendencia de Mercado</h5>
+                </div>
                 <ul class="history-list custom-scrollbar" id="rate-history-list">
                     <li class="history-item"><span class="text-muted">Cargando...</span></li>
                 </ul>
             </div>
+
         </div>
     `;
 
+    // --- Botones ---
     const saveButton = document.createElement('button');
     saveButton.className = 'btn-primary';
     saveButton.innerHTML = `<i class="bi bi-check-lg me-1"></i> Aplicar Nueva Tasa`;
@@ -181,14 +199,14 @@ export function openRateUpdateModal() {
     cancelButton.innerHTML = `Cerrar`;
 
     const footerContainer = document.createElement('div');
-    footerContainer.id = "modal-footer-container"; 
+    footerContainer.id = "modal-footer-container";
     footerContainer.append(cancelButton, saveButton);
 
     const modal = Modal({
         title: `<i class="bi bi-currency-exchange me-2"></i> Gestión de Tasa`,
         contentElement: content,
         id: 'rate-update-modal',
-        size: 'large' // Modal grande
+        size: 'large'
     });
     
     const modalFooterSlot = modal.querySelector('.modal-footer');
@@ -197,7 +215,7 @@ export function openRateUpdateModal() {
         modalFooterSlot.appendChild(footerContainer);
     }
 
-    // --- Widget en Header (Reloj + WiFi) ---
+    // --- INYECCIÓN DE WIDGET EN HEADER ---
     const headerWidget = content.querySelector('#temp-header-widget').firstElementChild;
     const modalHeader = modal.querySelector('.modal-header');
     const closeBtn = modal.querySelector('.close');
@@ -205,54 +223,73 @@ export function openRateUpdateModal() {
         modalHeader.insertBefore(headerWidget, closeBtn);
     }
 
-    // --- LOGICA DE RELOJ Y CONECTIVIDAD (TIEMPO REAL) ---
+    // --- LÓGICA DE CONECTIVIDAD EN VIVO ---
     const wifiIcon = headerWidget.querySelector('#wifi-status-icon');
-    const clockEl = headerWidget.querySelector('#live-clock');
+    const heroDateDisplay = content.querySelector('#hero-rate-date');
+    
+    // Función para actualizar la UI inmediatamente
+    const updateConnectivityUI = () => {
+        const isOnline = navigator.onLine;
+        
+        // 1. Actualizar Icono WiFi
+        wifiIcon.className = isOnline ? 'status-wifi online' : 'status-wifi offline';
+        wifiIcon.innerHTML = isOnline ? '<i class="bi bi-wifi"></i>' : '<i class="bi bi-wifi-off"></i>';
+        wifiIcon.title = isOnline ? 'En línea' : 'Sin conexión';
 
+        // 2. Actualizar Texto en Tarjeta Hero
+        if (!isOnline) {
+            heroDateDisplay.innerHTML = `<span class="text-danger">● Offline</span> • Sin conexión a API`;
+        } else {
+            // Si vuelve a estar online, intentamos recuperar el texto original o re-sincronizar
+            if (heroDateDisplay.innerText.includes('Offline')) {
+                heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Listo para sincronizar`;
+                // Opcional: Llamar a fetchCurrentRates() aquí automáticamente
+            }
+        }
+    };
+
+    // Escuchar eventos del navegador (esto hace la magia en vivo)
+    window.addEventListener('online', updateConnectivityUI);
+    window.addEventListener('offline', updateConnectivityUI);
+    
+    // Ejecutar una vez al inicio
+    updateConnectivityUI();
+
+    // --- RELOJ ---
+    const clockEl = headerWidget.querySelector('#live-clock');
     const updateClock = () => {
         const now = new Date();
         clockEl.textContent = now.toLocaleTimeString('es-VE', { hour12: true, hour: '2-digit', minute:'2-digit', second:'2-digit' });
     };
-
-    const updateNetworkStatus = () => {
-        if (navigator.onLine) {
-            wifiIcon.className = 'status-wifi online';
-            wifiIcon.innerHTML = '<i class="bi bi-wifi"></i>';
-            wifiIcon.title = "En línea";
-        } else {
-            wifiIcon.className = 'status-wifi offline';
-            wifiIcon.innerHTML = '<i class="bi bi-wifi-off"></i>';
-            wifiIcon.title = "Sin conexión";
-        }
-    };
-
-    // Listeners de eventos reales
-    window.addEventListener('online', updateNetworkStatus);
-    window.addEventListener('offline', updateNetworkStatus);
-    
     const clockInterval = setInterval(updateClock, 1000);
-    updateClock(); // Init clock
-    updateNetworkStatus(); // Init wifi
+    updateClock();
 
-    // Limpieza al cerrar
+    // --- LIMPIEZA AL CERRAR ---
     const originalRemove = modal.remove;
     modal.remove = function() {
         clearInterval(clockInterval);
-        window.removeEventListener('online', updateNetworkStatus);
-        window.removeEventListener('offline', updateNetworkStatus);
+        window.removeEventListener('online', updateConnectivityUI);
+        window.removeEventListener('offline', updateConnectivityUI);
         originalRemove.call(this);
     };
 
-    // --- Lógica de Guardado ---
+    // --- LÓGICA DE GUARDADO (CRÍTICA PARA EL CÁLCULO) ---
     const performSave = (newRate) => {
-        state.settings.currencies.principal.rate = newRate;
-        localStorage.setItem('buca_last_known_rate_usd', newRate.toString());
-        Logger.info(`Tasa actualizada a: ${newRate}`);
+        // 1. Convertir a número y forzar 2 decimales para evitar errores de punto flotante
+        const finalRate = Number(parseFloat(newRate).toFixed(2));
+
+        // 2. Actualizar ESTADO GLOBAL
+        state.settings.currencies.principal.rate = finalRate;
         
-        // IMPORTANTE: Recargar la vista actual para reflejar cambios de precios
+        // 3. Guardar en LocalStorage
+        localStorage.setItem('buca_last_known_rate_usd', finalRate.toString());
+        
+        Logger.info(`Tasa aplicada correctamente: ${finalRate}`);
+        
+        // 4. ¡IMPORTANTE! Forzar actualización de TODA la interfaz (Productos, Header, etc.)
         triggerRerender(); 
         
-        showToast(`Tasa actualizada a ${simboloBase} ${newRate.toFixed(2)}`, 'success');
+        showToast(`Tasa actualizada a ${simboloBase} ${finalRate.toFixed(2)}`, 'success');
         modal.remove();
     };
 
@@ -282,83 +319,92 @@ export function openRateUpdateModal() {
     cancelButton.addEventListener('click', () => modal.remove());
     document.body.appendChild(modal);
 
-    // --- Carga de Datos API ---
-    const spinner = content.querySelector('#api-loading-spinner');
-    const heroRateDisplay = content.querySelector('#hero-rate-display');
-    const heroDateDisplay = content.querySelector('#hero-rate-date');
-    
-    spinner.style.display = 'block';
-
-    fetchCurrentRates().then(data => {
-        spinner.style.display = 'none';
-        const apiRate = parseFloat(data.current.usd);
-        const apiDate = new Date(data.current.date + 'T12:00:00'); 
+    // --- CARGA INICIAL DE DATOS ---
+    if (navigator.onLine) {
+        const spinner = content.querySelector('#api-loading-spinner');
+        const heroRateDisplay = content.querySelector('#hero-rate-display');
         
-        if (!isNaN(apiRate)) {
-            heroRateDisplay.textContent = `${simboloBase} ${apiRate.toFixed(2)}`;
-            const dateStr = apiDate.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' });
-            heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Oficial para: <strong>${dateStr}</strong>`;
+        spinner.style.display = 'block';
+
+        fetchCurrentRates().then(data => {
+            spinner.style.display = 'none';
+            const apiRate = parseFloat(data.current.usd);
+            const apiDate = new Date(data.current.date + 'T12:00:00'); 
             
-            const input = content.querySelector('#manual-rate-input');
-            if(input && Math.abs(parseFloat(input.value) - currentRate) < 0.01) {
-                input.value = apiRate.toFixed(2);
+            if (!isNaN(apiRate)) {
+                // Mostrar tasa de API
+                heroRateDisplay.textContent = `${simboloBase} ${apiRate.toFixed(2)}`;
+                
+                const dateStr = apiDate.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' });
+                heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Oficial: <strong>${dateStr}</strong>`;
+                
+                // Sugerir en el input manual si no se ha tocado
+                const input = content.querySelector('#manual-rate-input');
+                if(input && Math.abs(parseFloat(input.value) - currentRate) < 0.01) {
+                    input.value = apiRate.toFixed(2);
+                }
             }
-        }
-    }).catch(() => {
-        spinner.style.display = 'none';
-        heroDateDisplay.innerHTML = `<span class="text-danger">● Offline</span> • Usando memoria local`;
-    });
+        }).catch(() => {
+            spinner.style.display = 'none';
+            // El listener de 'offline' manejará el texto, pero por si acaso falla la promesa:
+            heroDateDisplay.innerHTML = `<span class="text-warning">● API Inaccesible</span>`;
+        });
 
-    // Historial
-    fetchRateHistory(6).then(history => {
+        // Historial
+        fetchRateHistory(6).then(history => {
+            const listEl = content.querySelector('#rate-history-list');
+            if (history && history.length > 0) {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                listEl.innerHTML = history.map((item, index) => {
+                    const prevItem = history[index + 1]; 
+                    const dateObj = new Date(`${item.date}T12:00:00`);
+                    const itemDate = new Date(`${item.date}T00:00:00`);
+                    
+                    let dayBadgeHTML = '';
+                    let rowClass = '';
+
+                    if (itemDate > today) {
+                        dayBadgeHTML = `<span class="day-badge tomorrow">Mañana</span>`;
+                        rowClass = 'is-active-day';
+                    } else if (itemDate.getTime() === today.getTime()) {
+                        dayBadgeHTML = `<span class="day-badge today">Hoy</span>`;
+                    }
+
+                    const dayName = dateObj.toLocaleDateString('es-VE', { weekday: 'long' });
+                    const fullDate = dateObj.toLocaleDateString('es-VE', { day: 'numeric', month: 'long' });
+                    const val = parseFloat(item.usd);
+                    
+                    let percentHTML = '';
+                    if (prevItem) {
+                        const prevVal = parseFloat(prevItem.usd);
+                        const diff = ((val - prevVal) / prevVal) * 100;
+                        const isPositive = diff > 0;
+                        const icon = isPositive ? 'bi-caret-up-fill' : (diff === 0 ? 'bi-dash' : 'bi-caret-down-fill');
+                        const cssClass = isPositive ? 'positive' : (diff === 0 ? 'neutral' : 'negative');
+                        percentHTML = `<span class="rate-change ${cssClass}"><i class="bi ${icon}"></i> ${Math.abs(diff).toFixed(2)}%</span>`;
+                    }
+
+                    return `
+                    <li class="history-item ${rowClass}">
+                        <div class="date-col">
+                            <span class="day-name">${dayName} ${dayBadgeHTML}</span>
+                            <span class="full-date">${fullDate}</span>
+                        </div>
+                        <div class="val-col">
+                            <span class="rate-val">${simboloBase} ${val.toFixed(2)}</span>
+                            ${percentHTML}
+                        </div>
+                    </li>`;
+                }).join('');
+            } else {
+                listEl.innerHTML = `<li class="text-center p-4 text-muted">Sin historial disponible.</li>`;
+            }
+        });
+    } else {
+        // Si arranca offline
         const listEl = content.querySelector('#rate-history-list');
-        if (history && history.length > 0) {
-            const today = new Date();
-            today.setHours(0,0,0,0);
-
-            listEl.innerHTML = history.map((item, index) => {
-                const prevItem = history[index + 1]; 
-                const dateObj = new Date(`${item.date}T12:00:00`);
-                const itemDate = new Date(`${item.date}T00:00:00`);
-                
-                let dayBadgeHTML = '';
-                let rowClass = '';
-
-                if (itemDate > today) {
-                    dayBadgeHTML = `<span class="day-badge tomorrow">Mañana</span>`;
-                    rowClass = 'is-active-day';
-                } else if (itemDate.getTime() === today.getTime()) {
-                    dayBadgeHTML = `<span class="day-badge today">Hoy</span>`;
-                }
-
-                const dayName = dateObj.toLocaleDateString('es-VE', { weekday: 'long' });
-                const fullDate = dateObj.toLocaleDateString('es-VE', { day: 'numeric', month: 'long' });
-                const val = parseFloat(item.usd);
-                
-                let percentHTML = '';
-                if (prevItem) {
-                    const prevVal = parseFloat(prevItem.usd);
-                    const diff = ((val - prevVal) / prevVal) * 100;
-                    const isPositive = diff > 0;
-                    const icon = isPositive ? 'bi-caret-up-fill' : (diff === 0 ? 'bi-dash' : 'bi-caret-down-fill');
-                    const cssClass = isPositive ? 'positive' : (diff === 0 ? 'neutral' : 'negative');
-                    percentHTML = `<span class="rate-change ${cssClass}"><i class="bi ${icon}"></i> ${Math.abs(diff).toFixed(2)}%</span>`;
-                }
-
-                return `
-                <li class="history-item ${rowClass}">
-                    <div class="date-col">
-                        <span class="day-name">${dayName} ${dayBadgeHTML}</span>
-                        <span class="full-date">${fullDate}</span>
-                    </div>
-                    <div class="val-col">
-                        <span class="rate-val">${simboloBase} ${val.toFixed(2)}</span>
-                        ${percentHTML}
-                    </div>
-                </li>`;
-            }).join('');
-        } else {
-            listEl.innerHTML = `<li class="text-center p-4 text-muted">Sin historial.</li>`;
-        }
-    });
+        listEl.innerHTML = `<li class="text-center p-4 text-muted"><i class="bi bi-wifi-off display-4 d-block mb-2"></i>Sin conexión para cargar historial.</li>`;
+    }
 }
