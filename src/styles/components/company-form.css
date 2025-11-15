@@ -1,0 +1,16 @@
+/* ======================================================
+// ARCHIVO NUEVO: src/styles/components/company-form.css
+// PROPÓSITO: Estilos específicos para el formulario de
+//            creación de compañía (si son necesarios).
+// ====================================================== */
+
+/* Por ahora, este archivo puede estar vacío.
+   El CompanyForm.js reutiliza las clases:
+   - .product-form-wrapper
+   - .wizard-stepper
+   - .wizard-content
+   - .wizard-step
+   - .form-grid-layout
+   - .summary-card-premium
+   ... y todas las clases de 'dashboard-premium.css'.
+*/

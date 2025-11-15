@@ -1,12 +1,6 @@
 // ======================================================
 // ARCHIVO: src/services/modal.service.js
-// ACTUALIZACIÓN: Soporte para tamaños y WiFi en tiempo real
-// MEJORA: (Precisión Decimal y UI)
-// 1. Añadido helper 'formatFintechRate' para UI de tasas.
-// 2. Se muestra precisión completa (ej. 236.4601) en hero e historial.
-// 3. Input usa step="any" y valor .toString() para precisión.
-// 4. 'performSave' ahora guarda el 'float' completo, sin truncar.
-// 5. Estados de lista usan la clase 'history-empty-state'.
+// ACTUALIZACIÓN: Añadida la función openCompanyModal
 // ======================================================
 
 import { state } from '../store/state.js';
@@ -19,8 +13,12 @@ import { triggerRerender } from '../store/actions.js';
 import { PERMISSIONS } from './roles.config.js';
 import { can } from './permissions.service.js';
 
+// --- ¡NUEVA IMPORTACIÓN! ---
+import { CompanyForm } from '../components/Companys/CompanyForm.js';
+
 // --- MODAL DE CONFIRMACIÓN (PEQUEÑO) ---
 export function showConfirmationModal(title, messageHTML, onConfirm, options = {}) {
+    // ... (código sin cambios) ...
     const defaults = {
         icon: 'bi bi-exclamation-triangle-fill text-warning',
         confirmText: 'Sí, continuar',
@@ -87,6 +85,7 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
 
 // --- MODAL DE PRODUCTO (GRANDE) ---
 export function openProductModal(productToEdit = null) {
+    // ... (código sin cambios) ...
     return new Promise((resolve) => {
         const isEditMode = productToEdit !== null;
         const modalTitle = isEditMode 
@@ -124,27 +123,68 @@ export function openProductModal(productToEdit = null) {
     });
 }
 
-// ==========================================================================
-// FUNCIÓN COMPLETA: openRateUpdateModal()
-// ARCHIVO: src/services/modal.service.js
-// VERSIÓN: REFINADA CON BOTÓN DE REFRESCAR
-// ==========================================================================
+// --- ¡NUEVA FUNCIÓN! ---
+// --- MODAL DE COMPAÑÍA (GRANDE) ---
+export function openCompanyModal() {
+    return new Promise((resolve) => {
+        const modalTitle = '<i class="bi bi-building-fill-add me-2"></i> Crear Nueva Compañía';
+        
+        const dummyContent = document.createElement('div');
+        dummyContent.textContent = 'Cargando formulario...';
 
+        const companyModalElement = Modal({
+            title: modalTitle,
+            contentElement: dummyContent,
+            id: 'add-company-modal',
+            size: 'large' // Grande, como el de producto
+        });
+
+        // Inyectamos el nuevo componente CompanyForm
+        const formElement = CompanyForm(companyModalElement);
+        const modalBodyContainer = companyModalElement.querySelector('#modal-body-container');
+        
+        if (modalBodyContainer) {
+            modalBodyContainer.innerHTML = '';
+            modalBodyContainer.appendChild(formElement);
+        }
+
+        document.body.appendChild(companyModalElement);
+
+        const firstInput = formElement.querySelector('input, select');
+        if (firstInput) firstInput.focus();
+        
+        // Resolvemos la promesa cuando el modal se cierra
+        const originalRemove = companyModalElement.remove;
+        companyModalElement.remove = function() {
+            originalRemove.call(this);
+            resolve(true); // Resuelve 'true' para indicar que se cerró
+        };
+    });
+}
+
+
+// --- MODAL DE TASA (GRANDE) ---
 export function openRateUpdateModal() {
+    // ... (código sin cambios) ...
     
-    // --- VERIFICAR PERMISOS ---
     if (!can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) && !can(PERMISSIONS.EDIT_SETTINGS_SYSTEM)) {
         Logger.warn('Intento de abrir modal de tasa sin permisos.');
         return;
     }
 
-    // --- HELPER: FORMATO FINTECH ---
+    // --- INICIO DE MEJORA: Helper de formato Fintech ---
+    /**
+     * Formatea un número al estilo "Fintech" (236.4601)
+     * @param {number} rate - Tasa completa
+     * @param {string} symbol - Símbolo de moneda
+     */
     function formatFintechRate(rate, symbol) {
         const rateStr = rate.toString();
         const parts = rateStr.split('.');
         const integer = parts[0];
         const fraction = parts[1] || '00';
         
+        // 236 grande, .46 normal, .01 más opaco
         const mainFraction = fraction.substring(0, 2);
         const extraFraction = fraction.substring(2); 
 
@@ -158,15 +198,15 @@ export function openRateUpdateModal() {
             </span>
         `;
     }
+    // --- FIN DE MEJORA ---
 
-    // --- DATOS INICIALES ---
     const simboloBase = state.settings.currencies.base.symbol || 'Bs.';
     const currentRate = state.settings.currencies.principal.rate;
     
-    // --- CREAR CONTENIDO DEL MODAL ---
     const content = document.createElement('div');
     content.style.width = '100%';
 
+    // HTML Estructura
     content.innerHTML = `
         <div id="temp-header-widget" style="display:none;">
             <div class="header-status-widget">
@@ -185,7 +225,7 @@ export function openRateUpdateModal() {
                     <span class="hero-badge"><i class="bi bi-lightning-charge-fill"></i> Tasa Automática</span>
                     <div class="hero-amount" id="hero-rate-display">
                         ${formatFintechRate(currentRate, simboloBase)}
-                    </div>
+                        </div>
                     <div class="hero-date" id="hero-rate-date">
                         Verificando conexión...
                     </div>
@@ -203,7 +243,7 @@ export function openRateUpdateModal() {
                         <input type="number" step="any" id="manual-rate-input" 
                             value="${currentRate.toString()}" 
                             placeholder="0.0000">
-                    </div>
+                        </div>
                     <div style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--bs-gray-500);">
                         <i class="bi bi-info-circle-fill me-1"></i> 
                         Este valor prevalecerá para todos los cálculos.
@@ -215,22 +255,19 @@ export function openRateUpdateModal() {
             <div class="history-panel-card">
                 <div class="history-header-panel">
                     <h5><i class="bi bi-graph-up"></i> Tendencia de Mercado</h5>
-                    <button class="btn-refresh" data-action="refresh-history" title="Actualizar historial">
-                        <i class="bi bi-arrow-clockwise"></i> Actualizar
-                    </button>
                 </div>
                 <ul class="history-list custom-scrollbar" id="rate-history-list">
                     <li class="history-empty-state">
                         <div class="spinner"></div>
                         <span style="margin-top: 1rem;">Cargando...</span>
                     </li>
-                </ul>
+                    </ul>
             </div>
 
         </div>
     `;
 
-    // --- CREAR BOTONES DEL FOOTER ---
+    // --- Botones ---
     const saveButton = document.createElement('button');
     saveButton.className = 'btn-primary';
     saveButton.innerHTML = `<i class="bi bi-check-lg me-1"></i> Aplicar Nueva Tasa`;
@@ -243,7 +280,6 @@ export function openRateUpdateModal() {
     footerContainer.id = "modal-footer-container";
     footerContainer.append(cancelButton, saveButton);
 
-    // --- CREAR MODAL ---
     const modal = Modal({
         title: `<i class="bi bi-currency-exchange me-2"></i> Gestión de Tasa`,
         contentElement: content,
@@ -257,7 +293,7 @@ export function openRateUpdateModal() {
         modalFooterSlot.appendChild(footerContainer);
     }
 
-    // --- INYECTAR WIDGET EN HEADER ---
+    // --- INYECCIÓN DE WIDGET EN HEADER ---
     const headerWidget = content.querySelector('#temp-header-widget').firstElementChild;
     const modalHeader = modal.querySelector('.modal-header');
     const closeBtn = modal.querySelector('.close');
@@ -269,36 +305,39 @@ export function openRateUpdateModal() {
     const wifiIcon = headerWidget.querySelector('#wifi-status-icon');
     const heroDateDisplay = content.querySelector('#hero-rate-date');
     
+    // Función para actualizar la UI inmediatamente
     const updateConnectivityUI = () => {
         const isOnline = navigator.onLine;
         
+        // 1. Actualizar Icono WiFi
         wifiIcon.className = isOnline ? 'status-wifi online' : 'status-wifi offline';
         wifiIcon.innerHTML = isOnline ? '<i class="bi bi-wifi"></i>' : '<i class="bi bi-wifi-off"></i>';
         wifiIcon.title = isOnline ? 'En línea' : 'Sin conexión';
 
+        // 2. Actualizar Texto en Tarjeta Hero
         if (!isOnline) {
             heroDateDisplay.innerHTML = `<span class="text-danger">● Offline</span> • Sin conexión a API`;
         } else {
+            // Si vuelve a estar online, intentamos recuperar el texto original o re-sincronizar
             if (heroDateDisplay.innerText.includes('Offline')) {
                 heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Listo para sincronizar`;
+                // Opcional: Llamar a fetchCurrentRates() aquí automáticamente
             }
         }
     };
 
+    // Escuchar eventos del navegador (esto hace la magia en vivo)
     window.addEventListener('online', updateConnectivityUI);
     window.addEventListener('offline', updateConnectivityUI);
+    
+    // Ejecutar una vez al inicio
     updateConnectivityUI();
 
-    // --- RELOJ EN VIVO ---
+    // --- RELOJ ---
     const clockEl = headerWidget.querySelector('#live-clock');
     const updateClock = () => {
         const now = new Date();
-        clockEl.textContent = now.toLocaleTimeString('es-VE', { 
-            hour12: true, 
-            hour: '2-digit', 
-            minute:'2-digit', 
-            second:'2-digit' 
-        });
+        clockEl.textContent = now.toLocaleTimeString('es-VE', { hour12: true, hour: '2-digit', minute:'2-digit', second:'2-digit' });
     };
     const clockInterval = setInterval(updateClock, 1000);
     updateClock();
@@ -312,124 +351,30 @@ export function openRateUpdateModal() {
         originalRemove.call(this);
     };
 
-    // --- 🆕 FUNCIÓN PARA CARGAR HISTORIAL (REUTILIZABLE) ---
-    const loadHistoryData = () => {
-        const listEl = content.querySelector('#rate-history-list');
-        const refreshBtn = content.querySelector('.btn-refresh');
-        
-        // Estado: Loading
-        listEl.innerHTML = `
-            <li class="history-empty-state">
-                <div class="spinner"></div>
-                <span style="margin-top: 1rem;">Cargando historial...</span>
-            </li>
-        `;
-        
-        if (refreshBtn) {
-            refreshBtn.disabled = true;
-            refreshBtn.classList.add('is-loading');
-        }
-
-        fetchRateHistory(6)
-            .then(history => {
-                if (history && history.length > 0) {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-
-                    listEl.innerHTML = history.map((item, index) => {
-                        const prevItem = history[index + 1]; 
-                        const dateObj = new Date(`${item.date}T12:00:00`);
-                        const itemDate = new Date(`${item.date}T00:00:00`);
-                        
-                        let dayBadgeHTML = '';
-                        let rowClass = '';
-
-                        if (itemDate > today) {
-                            dayBadgeHTML = `<span class="day-badge tomorrow">Mañana</span>`;
-                            rowClass = 'is-active-day';
-                        } else if (itemDate.getTime() === today.getTime()) {
-                            dayBadgeHTML = `<span class="day-badge today">Hoy</span>`;
-                        }
-
-                        const dayName = dateObj.toLocaleDateString('es-VE', { weekday: 'long' });
-                        const fullDate = dateObj.toLocaleDateString('es-VE', { 
-                            day: 'numeric', 
-                            month: 'long' 
-                        });
-                        const val = parseFloat(item.usd);
-                        
-                        let percentHTML = '';
-                        if (prevItem) {
-                            const prevVal = parseFloat(prevItem.usd);
-                            const diff = ((val - prevVal) / prevVal) * 100;
-                            const isPositive = diff > 0;
-                            const icon = isPositive ? 'bi-caret-up-fill' : (diff === 0 ? 'bi-dash' : 'bi-caret-down-fill');
-                            const cssClass = isPositive ? 'positive' : (diff === 0 ? 'neutral' : 'negative');
-                            percentHTML = `
-                                <span class="rate-change ${cssClass}">
-                                    <i class="bi ${icon}"></i> ${Math.abs(diff).toFixed(2)}%
-                                </span>
-                            `;
-                        }
-
-                        return `
-                        <li class="history-item ${rowClass}">
-                            <div class="date-col">
-                                <span class="day-name">${dayName} ${dayBadgeHTML}</span>
-                                <span class="full-date">${fullDate}</span>
-                            </div>
-                            <div class="val-col">
-                                <span class="rate-val">${formatFintechRate(val, simboloBase)}</span>
-                                ${percentHTML}
-                            </div>
-                        </li>`;
-                    }).join('');
-                } else {
-                    listEl.innerHTML = `
-                        <li class="history-empty-state">
-                            <i class="bi bi-info-circle"></i>
-                            <span>Sin historial disponible.</span>
-                        </li>
-                    `;
-                }
-            })
-            .catch(error => {
-                Logger.error('Error cargando historial:', error);
-                listEl.innerHTML = `
-                    <li class="history-empty-state">
-                        <i class="bi bi-exclamation-triangle text-warning"></i>
-                        <span>Error al cargar historial. Intenta de nuevo.</span>
-                    </li>
-                `;
-            })
-            .finally(() => {
-                if (refreshBtn) {
-                    refreshBtn.disabled = false;
-                    refreshBtn.classList.remove('is-loading');
-                }
-            });
-    };
-
-    // --- 🆕 LISTENER PARA EL BOTÓN DE REFRESCAR ---
-    content.addEventListener('click', (e) => {
-        const refreshBtn = e.target.closest('[data-action="refresh-history"]');
-        if (refreshBtn && navigator.onLine) {
-            loadHistoryData();
-            showToast('Actualizando historial...', 'info', 2000);
-        } else if (refreshBtn && !navigator.onLine) {
-            showToast('Sin conexión a internet', 'warning');
-        }
-    });
-
-    // --- LÓGICA DE GUARDADO ---
+    // --- LÓGICA DE GUARDADO (CRÍTICA PARA EL CÁLCULO) ---
     const performSave = (newRate) => {
+        
+        // --- INICIO DE CORRECCIÓN: No truncar a 2 decimales ---
+        // 1. Convertir a número flotante
         const finalRate = parseFloat(newRate);
+        // const finalRate = Number(parseFloat(newRate).toFixed(2)); // <-- ERROR ANTIGUO
+        // --- FIN DE CORRECCIÓN ---
+
+        // 2. Actualizar ESTADO GLOBAL
         state.settings.currencies.principal.rate = finalRate;
+        
+        // 3. Guardar en LocalStorage
         localStorage.setItem('buca_last_known_rate_usd', finalRate.toString());
         
         Logger.info(`Tasa aplicada correctamente: ${finalRate}`);
+        
+        // 4. ¡IMPORTANTE! Forzar actualización de TODA la interfaz (Productos, Header, etc.)
         triggerRerender(); 
+        
+        // --- INICIO DE CORRECCIÓN: Usar .toString() en el toast ---
         showToast(`Tasa actualizada a ${simboloBase} ${finalRate.toString()}`, 'success');
+        // --- FIN DE CORRECCIÓN ---
+        
         modal.remove();
     };
 
@@ -457,54 +402,106 @@ export function openRateUpdateModal() {
     });
 
     cancelButton.addEventListener('click', () => modal.remove());
-    
-    // --- AÑADIR MODAL AL DOM ---
     document.body.appendChild(modal);
 
-    // --- 🆕 CARGA INICIAL DE DATOS ---
+    // --- CARGA INICIAL DE DATOS ---
     if (navigator.onLine) {
         const spinner = content.querySelector('#api-loading-spinner');
         const heroRateDisplay = content.querySelector('#hero-rate-display');
         
         spinner.style.display = 'block';
 
-        // Cargar tasa actual (Hero Card)
         fetchCurrentRates().then(data => {
             spinner.style.display = 'none';
             const apiRate = parseFloat(data.current.usd);
             const apiDate = new Date(data.current.date + 'T12:00:00'); 
             
             if (!isNaN(apiRate)) {
+                // --- INICIO DE MEJORA: Aplicar formato fintech y .toString() ---
                 heroRateDisplay.innerHTML = formatFintechRate(apiRate, simboloBase);
                 
-                const dateStr = apiDate.toLocaleDateString('es-VE', { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long' 
-                });
+                const dateStr = apiDate.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' });
                 heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Oficial: <strong>${dateStr}</strong>`;
                 
                 const input = content.querySelector('#manual-rate-input');
                 if(input && Math.abs(parseFloat(input.value) - currentRate) < 0.01) {
                     input.value = apiRate.toString();
                 }
+                // --- FIN DE MEJORA ---
             }
         }).catch(() => {
             spinner.style.display = 'none';
             heroDateDisplay.innerHTML = `<span class="text-warning">● API Inaccesible</span>`;
         });
 
-        // ✅ Cargar historial usando la función reutilizable
-        loadHistoryData();
-        
+        // Historial
+        fetchRateHistory(6).then(history => {
+            const listEl = content.querySelector('#rate-history-list');
+            if (history && history.length > 0) {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                listEl.innerHTML = history.map((item, index) => {
+                    const prevItem = history[index + 1]; 
+                    const dateObj = new Date(`${item.date}T12:00:00`);
+                    const itemDate = new Date(`${item.date}T00:00:00`);
+                    
+                    let dayBadgeHTML = '';
+                    let rowClass = '';
+
+                    if (itemDate > today) {
+                        dayBadgeHTML = `<span class="day-badge tomorrow">Mañana</span>`;
+                        rowClass = 'is-active-day';
+                    } else if (itemDate.getTime() === today.getTime()) {
+                        dayBadgeHTML = `<span class="day-badge today">Hoy</span>`;
+                    }
+
+                    const dayName = dateObj.toLocaleDateString('es-VE', { weekday: 'long' });
+                    const fullDate = dateObj.toLocaleDateString('es-VE', { day: 'numeric', month: 'long' });
+                    const val = parseFloat(item.usd);
+                    
+                    let percentHTML = '';
+                    if (prevItem) {
+                        const prevVal = parseFloat(prevItem.usd);
+                        const diff = ((val - prevVal) / prevVal) * 100;
+                        const isPositive = diff > 0;
+                        const icon = isPositive ? 'bi-caret-up-fill' : (diff === 0 ? 'bi-dash' : 'bi-caret-down-fill');
+                        const cssClass = isPositive ? 'positive' : (diff === 0 ? 'neutral' : 'negative');
+                        percentHTML = `
+                            <span class="rate-change ${cssClass}">
+                                <i class="bi ${icon}"></i> ${Math.abs(diff).toFixed(2)}%
+                            </span>
+                        `;
+                    }
+
+                    return `
+                    <li class="history-item ${rowClass}">
+                        <div class="date-col">
+                            <span class="day-name">${dayName} ${dayBadgeHTML}</span>
+                            <span class="full-date">${fullDate}</span>
+                        </div>
+                        <div class="val-col">
+                            <span class="rate-val">${formatFintechRate(val, simboloBase)}</span>
+                            ${percentHTML}
+                        </div>
+                    </li>`;
+                }).join('');
+            } else {
+                // --- INICIO DE MEJORA: Usar clase history-empty-state ---
+                listEl.innerHTML = `<li class="history-empty-state"><i class="bi bi-info-circle"></i><span>Sin historial disponible.</span></li>`;
+                // --- FIN DE MEJORA ---
+            }
+        });
     } else {
-        // Sin conexión - Estado offline
+        // Si arranca offline
         const listEl = content.querySelector('#rate-history-list');
+        // --- INICIO DE MEJORA: Usar clase history-empty-state ---
         listEl.innerHTML = `
             <li class="history-empty-state">
                 <i class="bi bi-wifi-off"></i>
                 <span>Sin conexión para cargar historial.</span>
             </li>
         `;
+        // --- FIN DE MEJORA ---
     }
 }

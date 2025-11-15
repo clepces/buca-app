@@ -1,27 +1,37 @@
 // ======================================================
 // ARCHIVO: src/components/ProductFormWizard.js
-// Propósito: Controla toda la lógica de UI para el 
-// wizard de 4 pasos (pasos, botones, navegación).
+// PROPÓSITO: Controla la lógica de UI para el wizard.
+// CORRECCIÓN: (Bug de Pasos)
+// 1. El wizard ahora es dinámico. Obtiene 'totalSteps'
+//    del número de elementos (divs) recibidos.
+// 2. 'showStep' valida contra 'totalSteps' dinámico.
+// 3. 'updateFooterButtons' muestra 'Calcular' en el paso
+//    (totalSteps - 1) y 'Guardar' en el paso (totalSteps).
 // ======================================================
 
 import { Logger } from '../services/logger.service.js';
 
 /**
- * Inicializa y controla un wizard de 4 pasos dentro de un modal.
+ * Inicializa y controla un wizard de N pasos dentro de un modal.
  * @param {object} config - Objeto de configuración.
  * @param {HTMLElement} config.modalElementRef - La referencia al elemento del modal principal.
  * @param {HTMLElement} config.wizardStepperEl - El elemento stepper del header.
- * @param {NodeListOf<HTMLElement>} config.wizardStepsEls - Una lista de los 4 divs de contenido.
+ * @param {NodeListOf<HTMLElement>} config.wizardStepsEls - Una lista de N divs de contenido.
  * @param {boolean} config.isEditMode - Para etiqutar los botones correctamente.
  * @param {object} config.callbacks - Funciones que el wizard llamará.
  * @param {function} config.callbacks.onStepNext - Se llama al pulsar "Siguiente".
  * @param {function} config.callbacks.onStepPrev - Se llama al pulsar "Anterior".
- * @param {function} config.callbacks.onCalculate - Se llama al pulsar "Calcular".
+ * @param {function} config.callbacks.onCalculate - Se llama al pulsar "Calcular/Revisar".
  * @param {function} config.callbacks.onSubmit - Se llama al pulsar "Guardar/Actualizar".
  * @returns {object} - Una API para controlar el wizard externamente.
  */
 export function initProductFormWizard(config) {
     const { modalElementRef, wizardStepperEl, wizardStepsEls, isEditMode, callbacks } = config;
+
+    // --- ¡INICIO DE CORRECCIÓN 1! ---
+    const totalSteps = wizardStepsEls.length; // ¡Dinámico! (Será 4 para Productos, 3 para Compañía)
+    Logger.info(`[Wizard] Inicializado con ${totalSteps} pasos.`);
+    // --- FIN DE CORRECCIÓN 1 ---
 
     let currentStep = 1;
     let btnPrev = null;
@@ -50,40 +60,56 @@ export function initProductFormWizard(config) {
         btnCalculate.style.display = 'none'; 
         btnSave.style.display = 'none';
 
-        // Mostrar según el paso
-        switch (stepNum) {
-            case 1: 
-                btnNext.style.display = 'inline-flex'; 
-                btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`; 
-                break;
-            case 2: 
-                btnPrev.style.display = 'inline-flex'; 
-                btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`; 
-                btnNext.style.display = 'inline-flex'; 
-                btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`; 
-                break;
-            case 3: 
-                btnPrev.style.display = 'inline-flex'; 
-                btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`; 
-                btnCalculate.style.display = 'inline-flex'; 
-                break;
-            case 4: 
-                btnPrev.style.display = 'inline-flex'; 
-                btnPrev.innerHTML = `<i class="bi bi-pencil-fill me-1"></i> Volver a Editar`; 
-                btnSave.style.display = 'inline-flex'; 
-                break;
+        // --- ¡INICIO DE CORRECCIÓN 3! ---
+        // Lógica de botones dinámicos
+            
+        if (stepNum > 1) {
+            btnPrev.style.display = 'inline-flex';
         }
+
+        if (stepNum === totalSteps) {
+            // --- PASO FINAL (Resumen) ---
+            // (Ej: 4 de 4, o 3 de 3)
+            btnPrev.innerHTML = `<i class="bi bi-pencil-fill me-1"></i> Volver a Editar`; 
+            btnSave.style.display = 'inline-flex';
+        
+        } else if (stepNum === totalSteps - 1) {
+            // --- PENÚLTIMO PASO (Datos antes de Resumen) ---
+            // (Ej: 3 de 4, o 2 de 3)
+            btnCalculate.style.display = 'inline-flex';
+        
+        } else {
+            // --- CUALQUIER PASO ANTERIOR ---
+            // (Ej: 1 de 4, 2 de 4, o 1 de 3)
+            btnNext.style.display = 'inline-flex'; 
+            btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`; 
+        }
+
+        // Caso especial: Si el wizard solo tiene 2 pasos (ej. Info y Resumen)
+        if (totalSteps === 2 && stepNum === 1) {
+             btnNext.style.display = 'none'; // Ocultar "Siguiente"
+             btnCalculate.style.display = 'inline-flex'; // Mostrar "Revisar" de una vez
+        }
+
+        // Renombrar "Anterior" en el paso 2 (siempre es el mismo)
+        if (stepNum === 2) {
+             btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`; 
+        }
+        // --- FIN DE CORRECCIÓN 3 ---
     };
 
     /**
      * Muestra un paso específico del wizard y actualiza la UI.
-     * @param {number} stepNum - El número del paso (1-4).
+     * @param {number} stepNum - El número del paso (1 a N).
      */
     function showStep(stepNum) {
-        if (stepNum < 1 || stepNum > 4) { 
-            // console.log(`Número de paso inválido: ${stepNum}`);
+        
+        // --- ¡INICIO DE CORRECCIÓN 2! ---
+        if (stepNum < 1 || stepNum > totalSteps) { // ¡Validación dinámica!
+            Logger.warn(`[Wizard] Número de paso inválido: ${stepNum} (Total: ${totalSteps})`);
             return; 
         }
+        // --- FIN DE CORRECCIÓN 2 ---
         
         currentStep = stepNum;
 
@@ -195,7 +221,13 @@ export function initProductFormWizard(config) {
                 if (isBusy) {
                     btnSave.innerHTML = `<i class="bi bi-hourglass-split me-1"></i> Guardando...`;
                 } else {
+                    // Re-establece el texto correcto (Guardar o Actualizar)
                     btnSave.innerHTML = `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? 'Actualizar Producto' : 'Guardar Producto'}`;
+                    
+                    // Asegurarse de que el botón de Guardar Compañía también se resetee
+                    if (modalElementRef.id === 'add-company-modal') {
+                         btnSave.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Crear Negocio`;
+                    }
                 }
             }
         }

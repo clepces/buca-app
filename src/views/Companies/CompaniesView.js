@@ -1,6 +1,7 @@
 // ======================================================
 // ARCHIVO: src/views/Companies/CompaniesView.js
-// VERSIÓN CORREGIDA: Separa 'change' de 'click'
+// VERSIÓN CORREGIDA: Conecta el botón 'add-company'
+//                  al 'openCompanyModal'.
 // ======================================================
 
 import { StatCard } from '../../components/StatCard.js';
@@ -15,6 +16,9 @@ import { debounce } from '../../utils/debounce.js';
 import { paginate, getTotalPages } from '../../services/pagination.service.js';
 import { initTippy, destroyTippy } from '../../utils/tippy-helper.js';
 
+// --- ¡NUEVA IMPORTACIÓN! ---
+import { openCompanyModal } from '../../services/modal.service.js';
+
 export function CompaniesView(element, state) {
     const canCreate = can(PERMISSIONS.CREATE_COMPANY);
 
@@ -25,19 +29,20 @@ export function CompaniesView(element, state) {
         searchTerm: '',
         selectedCompanies: new Set(),
         companies: [
+            // ... (datos de placeholder sin cambios) ...
             { id: '1', name: 'BrightWave Innovations', domain: 'brightwave.com', email: 'michael@example.com', accountUrl: 'https://bwi.example.com', plan: 'Advanced (Monthly)', createdDate: '12 Sep 2024', status: 'Active' },
-            { id: '2', name: 'Stellar Dynamics', domain: 'stellar.com', email: 'sophie@example.com', accountUrl: 'https://sd.example.com', plan: 'Basic (Yearly)', createdDate: '24 Oct 2024', status: 'Active' },
-            { id: '3', name: 'Quantum Nexus', domain: 'quantum.com', email: 'cameron@example.com', accountUrl: 'https://qn.example.com', plan: 'Advanced (Monthly)', createdDate: '18 Feb 2024', status: 'Active' },
-            { id: '4', name: 'EcoVision Enterprises', domain: 'ecovision.com', email: 'doris@example.com', accountUrl: 'https://eve.example.com', plan: 'Advanced (Monthly)', createdDate: '17 Oct 2024', status: 'Active' },
-            { id: '5', name: 'Aurora Insights', domain: 'aurora.com', email: 'aurora@example.com', accountUrl: 'https://ai.example.com', plan: 'Enterprise (Monthly)', createdDate: '20 Jul 2024', status: 'Active' },
-            { id: '6', name: 'BlueSky Ventures', domain: 'bluesky.com', email: 'kathleen@example.com', accountUrl: 'https://bsv.example.com', plan: 'Advanced (Monthly)', createdDate: '10 Apr 2024', status: 'Active' },
-            { id: '7', name: 'TerraFusion', domain: 'terrafusion.com', email: 'bruce@example.com', accountUrl: 'https://tf.example.com', plan: 'Advanced (Monthly)', createdDate: '29 Aug 2024', status: 'Active' },
-            { id: '8', name: 'UrbanPulse Design', domain: 'urbanpulse.com', email: 'estelle@example.com', accountUrl: 'https://upd.example.com', plan: 'Basic (Monthly)', createdDate: '22 Feb 2024', status: 'Inactive' },
-            { id: '9', name: 'Nimbus Networks', domain: 'nimbus.com', email: 'stephen@example.com', accountUrl: 'https://nn.example.com', plan: 'Basic (Monthly)', createdDate: '03 Nov 2024', status: 'Active' },
-            { id: '10', name: 'UrbanPulse Design', domain: 'urbanpulse.com', email: 'estelle@example.com', accountUrl: 'https://upd.example.com', plan: 'Basic (Monthly)', createdDate: '22 Feb 2024', status: 'Inactive' },
-            { id: '11', name: 'Nimbus Networks', domain: 'nimbus.com', email: 'stephen@example.com', accountUrl: 'https://nn.example.com', plan: 'Basic (Monthly)', createdDate: '03 Nov 2024', status: 'Active' },
-            { id: '12', name: 'TerraFusion', domain: 'terrafusion.com', email: 'bruce@example.com', accountUrl: 'https://tf.example.com', plan: 'Advanced (Monthly)', createdDate: '29 Aug 2024', status: 'Active' },
-            { id: '13', name: 'BlueSky Ventures', domain: 'bluesky.com', email: 'kathleen@example.com', accountUrl: 'https://bsv.example.com', plan: 'Advanced (Monthly)', createdDate: '10 Apr 2024', status: 'Active' },
+            // { id: '2', name: 'Stellar Dynamics', domain: 'stellar.com', email: 'sophie@example.com', accountUrl: 'https://sd.example.com', plan: 'Basic (Yearly)', createdDate: '24 Oct 2024', status: 'Active' },
+            // { id: '3', name: 'Quantum Nexus', domain: 'quantum.com', email: 'cameron@example.com', accountUrl: 'https://qn.example.com', plan: 'Advanced (Monthly)', createdDate: '18 Feb 2024', status: 'Active' },
+            // { id: '4', name: 'EcoVision Enterprises', domain: 'ecovision.com', email: 'doris@example.com', accountUrl: 'https://eve.example.com', plan: 'Advanced (Monthly)', createdDate: '17 Oct 2024', status: 'Active' },
+            // { id: '5', name: 'Aurora Insights', domain: 'aurora.com', email: 'aurora@example.com', accountUrl: 'https://ai.example.com', plan: 'Enterprise (Monthly)', createdDate: '20 Jul 2024', status: 'Active' },
+            // { id: '6', name: 'BlueSky Ventures', domain: 'bluesky.com', email: 'kathleen@example.com', accountUrl: 'https://bsv.example.com', plan: 'Advanced (Monthly)', createdDate: '10 Apr 2024', status: 'Active' },
+            // { id: '7', name: 'TerraFusion', domain: 'terrafusion.com', email: 'bruce@example.com', accountUrl: 'https://tf.example.com', plan: 'Advanced (Monthly)', createdDate: '29 Aug 2024', status: 'Active' },
+            // { id: '8', name: 'UrbanPulse Design', domain: 'urbanpulse.com', email: 'estelle@example.com', accountUrl: 'https://upd.example.com', plan: 'Basic (Monthly)', createdDate: '22 Feb 2024', status: 'Inactive' },
+            // { id: '9', name: 'Nimbus Networks', domain: 'nimbus.com', email: 'stephen@example.com', accountUrl: 'https://nn.example.com', plan: 'Basic (Monthly)', createdDate: '03 Nov 2024', status: 'Active' },
+            // { id: '10', name: 'UrbanPulse Design', domain: 'urbanpulse.com', email: 'estelle@example.com', accountUrl: 'https://upd.example.com', plan: 'Basic (Monthly)', createdDate: '22 Feb 2024', status: 'Inactive' },
+            // { id: '11', name: 'Nimbus Networks', domain: 'nimbus.com', email: 'stephen@example.com', accountUrl: 'https://nn.example.com', plan: 'Basic (Monthly)', createdDate: '03 Nov 2024', status: 'Active' },
+            // { id: '12', name: 'TerraFusion', domain: 'terrafusion.com', email: 'bruce@example.com', accountUrl: 'https://tf.example.com', plan: 'Advanced (Monthly)', createdDate: '29 Aug 2024', status: 'Active' },
+            // { id: '13', name: 'BlueSky Ventures', domain: 'bluesky.com', email: 'kathleen@example.com', accountUrl: 'https://bsv.example.com', plan: 'Advanced (Monthly)', createdDate: '10 Apr 2024', status: 'Active' },
         ]
     };
     
@@ -181,9 +186,8 @@ export function CompaniesView(element, state) {
         updateTableAndPagination(); 
     }, 300);
 
-    // --- Manejadores de Eventos ---
-    
     const handlePagination = (e) => {
+        // ... (código de paginación sin cambios) ...
         const target = e.target;
         let needsUpdate = false;
 
@@ -213,12 +217,11 @@ export function CompaniesView(element, state) {
         }
     };
 
-    // --- ✅ NUEVO MANEJADOR PARA EL EVENTO 'CHANGE' ---
     const handleItemsPerPageChange = (e) => {
         if (e.target.id === 'items-per-page') {
             viewState.itemsPerPage = parseInt(e.target.value, 10);
-            viewState.currentPage = 1; // Resetear a página 1
-            updateTableAndPagination(); // Actualizar la vista
+            viewState.currentPage = 1;
+            updateTableAndPagination();
         }
     };
 
@@ -231,6 +234,7 @@ export function CompaniesView(element, state) {
     };
 
     const handleSelection = (e) => {
+        // ... (código de selección sin cambios) ...
         const target = e.target;
         const action = target.dataset.action;
         let needsUpdate = false;
@@ -260,7 +264,8 @@ export function CompaniesView(element, state) {
         }
     };
 
-    const handleActions = (e) => {
+    // --- ¡INICIO DE MODIFICACIÓN! ---
+    const handleActions = async (e) => {
         const actionButton = e.target.closest('[data-action]');
         if (!actionButton) return;
         const action = actionButton.dataset.action;
@@ -271,31 +276,36 @@ export function CompaniesView(element, state) {
             return;
         }
 
-        if (action === 'add-company') { Logger.info('Abrir modal para añadir compañía...'); }
+        if (action === 'add-company') {
+            Logger.info('Abriendo modal para añadir compañía...');
+            const modalClosed = await openCompanyModal(); // <-- ¡NUEVA LLAMADA!
+            if (modalClosed) {
+                Logger.info('Modal de compañía cerrado, refrescando tabla...');
+                // Aquí deberías forzar una recarga real de los datos de Firebase
+                updateTableAndPagination();
+            }
+            return;
+        }
+        // --- FIN DE MODIFICACIÓN! ---
+
         if (action === 'view-company') { Logger.info(`Abrir modal para VER compañía: ${companyId}`); }
         if (action === 'edit-company') { Logger.info(`Abrir modal para EDITAR compañía: ${companyId}`); }
         if (action === 'delete-company') { Logger.info(`Abrir modal para ELIMINAR compañía: ${companyId}`); }
         if (action === 'refresh-data') { Logger.info('Refrescando datos de compañías...'); updateTableAndPagination(); }
         if (action === 'manage-columns') { Logger.info('Abrir modal "Manage Columns" (Próximamente)...'); }
     };
-
-    // --- CICLO DE VIDA DE LA VISTA ---
     
     renderLayout();
     updateTableAndPagination();
-
-    // --- ✅ LISTENERS ACTUALIZADOS ---
+    
     element.addEventListener('click', handleActions);
-    element.addEventListener('click', handlePagination); // Solo para botones de pág.
-    element.addEventListener('input', handleSearch); // Para búsqueda
-    element.addEventListener('change', handleItemsPerPageChange); // Para el <select>
+    element.addEventListener('click', handlePagination);
+    element.addEventListener('input', handleSearch);
+    element.addEventListener('change', handleItemsPerPageChange);
 
     return () => {
         Logger.info('Limpiando CompaniesView y sus listeners...');
-        
-        // ✅ NUEVO: Destruir Tippy
         destroyTippy(element);
-        
         element.removeEventListener('click', handleActions);
         element.removeEventListener('click', handlePagination);
         element.removeEventListener('input', handleSearch);

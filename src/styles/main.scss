@@ -1,6 +1,5 @@
 /* ======================================================
 // ARCHIVO: src/styles/main.scss
-// VERSIÓN CORREGIDA: Limpia la confusión de 'panel.css'
 // ====================================================== */
 
 /* 1. Reseteo y Estilos Base */
@@ -31,9 +30,12 @@
 @import './components/tabs.css';
 @import './components/historial.css';
 @import './components/product-form.css';
+/* --- ¡NUEVA LÍNEA! --- */
+@import './components/company-form.css'; /* (Añadiremos este archivo) */
+
 
 /* 5. 🆕 ESTILOS PREMIUM (Correctos) */
-@import './components/stat-cards-premium.css'; /* ✅ ESTE ES EL CORRECTO */
+@import './components/stat-cards-premium.css';
 @import './components/dashboard-premium.css'; 
 
 /* 6. Otros y Media Queries */
