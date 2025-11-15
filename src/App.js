@@ -1,10 +1,9 @@
 // ======================================================
 // ARCHIVO: src/App.js
-// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.9 - FILE: 1.4.4
-// CORRECCIÓN: (Refactorización de Roles)
-// 1. Se importa 'ROLES' desde 'roles.config.js'.
-// 2. Se actualiza la lógica de redirección en 'bootAuthenticatedApp'
-//    para usar los nuevos roles (ROLES.CAJERO, ROLES.OPERADOR).
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.2.0 - FILE: 1.4.5
+// CORRECCIÓN: (Error Crítico) El listener 'online'
+//             ahora llama a 'this.handleNavigation(path)'
+//             en lugar de 'this.refreshCurrentView()'.
 // ======================================================
 
 import { state } from './store/state.js';
@@ -59,7 +58,12 @@ export default class App {
             Logger.info('App: Conexión restablecida.');
             showToast('Conexión restablecida. Sincronizando...', 'success', 3000);
             document.body.classList.remove('is-offline');
-            this.refreshCurrentView(); 
+            
+            // --- ¡INICIO DE CORRECCIÓN! ---
+            // Llamamos a handleNavigation para recargar la vista actual
+            const currentPath = window.location.hash || '#/';
+            this.handleNavigation(currentPath); 
+            // --- FIN DE CORRECCIÓN ---
         });
     }
     

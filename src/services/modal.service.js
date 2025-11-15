@@ -1,6 +1,12 @@
 // ======================================================
 // ARCHIVO: src/services/modal.service.js
 // ACTUALIZACIÓN: Soporte para tamaños y WiFi en tiempo real
+// MEJORA: (Precisión Decimal y UI)
+// 1. Añadido helper 'formatFintechRate' para UI de tasas.
+// 2. Se muestra precisión completa (ej. 236.4601) en hero e historial.
+// 3. Input usa step="any" y valor .toString() para precisión.
+// 4. 'performSave' ahora guarda el 'float' completo, sin truncar.
+// 5. Estados de lista usan la clase 'history-empty-state'.
 // ======================================================
 
 import { state } from '../store/state.js';
@@ -126,6 +132,34 @@ export function openRateUpdateModal() {
         return;
     }
 
+    // --- INICIO DE MEJORA: Helper de formato Fintech ---
+    /**
+     * Formatea un número al estilo "Fintech" (236.4601)
+     * @param {number} rate - Tasa completa
+     * @param {string} symbol - Símbolo de moneda
+     */
+    function formatFintechRate(rate, symbol) {
+        const rateStr = rate.toString();
+        const parts = rateStr.split('.');
+        const integer = parts[0];
+        const fraction = parts[1] || '00';
+        
+        // 236 grande, .46 normal, .01 más opaco
+        const mainFraction = fraction.substring(0, 2);
+        const extraFraction = fraction.substring(2); 
+
+        return `
+            <span class="fintech-rate">
+                <span class="fintech-symbol">${symbol}</span>
+                <span class="fintech-integer">${integer}</span>
+                <span class="fintech-decorator">.</span>
+                <span class="fintech-fraction">${mainFraction}</span>
+                ${extraFraction ? `<span class="fintech-extra">${extraFraction}</span>` : ''}
+            </span>
+        `;
+    }
+    // --- FIN DE MEJORA ---
+
     const simboloBase = state.settings.currencies.base.symbol || 'Bs.';
     const currentRate = state.settings.currencies.principal.rate;
     
@@ -150,8 +184,8 @@ export function openRateUpdateModal() {
                 <div class="rate-hero-card">
                     <span class="hero-badge"><i class="bi bi-lightning-charge-fill"></i> Tasa Automática</span>
                     <div class="hero-amount" id="hero-rate-display">
-                        ${simboloBase} ${currentRate.toFixed(2)}
-                    </div>
+                        ${formatFintechRate(currentRate, simboloBase)}
+                        </div>
                     <div class="hero-date" id="hero-rate-date">
                         Verificando conexión...
                     </div>
@@ -166,9 +200,10 @@ export function openRateUpdateModal() {
                     </div>
                     <div class="fintech-input-group">
                         <span>${simboloBase}</span>
-                        <input type="number" step="0.01" id="manual-rate-input" 
-                               value="${currentRate.toFixed(2)}" placeholder="0.00">
-                    </div>
+                        <input type="number" step="any" id="manual-rate-input" 
+                            value="${currentRate.toString()}" 
+                            placeholder="0.0000">
+                        </div>
                     <div style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--bs-gray-500);">
                         <i class="bi bi-info-circle-fill me-1"></i> 
                         Este valor prevalecerá para todos los cálculos.
@@ -182,8 +217,11 @@ export function openRateUpdateModal() {
                     <h5><i class="bi bi-graph-up"></i> Tendencia de Mercado</h5>
                 </div>
                 <ul class="history-list custom-scrollbar" id="rate-history-list">
-                    <li class="history-item"><span class="text-muted">Cargando...</span></li>
-                </ul>
+                    <li class="history-empty-state">
+                        <div class="spinner"></div>
+                        <span style="margin-top: 1rem;">Cargando...</span>
+                    </li>
+                    </ul>
             </div>
 
         </div>
@@ -275,8 +313,12 @@ export function openRateUpdateModal() {
 
     // --- LÓGICA DE GUARDADO (CRÍTICA PARA EL CÁLCULO) ---
     const performSave = (newRate) => {
-        // 1. Convertir a número y forzar 2 decimales para evitar errores de punto flotante
-        const finalRate = Number(parseFloat(newRate).toFixed(2));
+        
+        // --- INICIO DE CORRECCIÓN: No truncar a 2 decimales ---
+        // 1. Convertir a número flotante
+        const finalRate = parseFloat(newRate);
+        // const finalRate = Number(parseFloat(newRate).toFixed(2)); // <-- ERROR ANTIGUO
+        // --- FIN DE CORRECCIÓN ---
 
         // 2. Actualizar ESTADO GLOBAL
         state.settings.currencies.principal.rate = finalRate;
@@ -289,7 +331,10 @@ export function openRateUpdateModal() {
         // 4. ¡IMPORTANTE! Forzar actualización de TODA la interfaz (Productos, Header, etc.)
         triggerRerender(); 
         
-        showToast(`Tasa actualizada a ${simboloBase} ${finalRate.toFixed(2)}`, 'success');
+        // --- INICIO DE CORRECCIÓN: Usar .toString() en el toast ---
+        showToast(`Tasa actualizada a ${simboloBase} ${finalRate.toString()}`, 'success');
+        // --- FIN DE CORRECCIÓN ---
+        
         modal.remove();
     };
 
@@ -332,21 +377,20 @@ export function openRateUpdateModal() {
             const apiDate = new Date(data.current.date + 'T12:00:00'); 
             
             if (!isNaN(apiRate)) {
-                // Mostrar tasa de API
-                heroRateDisplay.textContent = `${simboloBase} ${apiRate.toFixed(2)}`;
+                // --- INICIO DE MEJORA: Aplicar formato fintech y .toString() ---
+                heroRateDisplay.innerHTML = formatFintechRate(apiRate, simboloBase);
                 
                 const dateStr = apiDate.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' });
                 heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Oficial: <strong>${dateStr}</strong>`;
                 
-                // Sugerir en el input manual si no se ha tocado
                 const input = content.querySelector('#manual-rate-input');
                 if(input && Math.abs(parseFloat(input.value) - currentRate) < 0.01) {
-                    input.value = apiRate.toFixed(2);
+                    input.value = apiRate.toString();
                 }
+                // --- FIN DE MEJORA ---
             }
         }).catch(() => {
             spinner.style.display = 'none';
-            // El listener de 'offline' manejará el texto, pero por si acaso falla la promesa:
             heroDateDisplay.innerHTML = `<span class="text-warning">● API Inaccesible</span>`;
         });
 
@@ -383,7 +427,11 @@ export function openRateUpdateModal() {
                         const isPositive = diff > 0;
                         const icon = isPositive ? 'bi-caret-up-fill' : (diff === 0 ? 'bi-dash' : 'bi-caret-down-fill');
                         const cssClass = isPositive ? 'positive' : (diff === 0 ? 'neutral' : 'negative');
-                        percentHTML = `<span class="rate-change ${cssClass}"><i class="bi ${icon}"></i> ${Math.abs(diff).toFixed(2)}%</span>`;
+                        percentHTML = `
+                            <span class="rate-change ${cssClass}">
+                                <i class="bi ${icon}"></i> ${Math.abs(diff).toFixed(2)}%
+                            </span>
+                        `;
                     }
 
                     return `
@@ -393,18 +441,27 @@ export function openRateUpdateModal() {
                             <span class="full-date">${fullDate}</span>
                         </div>
                         <div class="val-col">
-                            <span class="rate-val">${simboloBase} ${val.toFixed(2)}</span>
+                            <span class="rate-val">${formatFintechRate(val, simboloBase)}</span>
                             ${percentHTML}
                         </div>
                     </li>`;
                 }).join('');
             } else {
-                listEl.innerHTML = `<li class="text-center p-4 text-muted">Sin historial disponible.</li>`;
+                // --- INICIO DE MEJORA: Usar clase history-empty-state ---
+                listEl.innerHTML = `<li class="history-empty-state"><i class="bi bi-info-circle"></i><span>Sin historial disponible.</span></li>`;
+                // --- FIN DE MEJORA ---
             }
         });
     } else {
         // Si arranca offline
         const listEl = content.querySelector('#rate-history-list');
-        listEl.innerHTML = `<li class="text-center p-4 text-muted"><i class="bi bi-wifi-off display-4 d-block mb-2"></i>Sin conexión para cargar historial.</li>`;
+        // --- INICIO DE MEJORA: Usar clase history-empty-state ---
+        listEl.innerHTML = `
+            <li class="history-empty-state">
+                <i class="bi bi-wifi-off"></i>
+                <span>Sin conexión para cargar historial.</span>
+            </li>
+        `;
+        // --- FIN DE MEJORA ---
     }
 }
