@@ -46,7 +46,7 @@
    -------------------------------------------------------------------------- */
 /* 2. PARTES DEL MODAL */
 .modal-header {
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--bs-border-color);
     display: flex; justify-content: space-between; align-items: center;
     background-color: var(--bs-card-bg);
@@ -67,7 +67,7 @@
     background-color: var(--bs-gray-50);
 }
 .modal-footer {
-    padding: 1rem 1rem;
+    padding: 1rem 1.5rem;
     border-top: 1px solid var(--bs-border-color);
     background-color: var(--bs-card-bg);
     display: flex; justify-content: flex-end; gap: 1rem;
