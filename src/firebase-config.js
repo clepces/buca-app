@@ -21,7 +21,4 @@ const db = initializeFirestore(app, {
 });
 const auth = getAuth(app);
 
-// Persistencia habilitada automáticamente con persistentLocalCache
-
-
 export { db, auth };

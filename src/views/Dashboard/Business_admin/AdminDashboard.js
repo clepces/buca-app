@@ -13,14 +13,14 @@ export function AdminDashboard(element, state) {
     
     // Datos estáticos para las nuevas 8 tarjetas
     const stats = {
-        totalSales: 120500.75,
-        salesReturn: 1500.20,
-        totalPurchases: 80300.00,
-        purchaseReturn: 750.00,
-        profit: 40200.55,
-        overdueInvoices: 3200.00,
-        totalExpenses: 5100.00,
-        paymentReturns: 200.00
+        totalSales: 0.00,
+        salesReturn: 0.00,
+        totalPurchases: 0.00,
+        purchaseReturn: 0.00,
+        profit: 0.00,
+        overdueInvoices: 0.00,
+        totalExpenses: 0.00,
+        paymentReturns: 0.00
     };
 
     element.innerHTML = `

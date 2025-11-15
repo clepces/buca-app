@@ -32,7 +32,6 @@ export default class App {
 
     constructor(rootElement, initialState, mainLoader) {
         this.root = rootElement;
-        // --- ¡CORRECCIÓN! No guardamos 'initialState' en 'this.state' ---
         this.mainLoader = mainLoader;
         this.currentViewCleanup = () => {};
         this.boundHandleGlobalActions = this.handleGlobalActions.bind(this);
@@ -45,31 +44,22 @@ export default class App {
     async init() {
         Logger.info('App: Inicializando...');
         registerRerender(this.render.bind(this));
-        
-        // --- ¡NUEVO! Iniciamos los escuchadores de red ---
         this.initConnectivityListeners();
     }
 
-    // --- ¡NUEVA FUNCIÓN! ---
     initConnectivityListeners() {
-        // 1. Detectar cuando se pierde la conexión
         window.addEventListener('offline', () => {
             Logger.warn('App: Conexión perdida. Pasando a modo offline.');
             showToast('Sin conexión a internet. Trabajando en modo local.', 'warning', 5000);
-            document.body.classList.add('is-offline'); // Útil si quieres estilos CSS específicos
-            
-            // Opcional: Actualizar el estado global para que otros componentes sepan
-            // state.ui.isOffline = true; 
+            document.body.classList.add('is-offline');
+            state.ui.isOffline = true; 
         });
 
-        // 2. Detectar cuando vuelve la conexión
         window.addEventListener('online', () => {
             Logger.info('App: Conexión restablecida.');
             showToast('Conexión restablecida. Sincronizando...', 'success', 3000);
             document.body.classList.remove('is-offline');
-            
-            // Opcional: Recargar datos críticos
-            // this.refreshCurrentView(); 
+            this.refreshCurrentView(); 
         });
     }
     
@@ -83,9 +73,7 @@ export default class App {
             } else {
                 this.mainLoader.updateMessage('Verificando credenciales...');
             }
-            
-            const sessionData = await tracedLoadUserData(user); 
-            
+            const sessionData = await tracedLoadUserData(user);            
             if (sessionData) {
                 setUser({
                     uid: sessionData.user.uid,
@@ -95,14 +83,10 @@ export default class App {
                     departmentId: sessionData.business.departmentId,
                     role: sessionData.user.role
                 });
-
                 this.mainLoader.updateMessage('Obteniendo tasas de cambio...');
-                await delay(500); // Pequeña pausa visual
-                const rateInfo = await initRateService();
-                
-                // Actualizamos el estado (initRateService ya lo hizo, pero esto re-asegura)
-                state.settings.currencies.principal.rate = rateInfo.rate;
-                
+                await delay(500);
+                const rateInfo = await initRateService();                
+                state.settings.currencies.principal.rate = rateInfo.rate;                
                 if (state.session.business.id === 'admin_view') {
                     this.mainLoader.updateMessage('Bienvenido, Administrador');
                     state.products = [];
@@ -117,29 +101,21 @@ export default class App {
                     }
                 }
                 await delay(1500);
-                this.bootAuthenticatedApp(sessionData); // Arranca la app principal
-                
-                // --- 4. MOSTRAR ALERTAS (DESPUÉS DE CARGAR LA UI) ---
-                // Mostramos las alertas *después* de que la app arranque
-                // para que el toast sea visible sobre la UI.
-                await delay(1000); // Espera a que la UI esté pintada
-                
+                this.bootAuthenticatedApp(sessionData);
+                await delay(1000); 
                 if (rateInfo.isOffline) {
                     showToast(`Modo Offline: Usando tasa guardada (Bs. ${rateInfo.rate})`, 'warning', 5000);
                 }
                 if (rateInfo.requiresManualUpdate) {
-                    // Esta alerta es pegajosa (15 seg) porque es crítica
                     showToast('¡No se encontró tasa! Debes actualizarla manualmente.', 'error', 15000);
                 }
-                // --- FIN DE ALERTAS ---
 
             } else {
                 Logger.warn('No se pudo cargar sesión. Mostrando login.');
                 await logout(); 
             }
         } else {
-            this.mainLoader.hide(); 
-            
+            this.mainLoader.hide();             
             if (this.isLoggingOut) {
                 const loaderContainer = this.root.querySelector('.app-loader');
                 if (loaderContainer) {
@@ -161,34 +137,24 @@ export default class App {
     async bootAuthenticatedApp(sessionData) {
         Logger.info('App: arrancando aplicación autenticada.');
         this.mainLoader.hide();
-        
         this.renderLayout();
-        
-        const canViewDashboard = can(PERMISSIONS.VIEW_DASHBOARD);
-        
+        const canViewDashboard = can(PERMISSIONS.VIEW_DASHBOARD);        
         const userRole = sessionData?.user?.role || state.session?.user?.role;
         Logger.trace(`[App] bootAuthenticatedApp: Rol del usuario es ${userRole}`);
-
         const defaultRoute = '#/';
         let redirectTo = defaultRoute;
-
         if (!canViewDashboard) {
-            Logger.warn('Usuario no tiene permiso para Dashboard. Buscando ruta alternativa...');
-            
-            // --- ¡INICIO DE CORRECCIÓN! ---
-            // Usamos las constantes de ROLES en lugar de strings hardcodeados
+            Logger.warn('Usuario no tiene permiso para Dashboard. Buscando ruta alternativa...');           
             if (userRole === ROLES.CAJERO && can(PERMISSIONS.VIEW_POS_MODULE)) {
                 redirectTo = '#/pos';
             } else if (userRole === ROLES.OPERADOR && can(PERMISSIONS.VIEW_INVENTORY_MODULE)) {
                 redirectTo = '#/inventory';
             } else {
-            // --- FIN DE CORRECCIÓN! ---
                 Logger.error('Usuario sin permisos para dashboard ni para rutas alternativas. Mostrando error.');
                 this.root.querySelector('#view-container').innerHTML = `<p>Error: No tienes permisos para ver ninguna página.</p>`;
                 return;
             }
         }
-
         const currentHash = window.location.hash || '#/';
         if (currentHash !== redirectTo && redirectTo !== defaultRoute) {
             Logger.info(`Redirigiendo a la ruta por defecto del rol: ${redirectTo}`);
@@ -199,24 +165,14 @@ export default class App {
                 Logger.info(`Ya estamos en la ruta correcta (${currentHash}). Renderizando layout e iniciando router.`);
             }
         }
-        
-        await delay(50);
-        
+        await delay(50);        
         Logger.trace('ιχ Llamando a initRouter después de posible redirección.');
-        
-        // --- ¡CORRECCIÓN! (Bug 'onNavigate') ---
-        // Ahora solo pasamos el callback que el router espera.
         initRouter(this.handleNavigation.bind(this));
-
         if (!this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
             this.hasGlobalListener = true;
             Logger.info('Listener de acciones globales añadido.');
         }
-
-        // --- ¡NUEVO! ---
-        // El router ya no maneja los clics en 'data-route', así que App.js
-        // debe hacerlo desde su listener global.
     }
 
     async handleLogoutSequence(toastMessage = '¡Hasta pronto!') {
@@ -239,13 +195,11 @@ export default class App {
         catch (error) {
             Logger.error('Error durante logout:', error);
             this.isLoggingOut = false;
-            this.showLogin(); // Llama a showLogin en caso de error de logout
+            this.showLogin();
         }
-        // onAuthStateChanged(null) se encargará de llamar a showLogin()
     }
 
     async handleGlobalActions(e) {
-        // 1. Manejador de Clics de Navegación (movido desde el router)
         const link = e.target.closest('a[data-route]');
         if (link) {
             e.preventDefault(); 
@@ -253,40 +207,29 @@ export default class App {
             if (window.location.hash !== newPath) {
                 window.location.hash = newPath;
             }
-            return; // Es un clic de navegación, no una acción
+            return;
         }
-
-        // 2. Manejador de Acciones (como logout, toggle-theme)
         const actionElement = e.target.closest('[data-action]');
-        if (!actionElement) return;
-        
+        if (!actionElement) return;       
         const action = actionElement.dataset.action;
         const dropdown = document.getElementById('actions-menu-dropdown');
-        
         if (action !== 'toggle-actions-menu' && dropdown?.classList.contains('show')) {
             dropdown.classList.remove('show');
         }
-        
         if (action === 'logout') {
             this.handleLogoutSequence();
         } else {
             switch (action) {
-                // --- ¡INICIO DE NUEVA LÓGICA! ---
                 case 'open-rate-modal':
                     openRateUpdateModal();
                     break;
-                // --- ¡FIN DE NUEVA LÓGICA! ---
-
                 case 'open-config':
                     Logger.info('Abrir config...');
                     break;
-                
                 case 'toggle-theme':
                         this.toggleTheme();
                     break;
-
                 default:
-                    // (Manejo de 'toggle-actions-menu' si es necesario o dejarlo fuera)
                      if (action === 'toggle-actions-menu') {
                         dropdown?.classList.toggle('show');
                     } else {
@@ -299,7 +242,6 @@ export default class App {
     renderLayout() {
         const currentPath = window.location.hash || '#/';
         const mainNavHTML = MainNav(currentPath, state, state.ui.navContext);
-        
         this.root.innerHTML = `
             <div class="page-wrapper"  id="app-layout" >
                 ${Header(state)}
@@ -331,29 +273,24 @@ export default class App {
              Logger.error("Contenedor de vista no encontrado (#view-container).");
              return;
         }
-
         if (typeof this.currentViewCleanup === 'function') {
             try { this.currentViewCleanup(); }
             catch (e) { Logger.error('Error en cleanup de vista:', e); }
             this.currentViewCleanup = () => {};
         }
-
         const route = routes.find(r => r.path === path);
         const defaultRoute = routes.find(r => r.path === '#/');
-
         if (!route) {
              Logger.warn(`Ruta no encontrada: ${path}. Redirigiendo a Dashboard.`);
              window.location.hash = '#/';
              return;
         }
-
         if (!can(route.permission)) {
             Logger.warn(`Acceso denigado a: ${path}. Redirigiendo a ruta por defecto.`);
             const accessibleRoute = routes.find(r => r.isMainModule && can(r.permission)) || defaultRoute;
             window.location.hash = accessibleRoute.path;
             return;
         }
-
         const newNavContext = route?.context || MODULES.CORE;
         if (state.ui.navContext !== newNavContext) {
              state.ui.navContext = newNavContext;
@@ -369,10 +306,8 @@ export default class App {
              Logger.error("Contenedor de vista desaparecido después de renderLayout().");
              return;
         }
-
         updatedViewContainer.classList.add('fade-out');
         await delay(150);
-
         try {
             const ViewComponent = await route.component();
             this.currentViewCleanup = ViewComponent(updatedViewContainer, state);
@@ -386,8 +321,7 @@ export default class App {
     }
 
     showLogin() {
-        this.mainLoader.hide(); 
-        
+        this.mainLoader.hide();         
         Logger.info('Mostrando pantalla de login...');
         if (typeof this.currentViewCleanup === 'function') {
             try {
@@ -416,7 +350,6 @@ export default class App {
         const next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-bs-theme', next);
         Logger.info(`Tema cambiado a: ${next}`);
-
         this.updateNavigation();
     }
 
