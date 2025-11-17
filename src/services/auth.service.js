@@ -1,10 +1,9 @@
 // ======================================================
 // ARCHIVO: src/services/auth.service.js
-// VERSION APP: 3.0.0 - MODULE:CORE: 1.1.4 - FILE: 1.0.4
-// CORRECCIÓN: (Refactorización de Roles)
-// 1. Se importa 'ROLES' desde 'roles.config.js'.
-// 2. Se actualiza el mapeo de 'jobTitle' a los nuevos
-//    roles (Propietario, Operador, Cajero).
+// CORRECCIÓN: (Bug de Permisos)
+// 1. Añadido 'user.getIdToken(true)' en 'loginEmailPassword'
+//    y 'tracedLoadUserData' para forzar el refresco
+//    del token y leer los Custom Claims (ej. super_admin).
 // ======================================================
 
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
@@ -27,7 +26,7 @@ export const initAuthListener = traceExecution('auth.service', 'initAuthListener
 			if (user) {
 				setLoading(true);
 				try {
-					const sessionData = await fetchUserSessionContext(user.uid, user.email);
+					const sessionData = await tracedLoadUserData(user); // <--- ¡Esta función AHORA forzará el refresco!
 					if (sessionData) {
 						setUser(sessionData);
 						logActivity({
@@ -68,6 +67,15 @@ export const loginEmailPassword = traceExecution('auth.service', 'loginEmailPass
 	try {
 		const userCredential = await signInWithEmailAndPassword(auth, email, password);
 		const user = userCredential.user;
+
+        // --- ¡INICIO DE CORRECCIÓN! (Forzar Refresco de Token) ---
+        // Forzamos al SDK a obtener un token NUEVO del servidor.
+        // Esto asegura que los 'Custom Claims' (como super_admin) se lean.
+        Logger.info('Forzando refresco de token para leer Custom Claims...');
+        await user.getIdToken(true); 
+        Logger.info('Refresco de token completado.');
+        // --- FIN DE CORRECCIÓN! ---
+
 		sessionData = await fetchUserSessionContext(user.uid, user.email);
 		if (!sessionData) {
 	  		throw new Error('AUTH_USER_CONTEXT_NOT_FOUND');
@@ -136,12 +144,23 @@ const internalLogout = async () => {
 
 export const tracedLoadUserData = traceExecution('auth.service', 'tracedLoadUserData')(async (user) => {
 	try {
+        // --- (Esto es de la corrección anterior y está BIEN) ---
+        Logger.info('Forzando refresco de token (page load) para leer Custom Claims...');
+        await user.getIdToken(true);
+        Logger.info('Refresco de token (page load) completado.');
+        // --- (Fin de la corrección anterior) ---
+
 		const sessionData = await fetchUserSessionContext(user.uid, user.email);
-		if (sessionData) {
+		
+        if (sessionData) {
+			
+            // --- ¡INICIO DE CORRECCIÓN! ---
+            // Leemos el objeto 'sessionData' plano y construimos
+            // el objeto anidado que espera App.js.
 			return {
 				user: {
-					uid: sessionData.uid,
-					email: sessionData.email,
+					uid: sessionData.uid,       // ANTES: sessionData.user.uid
+					email: sessionData.email,     // ANTES: sessionData.user.email
 					name: sessionData.name,
 					role: sessionData.role
 				},
@@ -150,6 +169,8 @@ export const tracedLoadUserData = traceExecution('auth.service', 'tracedLoadUser
 					departmentId: sessionData.departmentId
 				}
 			};
+            // --- FIN DE CORRECCIÓN! ---
+
 		}
 		return null;
 	} catch (error) {

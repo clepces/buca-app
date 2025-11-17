@@ -258,7 +258,7 @@ input:focus, select:focus, textarea:focus {
 input:disabled, button:disabled, select:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background-color: var(--bs-gray-100); /* Color gris claro */
+    background-color:#2563eb; /* Color gris claro */
 }
 
 /* Y AÑADE LA VERSIÓN PARA TEMA OSCURO */

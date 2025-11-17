@@ -8,6 +8,9 @@
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase-config.js';
+
+window.auth = auth; // <--- ¡AÑADE ESTA LÍNEA!
+
 import { handleError } from './utils/handleError.js';
 import { Logger } from './services/logger.service.js';
 import App from './App.js';

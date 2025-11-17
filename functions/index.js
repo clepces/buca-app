@@ -1,119 +1,136 @@
 // ======================================================
-// ARCHIVO: functions/index.js (NUEVO)
+// ARCHIVO: functions/index.js (ACTUALIZADO A 'onRequest')
 // PROPÓSITO: Backend que crea el negocio y el propietario.
+// CORRECCIÓN: Se convierte de 'onCall' a 'onRequest'
+//             para manejar la autenticación manualmente.
 // ======================================================
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const cors = require("cors")({ origin: true }); // ¡Añadimos CORS!
 
-// Inicializamos la app de ADMIN (la "llave maestra")
 admin.initializeApp();
 const db = admin.firestore();
 
-/**
- * Función 'onCall' (invocable) para crear un negocio y su propietario.
- * Solo los Super Admins autenticados pueden llamarla.
- */
-exports.createBusinessAndOwner = functions.https.onCall(async (data, context) => {
-  // 1. Verificación de Seguridad
-  // Nos aseguramos de que quien llama es un Super Admin
-  if (!context.auth || context.auth.token.role !== "super_admin") {
-    throw new functions.https.HttpsError(
-      "permission-denied",
-      "No tienes permisos para realizar esta acción."
-    );
-  }
-
-  const { businessData, ownerData } = data;
-
-  // 2. Validar datos (simple)
-  if (!businessData.name || !ownerData.email || !ownerData.password) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "Faltan datos (nombre de negocio, email o contraseña)."
-    );
-  }
-
-  let newOwner;
-  try {
-    // 3. Crear el usuario en Firebase AUTHENTICATION
-    console.log(`Creando usuario Auth para: ${ownerData.email}`);
-    newOwner = await admin.auth().createUser({
-      email: ownerData.email,
-      password: ownerData.password,
-      displayName: ownerData.name,
-      emailVerified: true, // Lo marcamos como verificado
-      disabled: false,
-    });
-
-    // 4. Crear los documentos en FIRESTORE (en un batch)
-    console.log(`Usuario creado con UID: ${newOwner.uid}. Creando documentos...`);
-    const batch = db.batch();
-
-    // A. El documento principal del negocio
-    const businessRef = db.collection("businesses").doc(); // ID automático
-    batch.set(businessRef, {
-      name: businessData.name,
-      planId: businessData.planId,
-      ownerUid: newOwner.uid,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      status: "active",
-    });
-
-    // B. El perfil del usuario DENTRO del negocio
-    const userProfileRef = db
-      .collection("businesses")
-      .doc(businessRef.id)
-      .collection("users")
-      .doc(newOwner.uid);
+exports.createBusinessAndOwner = functions.https.onRequest((request, response) => {
+  // Envolvemos la función con el manejador de CORS
+  cors(request, response, async () => {
     
-    batch.set(userProfileRef, {
-      name: ownerData.name,
-      email: ownerData.email,
-      jobTitle: "Propietario", // ¡Rol clave!
-      role: "Propietario", // Mantenemos consistencia
-      departmentIds: ["main"], // Departamento por defecto
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    // --- DEBUG DE PERMISOS (MANUAL) ---
+    console.log("--- DEBUG DE PERMISOS (onRequest) ---");
+    console.log("Headers recibidos:", request.headers);
 
-    // C. El directorio global de usuarios (para el login)
-    const userDirectoryRef = db.collection("user_directory").doc(newOwner.uid);
-    batch.set(userDirectoryRef, {
-      businessId: businessRef.id, // Ligamos al nuevo negocio
-      role: "Propietario", // ¡Rol clave!
-    });
+    let decodedToken;
+    try {
+      // 1. Verificación de Seguridad (Manual)
+      const authorization = request.headers.authorization;
+      if (!authorization || !authorization.startsWith("Bearer ")) {
+        throw new Error("Token no proporcionado.");
+      }
 
-    // 5. Ejecutar todas las escrituras
-    await batch.commit();
+      const token = authorization.split("Bearer ")[1];
+      decodedToken = await admin.auth().verifyIdToken(token);
+      
+      console.log("Token decodificado:", decodedToken);
 
-    console.log("¡Negocio y propietario creados con éxito!");
-    return {
-      success: true,
-      businessId: businessRef.id,
-      ownerId: newOwner.uid,
-    };
+      if (decodedToken.role !== "super_admin") {
+        throw new Error("Permisos insuficientes.");
+      }
+      
+      console.log("¡Permiso de super_admin VERIFICADO!");
 
-  } catch (error) {
-    // 6. Manejo de Errores
-    console.error("Error al crear negocio:", error);
-
-    // Si falló la creación del negocio pero el usuario SÍ se creó,
-    // debemos borrar el usuario de Auth para evitar basura.
-    if (newOwner && newOwner.uid) {
-      console.warn(`Error en Firestore. Revirtiendo creación de usuario Auth ${newOwner.uid}`);
-      await admin.auth().deleteUser(newOwner.uid);
+    } catch (error) {
+      console.error("Error de autenticación:", error.message);
+      // Devolvemos el error en el formato que espera el 'fetch'
+      response.status(403).json({ 
+        error: { message: "No tienes permisos para realizar esta acción." } 
+      });
+      return;
     }
 
-    // Devolver un error amigable al cliente
-    if (error.code === "auth/email-already-exists") {
-      throw new functions.https.HttpsError(
-        "already-exists",
-        "El email del propietario ya está en uso."
-      );
+    // Si la autenticación es exitosa, continuamos...
+    try {
+      // 2. Obtener datos (ahora desde 'request.body.data')
+      const { businessData, ownerData } = request.body.data;
+
+      // 3. Validar datos
+      if (!businessData.name || !ownerData.email || !ownerData.password) {
+        throw new Error("Faltan datos (nombre, email o contraseña).");
+      }
+
+      let newOwner;
+      try {
+        // 4. Crear el usuario en Firebase AUTHENTICATION
+        console.log(`Creando usuario Auth para: ${ownerData.email}`);
+        newOwner = await admin.auth().createUser({
+          email: ownerData.email,
+          password: ownerData.password,
+          displayName: ownerData.name,
+          emailVerified: true,
+          disabled: false,
+        });
+
+        // 5. Crear los documentos en FIRESTORE (en un batch)
+        console.log(`Usuario creado con UID: ${newOwner.uid}. Creando documentos...`);
+        const batch = db.batch();
+
+        const businessRef = db.collection("businesses").doc();
+        batch.set(businessRef, {
+          name: businessData.name,
+          planId: businessData.planId,
+          ownerUid: newOwner.uid,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          status: "active",
+        });
+
+        const userProfileRef = db.collection("businesses").doc(businessRef.id).collection("users").doc(newOwner.uid);
+        batch.set(userProfileRef, {
+          name: ownerData.name,
+          email: ownerData.email,
+          jobTitle: "Propietario",
+          role: "Propietario",
+          departmentIds: ["main"],
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        const userDirectoryRef = db.collection("user_directory").doc(newOwner.uid);
+        batch.set(userDirectoryRef, {
+          businessId: businessRef.id,
+          role: "Propietario",
+        });
+
+        await batch.commit();
+
+        // 6. Enviar respuesta de ÉXITO
+        console.log("¡Negocio y propietario creados con éxito!");
+        response.status(200).json({
+          data: {
+            success: true,
+            businessId: businessRef.id,
+            ownerId: newOwner.uid,
+          }
+        });
+
+      } catch (error) {
+        // 7. Manejo de Errores (Rollback)
+        console.error("Error al crear negocio (try/catch interno):", error);
+        if (newOwner && newOwner.uid) {
+          console.warn(`Error en Firestore. Revirtiendo creación de usuario Auth ${newOwner.uid}`);
+          await admin.auth().deleteUser(newOwner.uid);
+        }
+
+        if (error.code === "auth/email-already-exists") {
+           throw new Error("El email del propietario ya está en uso.");
+        }
+        throw new Error(error.message || "Error interno al crear documentos.");
+      }
+    
+    } catch (error) {
+      // 8. Manejo de Errores (General)
+      console.error("Error en el handler de la función:", error);
+      response.status(500).json({ 
+        error: { message: error.message || "Ocurrió un error interno." }
+      });
     }
-    throw new functions.https.HttpsError(
-      "internal",
-      "Ocurrió un error interno en el servidor."
-    );
-  }
+  });
 });

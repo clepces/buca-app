@@ -1,14 +1,13 @@
 // ======================================================
-// ARCHIVO: src/services/admin.service.js (ACTUALIZADO)
-// PROPÓSITO: Llama a las Cloud Functions de Super Admin.
+// ARCHIVO: src/services/admin.service.js (VUELTA A FETCH MANUAL)
+// PROPÓSITO: Llama a la Cloud Function como un endpoint HTTP.
 // ======================================================
 
 import { Logger } from './logger.service.js';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { auth } from '../firebase-config.js'; // <-- ¡IMPORTANTE!
 
-// Inicializamos la conexión a las Functions
-const functions = getFunctions();
-const createBusinessCallable = httpsCallable(functions, 'createBusinessAndOwner');
+// URL de la Cloud Function
+const CREATE_BUSINESS_URL = 'https://us-central1-buca-scdbs.cloudfunctions.net/createBusinessAndOwner';
 
 /**
  * Llama a la Cloud Function para crear un nuevo negocio y su propietario.
@@ -16,26 +15,49 @@ const createBusinessCallable = httpsCallable(functions, 'createBusinessAndOwner'
  * @param {object} ownerData - { name, email, password }
  */
 export async function createNewBusiness(businessData, ownerData) {
-    Logger.info('Llamando a Cloud Function: createBusinessAndOwner...', { businessData, ownerData });
+    Logger.info('Llamando a Cloud Function (manual fetch): createBusinessAndOwner...', { businessData, ownerData });
 
     try {
-        // Llamamos a la función "createBusinessAndOwner" que definimos en index.js
-        const result = await createBusinessCallable({ businessData, ownerData });
-        
-        // La Cloud Function nos devuelve un objeto en 'result.data'
-        if (result.data.success) {
-            Logger.info('Cloud Function ejecutada con éxito:', result.data);
+        // 1. Obtener el token MÁS RECIENTE del usuario actual
+        if (!auth.currentUser) {
+            throw new Error("No hay usuario autenticado.");
+        }
+        // true = forzar refresco (para estar 100% seguros)
+        const token = await auth.currentUser.getIdToken(true); 
+
+        // 2. Construir la solicitud 'fetch'
+        const response = await fetch(CREATE_BUSINESS_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // <-- Adjuntamos el token manualmente
+            },
+            // IMPORTANTE: El 'fetch' debe enviar el objeto 'data' 
+            // que la función 'onCall' envolvía automáticamente
+            body: JSON.stringify({
+                data: { businessData, ownerData } 
+            })
+        });
+
+        // 3. Procesar la respuesta
+        const result = await response.json();
+
+        // 4. Manejar la respuesta
+        // Las funciones 'onRequest' devuelven el error en 'result.error'
+        // y el éxito en 'result.data' (para simular el 'onCall')
+        if (!response.ok || result.error) {
+            throw new Error(result.error?.message || 'Error en la respuesta del servidor.');
+        }
+
+        if (result.data && result.data.success) {
+            Logger.info('Cloud Function (manual fetch) ejecutada con éxito:', result.data);
             return result.data;
         } else {
-            // Esto no debería pasar si la función maneja bien sus errores
-            throw new Error(result.data.message || 'Error desconocido en Cloud Function');
+            throw new Error('La respuesta del servidor no fue exitosa.');
         }
 
     } catch (error) {
-        Logger.error('Error al llamar la Cloud Function:', error);
-
-        // 'error.message' contendrá los mensajes amigables que enviamos 
-        // desde la Cloud Function (ej. "El email ya está en uso.")
+        Logger.error('Error al llamar la Cloud Function (manual fetch):', error);
         throw new Error(error.message);
     }
 }
