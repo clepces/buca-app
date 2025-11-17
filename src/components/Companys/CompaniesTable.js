@@ -3,9 +3,9 @@
 // VERSIÓN 2.0: Añade "View", checkboxes y avatares SVG
 // ======================================================
 
-import { EmptyState } from './EmptyState.js';
-import { can } from '../services/permissions.service.js';
-import { PERMISSIONS } from '../services/roles.config.js';
+import { EmptyState } from '../EmptyState.js';
+import { can } from '../../services/permissions.service.js';
+import { PERMISSIONS } from '../../services/roles.config.js';
 
 /**
  * Renderiza la tabla de compañías.

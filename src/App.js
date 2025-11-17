@@ -13,9 +13,9 @@ import { loadBusinessData } from './services/storage.service.js';
 import { initRouter } from './router/index.js';
 import { Logger } from './services/logger.service.js';
 import { LoginView } from './views/Authorization/LoginView.js';
-import { Header } from './components/Header.js';
-import { MainNav } from './components/MainNav.js';
-import { Footer } from './components/Footer.js';
+import { Header } from './components/Views/Header.js';
+import { MainNav } from './components/Views/MainNav.js';
+import { Footer } from './components/Views/Footer.js';
 import { LoaderComponent } from './components/Loader.js';
 import { delay } from './utils/retardo.js';
 import { can } from './services/permissions.service.js';
@@ -59,11 +59,8 @@ export default class App {
             showToast('Conexión restablecida. Sincronizando...', 'success', 3000);
             document.body.classList.remove('is-offline');
             
-            // --- ¡INICIO DE CORRECCIÓN! ---
-            // Llamamos a handleNavigation para recargar la vista actual
             const currentPath = window.location.hash || '#/';
             this.handleNavigation(currentPath); 
-            // --- FIN DE CORRECCIÓN ---
         });
     }
     

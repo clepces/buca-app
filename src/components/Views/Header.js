@@ -2,10 +2,10 @@
 // ARCHIVO: src/components/Header.js
 // CORRECCIÓN: Definición de 'simboloPrincipal' agregada
 // ======================================================
-import { sanitizeHTML } from '../utils/sanitize.js';
-import { state as globalState } from '../store/state.js';
-import { can } from '../services/permissions.service.js';
-import { PERMISSIONS } from '../services/roles.config.js';
+import { sanitizeHTML } from '../../utils/sanitize.js';
+import { state as globalState } from '../../store/state.js';
+import { can } from '../../services/permissions.service.js';
+import { PERMISSIONS } from '../../services/roles.config.js';
 
 export function Header(state) {
     // Leemos la nueva config global cargada desde Firebase

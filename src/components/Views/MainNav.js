@@ -6,10 +6,10 @@
 //    en lugar de 'state.session.user' (que era un mix).
 // ======================================================
 
-import { can } from '../services/permissions.service.js';
-import { routes } from '../router/routes.js';
-import { MODULES } from '../services/modules.config.js';
-import { PERMISSIONS } from '../services/roles.config.js';
+import { can } from '../../services/permissions.service.js';
+import { routes } from '../../router/routes.js';
+import { MODULES } from '../../services/modules.config.js';
+import { PERMISSIONS } from '../../services/roles.config.js';
 
 export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE) {
 

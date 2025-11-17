@@ -5,7 +5,7 @@
 // ======================================================
 
 import { StatCard } from '../../components/StatCard.js';
-import { CompaniesTable } from '../../components/CompaniesTable.js';
+import { CompaniesTable } from '../../components/Companys/CompaniesTable.js';
 import { PaginationControls } from '../../components/PaginationControls.js';
 import { EmptyState } from '../../components/EmptyState.js';
 import { Logger } from '../../services/logger.service.js';
