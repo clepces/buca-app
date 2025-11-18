@@ -49,13 +49,14 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
     // 3. Construir HTML del Menú Contextual
     const contextualMenuHTML = showContextualMenu ? `
         <li class="breadcrumb-item">
-            <a href="#/" class="nav-button back-button" data-route="#/">
+            <a href="#/" class="nav-button back-button" data-route="#/" data-tippy-content="Volver">
                 <i class="bi bi-arrow-left"></i>
                 <span>Volver</span>
             </a>
         </li>
         <li class="breadcrumb-item section-title-item">
-            <a href="${sectionPath}" class="nav-button section-title-link ${activeRoute === sectionPath ? 'active' : ''}" data-route="${sectionPath}">
+            <a href="${sectionPath}" class="nav-button section-title-link ${activeRoute === sectionPath ? 'active' : ''}" 
+                data-route="${sectionPath}" data-tippy-content="${sectionTitle}">
                  <i class="bi ${mainRouteOfContext?.icon || 'bi-folder-fill'} me-1"></i>
                 <span>${sectionTitle}</span>
             </a>
@@ -63,7 +64,8 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
         <li class="breadcrumb-item separator">|</li>
         ${contextSubRoutes.map(route => `
             <li class="breadcrumb-item">
-                <a href="${route.path}" class="nav-button contextual-nav-button ${activeRoute === route.path ? 'active' : ''}" data-route="${route.path}">
+                <a href="${route.path}" class="nav-button contextual-nav-button ${activeRoute === route.path ? 'active' : ''}" 
+                    data-route="${route.path}" data-tippy-content="${route.label}">
                     <i class="bi ${route.icon || 'bi-record-fill'}"></i>
                     <span>${route.label}</span>
                 </a>
@@ -82,7 +84,8 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
                 <ul class="breadcrumb main-nav-menu ${!showContextualMenu ? 'visible' : 'hidden'}">
                     ${mainRoutes.map(route => `
                         <li class="breadcrumb-item">
-                            <a href="${route.path}" class="nav-button ${activeRoute === route.path ? 'active' : ''}" data-route="${route.path}">
+                            <a href="${route.path}" class="nav-button ${activeRoute === route.path ? 'active' : ''}" 
+                                data-route="${route.path}" data-tippy-content="${route.label}">
                                 <i class="bi ${route.icon}"></i>
                                 <span>${route.label}</span>
                             </a>
@@ -97,10 +100,10 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
             
             <div class="toolbar-separador"></div>
             <div class="toolbar-actions">
-                 <button class="nav-button" data-action="toggle-theme" title="Cambiar Tema">
+                 <button class="nav-button" data-action="toggle-theme" data-tippy-content="Cambiar Tema">
                     <i class="bi ${themeIconClass}"></i>
                 </button>
-                <button id="actions-menu-button" class="nav-button" data-action="toggle-actions-menu" title="Más opciones">
+                <button id="actions-menu-button" class="nav-button" data-action="toggle-actions-menu" data-tippy-content="Más opciones">
                     <i class="bi bi-three-dots-vertical"></i>
                 </button>
                 <div id="actions-menu-dropdown" class="actions-menu-dropdown">

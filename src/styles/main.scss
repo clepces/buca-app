@@ -30,9 +30,9 @@
 @import './components/tabs.css';
 @import './components/historial.css';
 @import './components/product-form.css';
-/* --- ¡NUEVA LÍNEA! --- */
-@import './components/company-form.css'; /* (Añadiremos este archivo) */
-
+@import './components/company-form.css'; 
+@import './components/settings-modal.css';
+@import './components/category-manager.css'; /* <-- ¡AÑADIR ESTA LÍNEA! */
 
 /* 5. 🆕 ESTILOS PREMIUM (Correctos) */
 @import './components/stat-cards-premium.css';

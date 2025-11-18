@@ -25,7 +25,8 @@ import { MODULES } from './services/modules.config.js';
 import { ROLES } from './services/roles.config.js';
 import { initRateService } from './services/rate.service.js'; 
 import { showToast } from './services/toast.service.js';
-import { openRateUpdateModal } from './services/modal.service.js';
+import { openRateUpdateModal, openSuperAdminSettingsModal } from './services/modal.service.js';
+import { initTippy } from './utils/tippy-helper.js'; // <-- ¡AÑADIR ESTA IMPORTACIÓN!
 
 export default class App {
 
@@ -225,8 +226,14 @@ export default class App {
                     openRateUpdateModal();
                     break;
                 case 'open-config':
-                    Logger.info('Abrir config...');
-                    break;
+                        // Verificamos permisos (aunque el botón no debería existir si no los tiene)
+                        if (can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) || can(PERMISSIONS.EDIT_SETTINGS_SYSTEM)) {
+                            Logger.info('Abriendo modal de Configuración Global...');
+                            openSuperAdminSettingsModal(); // <-- ¡LLAMAMOS AL NUEVO MODAL!
+                        } else {
+                            Logger.warn('Intento de abrir config sin permisos.');
+                        }
+                        break;
                 case 'toggle-theme':
                         this.toggleTheme();
                     break;
@@ -251,7 +258,15 @@ export default class App {
                     <div class="container view-container" id="view-container"></div>
                 </main>
                 ${Footer(state)}
-            </div>        `;
+            </div>
+        `;
+        
+        // --- ¡INICIO DE CORRECCIÓN TIPPY! ---
+        // Inicializa Tippy en todo el layout (Header, Nav, Footer)
+        // Esto convertirá automáticamente cualquier 'title' restante.
+        initTippy(this.root);
+        // --- FIN DE CORRECCIÓN TIPPY! ---
+
         if (state.session.isLoggedIn && !this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
             this.hasGlobalListener = true;

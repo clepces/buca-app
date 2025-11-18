@@ -1,0 +1,175 @@
+/* ======================================================
+// ARCHIVO NUEVO: src/styles/components/settings-modal.css
+// PROPÓSITO: Estilos para el modal de configuración de 2 columnas.
+// ====================================================== */
+
+.settings-layout {
+    display: grid;
+    /* --- ¡CAMBIO! 3 columnas: Nav, Contenido, Atajos --- */
+    grid-template-columns: 200px 1fr 60px;
+    gap: 0; /* Sin gap, los bordes lo manejan */
+    height: 100%; /* Ocupa el 100% del modal fullscreen */
+    background-color: var(--bs-body-bg);
+}
+
+/* 1. Columna de Navegación (Izquierda) */
+.settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-right: 1px solid var(--bs-border-color);
+    background-color: var(--bs-card-bg); 
+}
+
+.settings-nav .nav-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--bs-gray-500);
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: var(--bs-border-radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    color: var(--bs-heading-color);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.settings-nav-item i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+    color: var(--bs-gray-500);
+    transition: all var(--transition-fast);
+}
+
+.settings-nav-item:hover:not(:disabled) {
+    background-color: var(--bs-gray-50);
+    color: var(--bs-gray-900);
+}
+
+.settings-nav-item.active {
+    background-color: var(--primary-color);
+    color: var(--bs-card-bg);
+    font-weight: 600;
+}
+
+.settings-nav-item.active i {
+    color: var(--bs-card-bg);
+    transform: scale(1.1);
+}
+
+.settings-nav-item:disabled {
+    color: var(--bs-gray-400);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Tema Oscuro */
+[data-bs-theme="dark"] .settings-nav {
+    background-color: var(--bs-gray-800);
+    border-right-color: var(--bs-gray-700);
+}
+
+/* Color de texto base para botones en modo oscuro */
+[data-bs-theme="dark"] .settings-nav-item {
+    color: var(--bs-gray-300);
+}
+[data-bs-theme="dark"] .settings-nav-item i {
+    color: var(--bs-gray-500);
+}
+
+[data-bs-theme="dark"] .settings-nav-item:hover:not(:disabled) {
+    background-color: var(--bs-gray-700);
+    color: var(--bs-gray-100);
+}
+[data-bs-theme="dark"] .settings-nav-item.active {
+    background-color: var(--primary-light-hover);
+    color: var(--primary-light);
+}
+[data-bs-theme="dark"] .settings-nav-item.active i {
+    color: var(--primary-light);
+}
+[data-bs-theme="dark"] .settings-nav-item:disabled {
+    color: var(--bs-gray-600);
+}
+
+
+.settings-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    /* --- ¡CAMBIO! Padding aumentado --- */
+    padding: 2rem;
+    position: relative; 
+}
+
+.settings-panel {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Reutilizamos la tarjeta premium, pero ajustamos el padding del body */
+.settings-content .summary-card-premium .card-premium-body {
+    padding: 1.5rem;
+}
+
+/* 3. Footer Fijo (Eliminado) */
+/* --- ¡CORRECCIÓN! Eliminamos .settings-footer --- */
+
+/* --- ¡NUEVO! 4. Columna de Atajos (Derecha) --- */
+.settings-quick-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 0.5rem;
+    border-left: 1px solid var(--bs-border-color);
+    background-color: var(--bs-card-bg);
+    align-items: center;
+}
+
+[data-bs-theme="dark"] .settings-quick-nav {
+    background-color: var(--bs-gray-800);
+    border-left-color: var(--bs-gray-700);
+}
+
+.quick-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--bs-border-radius);
+    color: var(--bs-gray-500);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.quick-nav-item:hover {
+    background-color: var(--primary-light-hover);
+    color: var(--primary-color);
+    border-color: var(--primary-light-hover);
+}
+
+[data-bs-theme="dark"] .quick-nav-item {
+    color: var(--bs-gray-500);
+}
+[data-bs-theme="dark"] .quick-nav-item:hover {
+    background-color: var(--primary-light-hover);
+    color: var(--primary-light);
+    border-color: var(--primary-light-hover);
+}

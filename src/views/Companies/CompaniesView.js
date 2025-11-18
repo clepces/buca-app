@@ -1,7 +1,9 @@
 // ======================================================
 // ARCHIVO: src/views/Companies/CompaniesView.js
-// VERSIÓN CORREGIDA: Conecta el botón 'add-company'
-//                  al 'openCompanyModal'.
+// VERSIÓN 3.1: CORREGIDO (Error 'toLowerCase' de 'name')
+// CORRECCIÓN: La carga de datos ahora lee 'b.name' (para
+//             nuevos negocios) o 'b.info.name' (para la
+//             plantilla 'business_mega_center').
 // ======================================================
 
 import { StatCard } from '../../components/StatCard.js';
@@ -15,9 +17,8 @@ import { PERMISSIONS } from '../../services/roles.config.js';
 import { debounce } from '../../utils/debounce.js';
 import { paginate, getTotalPages } from '../../services/pagination.service.js';
 import { initTippy, destroyTippy } from '../../utils/tippy-helper.js';
-
-// --- ¡NUEVA IMPORTACIÓN! ---
 import { openCompanyModal } from '../../services/modal.service.js';
+import { loadAllBusinesses } from '../../services/storage.service.js'; 
 
 export function CompaniesView(element, state) {
     const canCreate = can(PERMISSIONS.CREATE_COMPANY);
@@ -28,31 +29,23 @@ export function CompaniesView(element, state) {
         totalItems: 0,
         searchTerm: '',
         selectedCompanies: new Set(),
-        companies: [
-            // ... (datos de placeholder sin cambios) ...
-            { id: '1', name: 'BrightWave Innovations', domain: 'brightwave.com', email: 'michael@example.com', accountUrl: 'https://bwi.example.com', plan: 'Advanced (Monthly)', createdDate: '12 Sep 2024', status: 'Active' },
-            // { id: '2', name: 'Stellar Dynamics', domain: 'stellar.com', email: 'sophie@example.com', accountUrl: 'https://sd.example.com', plan: 'Basic (Yearly)', createdDate: '24 Oct 2024', status: 'Active' },
-            // { id: '3', name: 'Quantum Nexus', domain: 'quantum.com', email: 'cameron@example.com', accountUrl: 'https://qn.example.com', plan: 'Advanced (Monthly)', createdDate: '18 Feb 2024', status: 'Active' },
-            // { id: '4', name: 'EcoVision Enterprises', domain: 'ecovision.com', email: 'doris@example.com', accountUrl: 'https://eve.example.com', plan: 'Advanced (Monthly)', createdDate: '17 Oct 2024', status: 'Active' },
-            // { id: '5', name: 'Aurora Insights', domain: 'aurora.com', email: 'aurora@example.com', accountUrl: 'https://ai.example.com', plan: 'Enterprise (Monthly)', createdDate: '20 Jul 2024', status: 'Active' },
-            // { id: '6', name: 'BlueSky Ventures', domain: 'bluesky.com', email: 'kathleen@example.com', accountUrl: 'https://bsv.example.com', plan: 'Advanced (Monthly)', createdDate: '10 Apr 2024', status: 'Active' },
-            // { id: '7', name: 'TerraFusion', domain: 'terrafusion.com', email: 'bruce@example.com', accountUrl: 'https://tf.example.com', plan: 'Advanced (Monthly)', createdDate: '29 Aug 2024', status: 'Active' },
-            // { id: '8', name: 'UrbanPulse Design', domain: 'urbanpulse.com', email: 'estelle@example.com', accountUrl: 'https://upd.example.com', plan: 'Basic (Monthly)', createdDate: '22 Feb 2024', status: 'Inactive' },
-            // { id: '9', name: 'Nimbus Networks', domain: 'nimbus.com', email: 'stephen@example.com', accountUrl: 'https://nn.example.com', plan: 'Basic (Monthly)', createdDate: '03 Nov 2024', status: 'Active' },
-            // { id: '10', name: 'UrbanPulse Design', domain: 'urbanpulse.com', email: 'estelle@example.com', accountUrl: 'https://upd.example.com', plan: 'Basic (Monthly)', createdDate: '22 Feb 2024', status: 'Inactive' },
-            // { id: '11', name: 'Nimbus Networks', domain: 'nimbus.com', email: 'stephen@example.com', accountUrl: 'https://nn.example.com', plan: 'Basic (Monthly)', createdDate: '03 Nov 2024', status: 'Active' },
-            // { id: '12', name: 'TerraFusion', domain: 'terrafusion.com', email: 'bruce@example.com', accountUrl: 'https://tf.example.com', plan: 'Advanced (Monthly)', createdDate: '29 Aug 2024', status: 'Active' },
-            // { id: '13', name: 'BlueSky Ventures', domain: 'bluesky.com', email: 'kathleen@example.com', accountUrl: 'https://bsv.example.com', plan: 'Advanced (Monthly)', createdDate: '10 Apr 2024', status: 'Active' },
-        ]
+        companies: [], 
+        stats: { 
+            total: 0,
+            active: 0,
+            inactive: 0,
+            locations: 0 
+        }
     };
     
     let paginatedCompanies = [];
     let filteredCompanies = [];
 
     const applyFilters = () => {
+        // Filtramos la data real en 'viewState.companies'
         filteredCompanies = viewState.companies.filter(c => 
-            c.name.toLowerCase().includes(viewState.searchTerm) ||
-            c.email.toLowerCase().includes(viewState.searchTerm)
+            // Esta línea ya no fallará
+            c.name.toLowerCase().includes(viewState.searchTerm)
         );
         viewState.totalItems = filteredCompanies.length;
     };
@@ -102,13 +95,19 @@ export function CompaniesView(element, state) {
             titleCounter.textContent = viewState.totalItems;
         }
     };
+    
+    const updateStatCards = () => {
+        const totalEl = element.querySelector('#stat-total-companies');
+        const activeEl = element.querySelector('#stat-active-companies');
+        const inactiveEl = element.querySelector('#stat-inactive-companies');
+
+        if (totalEl) totalEl.querySelector('.stat-card-value').textContent = viewState.stats.total;
+        if (activeEl) activeEl.querySelector('.stat-card-value').textContent = viewState.stats.active;
+        if (inactiveEl) inactiveEl.querySelector('.stat-card-value').textContent = viewState.stats.inactive;
+    };
 
     const renderLayout = () => {
-        const totalCompanies = '950';
-        const activeCompanies = '920';
-        const inactiveCompanies = '30';
-        const companyLocation = '180';
-
+        // Renderiza el esqueleto con placeholders
         element.innerHTML = `
         <div class="view-panel-content">
             <div class="view-header align-items-center mb-4">
@@ -116,15 +115,15 @@ export function CompaniesView(element, state) {
                     <h2 class="view-title mb-1">
                         <i class="bi bi-building me-2"></i> 
                         Companies 
-                        <span class="badge bg-primary-subtle text-primary-emphasis ms-2" id="view-title-counter">${viewState.totalItems}</span>
+                        <span class="badge bg-primary-subtle text-primary-emphasis ms-2" id="view-title-counter">0</span>
                     </h2>
                     <p class="text-muted mb-0">Administra todas las compañías en la plataforma.</p>
                 </div>
                 <div class="ms-auto d-flex gap-2">
-                    <button class="btn-icon btn-danger" data-action="export-pdf" data-tippy-content="Exportar a PDF">
+                    <button class="btn-icon btn-danger" data-action="export-pdf" data-tippy-content="Exportar a PDF" disabled>
                         <i class="bi bi-file-earmark-pdf-fill"></i>
                     </button>
-                    <button class="btn-icon btn-success" data-action="export-excel" data-tippy-content="Exportar a Excel">
+                    <button class="btn-icon btn-success" data-action="export-excel" data-tippy-content="Exportar a Excel" disabled>
                         <i class="bi bi-file-earmark-excel-fill"></i>
                     </button>
                     <button class="btn-icon btn-info" data-action="refresh-data" data-tippy-content="Actualizar Datos">
@@ -138,33 +137,45 @@ export function CompaniesView(element, state) {
             </div>
 
             <div class="panel-grid mb-4">
-                ${StatCard({ title: 'Total Companies', value: totalCompanies, icon: 'bi-building', className: 'stat-card-total-companies', miniGraph: true })}
-                ${StatCard({ title: 'Active Companies', value: activeCompanies, icon: 'bi-building-check', className: 'stat-card-active-companies', miniGraph: true })}
-                ${StatCard({ title: 'Inactive Companies', value: inactiveCompanies, icon: 'bi-building-dash', className: 'stat-card-inactive-companies', miniGraph: true })}
-                ${StatCard({ title: 'Company Location', value: companyLocation, icon: 'bi-geo-alt-fill', className: 'stat-card-location', miniGraph: true })}
+                ${StatCard({ 
+                    id: 'stat-total-companies', 
+                    title: 'Total Companies', 
+                    value: '...', 
+                    icon: 'bi-building', 
+                    className: 'stat-card-total-companies', 
+                    miniGraph: true 
+                })}
+                ${StatCard({ 
+                    id: 'stat-active-companies', 
+                    title: 'Active Companies', 
+                    value: '...', 
+                    icon: 'bi-building-check', 
+                    className: 'stat-card-active-companies', 
+                    miniGraph: true 
+                })}
+                ${StatCard({ 
+                    id: 'stat-inactive-companies', 
+                    title: 'Inactive Companies', 
+                    value: '...', 
+                    icon: 'bi-building-dash', 
+                    className: 'stat-card-inactive-companies', 
+                    miniGraph: true 
+                })}
+                ${StatCard({ 
+                    id: 'stat-location', 
+                    title: 'Company Location', 
+                    value: '...', 
+                    icon: 'bi-geo-alt-fill', 
+                    className: 'stat-card-location', 
+                    miniGraph: true 
+                })}
             </div>
 
             <div class="table-container-wrapper mt-4">
                 <div class="table-filters">
                     <div class="search-container">
                         <i class="bi bi-search search-icon"></i>
-                        <input type="search" id="search-companies" class="form-control" placeholder="Buscar por nombre, email..." value="${viewState.searchTerm}">
-                    </div>
-                    <div class="d-flex gap-2" style="margin-left: auto;">
-                        <select id="filter-plan" class="form-control" style="min-width: 150px;">
-                            <option value="">Select Plan</option>
-                            <option value="basic">Basic</option>
-                        </select>
-                        <select id="filter-status" class="form-control" style="min-width: 150px;">
-                            <option value="">Select Status</option>
-                            <option value="active">Active</option>
-                        </select>
-                        <select id="filter-sort" class="form-control" style="min-width: 180px;">
-                            <option value="last_7_days">Sort By: Last 7 Days</option>
-                        </select>
-                        <button class="btn-icon btn-secondary" data-action="manage-columns" data-tippy-content="Administrar Columnas" style="padding: revert;">
-                            <i class="bi bi-layout-three-columns"></i>
-                        </button>
+                        <input type="search" id="search-companies" class="form-control" placeholder="Buscar por nombre..." value="${viewState.searchTerm}">
                     </div>
                 </div>
 
@@ -172,7 +183,7 @@ export function CompaniesView(element, state) {
                     ${EmptyState({ icon: 'bi-hourglass-split', message: 'Cargando compañías...' })}
                 </div>
                 <div class="pagination-container" id="companies-pagination-container">
-                    </div>
+                </div>
             </div>
         </div>
         `;
@@ -182,12 +193,46 @@ export function CompaniesView(element, state) {
         }, 100);
     };
     
+    // --- ¡FUNCIÓN ASÍNCRONA CORREGIDA! ---
+    async function loadDataAndRender() {
+        try {
+            const businesses = await loadAllBusinesses();
+            
+            // Mapeamos los datos reales
+            viewState.companies = businesses.map(b => ({
+                id: b.id,
+                // --- ¡INICIO DE CORRECCIÓN! ---
+                name: b.name || b.info?.name || 'Nombre no encontrado', // <-- Lee b.name O b.info.name
+                // --- FIN DE CORRECCIÓN! ---
+                planId: b.planId || b.info?.plan || 'plan_basic', // <-- Hacemos lo mismo para plan
+                status: b.status || b.info?.subscriptionStatus || 'active', // <-- Y para status
+                createdAt: b.createdAt 
+            }));
+            
+            // Calculamos stats reales
+            viewState.stats.total = businesses.length;
+            viewState.stats.active = businesses.filter(b => (b.status || b.info?.subscriptionStatus) === 'active').length;
+            viewState.stats.inactive = viewState.stats.total - viewState.stats.active;
+            // viewState.stats.locations = ... (lógica futura)
+
+            // Actualizamos la UI
+            updateStatCards();
+            updateTableAndPagination();
+
+        } catch (error) {
+            Logger.error('Error cargando la data de CompaniesView:', error);
+            element.querySelector("#companies-table-container").innerHTML = EmptyState({
+                icon: 'bi-wifi-off',
+                message: 'Error al cargar compañías'
+            });
+        }
+    }
+    
     const debouncedSearchHandler = debounce(() => {
         updateTableAndPagination(); 
     }, 300);
 
     const handlePagination = (e) => {
-        // ... (código de paginación sin cambios) ...
         const target = e.target;
         let needsUpdate = false;
 
@@ -264,7 +309,6 @@ export function CompaniesView(element, state) {
         }
     };
 
-    // --- ¡INICIO DE MODIFICACIÓN! ---
     const handleActions = async (e) => {
         const actionButton = e.target.closest('[data-action]');
         if (!actionButton) return;
@@ -278,25 +322,29 @@ export function CompaniesView(element, state) {
 
         if (action === 'add-company') {
             Logger.info('Abriendo modal para añadir compañía...');
-            const modalClosed = await openCompanyModal(); // <-- ¡NUEVA LLAMADA!
+            const modalClosed = await openCompanyModal(); 
             if (modalClosed) {
                 Logger.info('Modal de compañía cerrado, refrescando tabla...');
-                // Aquí deberías forzar una recarga real de los datos de Firebase
-                updateTableAndPagination();
+                loadDataAndRender(); // <-- Recargamos los datos reales
             }
             return;
         }
-        // --- FIN DE MODIFICACIÓN! ---
 
+        if (action === 'refresh-data') { 
+            Logger.info('Refrescando datos de compañías...');
+            showToast('Actualizando lista de compañías...', 'info');
+            loadDataAndRender();
+        }
+        
         if (action === 'view-company') { Logger.info(`Abrir modal para VER compañía: ${companyId}`); }
         if (action === 'edit-company') { Logger.info(`Abrir modal para EDITAR compañía: ${companyId}`); }
         if (action === 'delete-company') { Logger.info(`Abrir modal para ELIMINAR compañía: ${companyId}`); }
-        if (action === 'refresh-data') { Logger.info('Refrescando datos de compañías...'); updateTableAndPagination(); }
         if (action === 'manage-columns') { Logger.info('Abrir modal "Manage Columns" (Próximamente)...'); }
     };
     
-    renderLayout();
-    updateTableAndPagination();
+    // --- ¡INICIALIZACIÓN DE LA VISTA! ---
+    renderLayout(); // 1. Dibuja el esqueleto
+    loadDataAndRender(); // 2. Pide los datos y llena la tabla/stats
     
     element.addEventListener('click', handleActions);
     element.addEventListener('click', handlePagination);

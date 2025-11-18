@@ -189,5 +189,21 @@ export const firebaseAdapter = {
       console.error('[firebase] Error actualizando producto:', error);
       throw error;
     }
+  },
+
+  async getAllBusinesses() {
+    try {
+      // Esta es una función de Super Admin,
+      // por lo que consultamos la raíz de 'businesses'
+      const businesses = await getAll('businesses');
+      return businesses || [];
+    } catch (error) {
+      console.error('[firebase] Error obteniendo todos los negocios:', error);
+      return [];
+    }
+  },
+
+  async getBusinessDetails(businessId) {
+    // ... (próximamente)
   }
 };

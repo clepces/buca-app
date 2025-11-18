@@ -198,11 +198,17 @@
 
 .stat-card-mini-graph .graph-bar {
     fill: var(--bs-gray-300);
-    transition: fill 0.3s ease;
+    transition: all 0.3s ease; /* Transición para el hover */
+    
+    /* Animación de carga */
+    transform: scaleY(0);
+    transform-origin: bottom;
+    animation: growBar 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .stat-card:hover .graph-bar {
     fill: var(--primary-color);
+    opacity: 0.8;
 }
 
 [data-bs-theme="dark"] .stat-card-mini-graph .graph-bar {
@@ -289,6 +295,17 @@
 /* ==============================================
    9. ANIMACIONES
    ============================================== */
+@keyframes growBar {
+    from {
+        transform: scaleY(0);
+        opacity: 0;
+    }
+    to {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+
 @keyframes scaleIn {
     from {
         opacity: 0;

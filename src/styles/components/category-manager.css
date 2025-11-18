@@ -1,0 +1,101 @@
+/* ======================================================
+// ARCHIVO NUEVO: src/styles/components/category-manager.css
+// PROPÓSITO: Estilos para el gestor de categorías (tags).
+// ====================================================== */
+
+.category-manager {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
+    background-color: var(--bs-body-bg);
+    min-height: 200px;
+}
+
+[data-bs-theme="dark"] .category-manager {
+    background-color: var(--bs-gray-900);
+}
+
+.category-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    flex-grow: 1;
+    min-height: 100px;
+    max-height: 250px;
+    overflow-y: auto;
+    align-content: flex-start; /* Alinea los tags arriba */
+    padding: 0.5rem;
+    border-radius: var(--bs-border-radius-sm);
+    background-color: var(--bs-gray-50);
+}
+
+[data-bs-theme="dark"] .category-tag-list {
+    background-color: var(--bs-body-bg);
+}
+
+.no-tags-placeholder {
+    font-size: 0.9rem;
+    color: var(--bs-gray-500);
+    padding: 1rem;
+    width: 100%;
+    text-align: center;
+}
+
+.category-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--primary-color);
+    color: var(--bs-white);
+    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    animation: scaleIn 0.3s ease-out;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.category-tag span {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.delete-tag {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: var(--bs-white);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-tag:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+    transform: scale(1.1) rotate(90deg);
+}
+
+.category-input-group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.category-input-group input {
+    flex-grow: 1;
+}
+
+.category-input-group button {
+    flex-shrink: 0;
+}

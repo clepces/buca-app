@@ -1,9 +1,9 @@
 // ======================================================
 // ARCHIVO: src/services/modal.service.js
-// ACTUALIZACIÓN: Añadida la función openCompanyModal
+// ACTUALIZACIÓN: openSuperAdminSettingsModal (v2.0)
 // ======================================================
 
-import { state } from '../store/state.js';
+import { state as globalState } from '../store/state.js'; // <-- ¡NUEVO!
 import { Modal } from '../components/Modal.js';
 import { ProductForm } from '../components/ProductForm.js';
 import { Logger } from './logger.service.js';
@@ -12,9 +12,9 @@ import { showToast } from './toast.service.js';
 import { triggerRerender } from '../store/actions.js';
 import { PERMISSIONS } from './roles.config.js';
 import { can } from './permissions.service.js';
-
-// --- ¡NUEVA IMPORTACIÓN! ---
 import { CompanyForm } from '../components/Companys/CompanyForm.js';
+import { SuperAdminSettings } from '../components/Settings/SuperAdminSettings.js';
+import { updateSingleSetting } from './settings.service.js'; // <-- ¡NUEVO!
 
 // --- MODAL DE CONFIRMACIÓN (PEQUEÑO) ---
 export function showConfirmationModal(title, messageHTML, onConfirm, options = {}) {
@@ -123,7 +123,6 @@ export function openProductModal(productToEdit = null) {
     });
 }
 
-// --- ¡NUEVA FUNCIÓN! ---
 // --- MODAL DE COMPAÑÍA (GRANDE) ---
 export function openCompanyModal() {
     return new Promise((resolve) => {
@@ -162,6 +161,117 @@ export function openCompanyModal() {
     });
 }
 
+/**
+ * Abre el modal de Configuración Global del Super Admin.
+ * VERSIÓN 2.0: Fullscreen, footer real, buscador y guardado de datos.
+ */
+export function openSuperAdminSettingsModal() {
+    return new Promise((resolve) => {
+        const modalTitle = '<i class="bi bi-shield-lock-fill me-2"></i> Configuración Global';
+        
+        const dummyContent = document.createElement('div');
+        dummyContent.textContent = 'Cargando configuración...';
+
+        const settingsModalElement = Modal({
+            title: modalTitle,
+            contentElement: dummyContent,
+            id: 'super-admin-settings-modal',
+            size: 'fullscreen' // <-- ¡CAMBIO!
+        });
+
+        // --- ¡INICIO DE CORRECCIÓN! (Layout y Footer) ---
+        
+        // 1. Inyectar el buscador en el header
+        const modalHeader = settingsModalElement.querySelector('.modal-header');
+        const closeBtn = settingsModalElement.querySelector('.close');
+        if (modalHeader && closeBtn) {
+            const headerActions = document.createElement('div');
+            headerActions.className = 'modal-header-actions';
+            headerActions.innerHTML = `
+                <div class="search-container">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="search" id="search-settings" class="form-control" placeholder="Buscar ajustes (próximamente)..." disabled>
+                </div>
+            `;
+            modalHeader.insertBefore(headerActions, closeBtn);
+        }
+
+        // 2. Ocultar el padding del body (el layout interno lo maneja)
+        const modalBody = settingsModalElement.querySelector('#modal-body-container');
+        modalBody.style.padding = '0';
+        
+        // 3. Inyectar el componente de settings
+        const { element: settingsElement, getSettingsData } = SuperAdminSettings(settingsModalElement);
+        
+        if (modalBody) {
+            modalBody.innerHTML = '';
+            modalBody.appendChild(settingsElement);
+        }
+        
+        // 4. Crear y conectar los botones del footer REAL
+        const modalFooterTarget = settingsModalElement.querySelector('#modal-footer-container');
+        
+        const saveButton = document.createElement('button');
+        saveButton.className = 'btn-primary';
+        saveButton.innerHTML = `<i class="bi bi-save-fill me-1"></i> Guardar Cambios`;
+        saveButton.id = 'btn-save-global-settings';
+        
+        const cancelButton = document.createElement('button');
+        cancelButton.className = 'btn-secondary';
+        cancelButton.innerHTML = `Cancelar`;
+        // El 'data-action="close-modal"' no es necesario,
+        // el listener de 'click' del modal lo capturará
+        
+        modalFooterTarget.append(cancelButton, saveButton);
+
+        // 5. Conectar lógica de guardado
+        saveButton.addEventListener('click', () => {
+            try {
+                const data = getSettingsData();
+                Logger.info('Guardando configuración global...', data);
+
+                // --- Conectamos al servicio de guardado ---
+                // (Simulación, descomentar para guardar de verdad)
+                
+                // updateSingleSetting(globalState, 'appConfig.system.metadata.appNameSimplify', data.appName);
+                // updateSingleSetting(globalState, 'appConfig.system.metadata.appName', data.appNameFull);
+                // updateSingleSetting(globalState, 'products.tax_rate', data.defaultTax);
+                // updateSingleSetting(globalState, 'products.available_categories', data.defaultCategories);
+                
+                // Actualizamos el estado local para reflejar los cambios SIN recargar
+                globalState.settings.appConfig.system.metadata.appNameSimplify = data.appName;
+                globalState.settings.appConfig.system.metadata.appName = data.appNameFull;
+                globalState.settings.products.tax_rate = data.defaultTax;
+                globalState.settings.products.available_categories = data.defaultCategories;
+
+                showToast('Configuración guardada.', 'success');
+                settingsModalElement.remove();
+                
+                // Forzar un re-render del Header/Nav para ver el nuevo nombre
+                triggerRerender(); 
+
+            } catch (error) {
+                Logger.error('Error al guardar configuración:', error);
+                showToast('Error al guardar: ' + error.message, 'error');
+            }
+        });
+
+        // 6. Conectar botón de cancelar
+        cancelButton.addEventListener('click', () => {
+            settingsModalElement.remove();
+        });
+        
+        // --- FIN DE CORRECCIÓN ---
+
+        document.body.appendChild(settingsModalElement);
+        
+        const originalRemove = settingsModalElement.remove;
+        settingsModalElement.remove = function() {
+            originalRemove.call(this);
+            resolve(true); 
+        };
+    });
+}
 
 // --- MODAL DE TASA (GRANDE) ---
 export function openRateUpdateModal() {

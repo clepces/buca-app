@@ -1,20 +1,39 @@
 // ==========================================================================
 // ARCHIVO: src/views/Dashboard/Super_admin/SuperAdminDashboard.js
-// VERSIÓN 3.0: Refinada para usar 100% los estilos premium
+// VERSIÓN 3.1: Conectado a datos reales (loadAllBusinesses)
 // ==========================================================================
 import { StatCard } from '../../../components/StatCard.js';
 import { Logger } from '../../../services/logger.service.js';
 import { state as globalState } from '../../../store/state.js';
+import { initTippy, destroyTippy } from '../../../utils/tippy-helper.js';
+// --- ¡NUEVAS IMPORTACIONES! ---
+import { loadAllBusinesses } from '../../../services/storage.service.js';
+import { EmptyState } from '../../../components/EmptyState.js';
 
 export function SuperAdminDashboard(element, state) {
-    const userName = globalState.user?.name || 'Admin';
+    const userName = globalState.session?.user?.name || 'Admin';
     const symbol = globalState.settings.currencies.principal.symbol || '$';
     
-    // --- Datos de Platzhalter ---
-    const companiesPlaceholder = '5468';
-    const activeCompaniesPlaceholder = '4598';
-    const subscribersPlaceholder = '3698';
-    const earningsPlaceholder = `${symbol}89,878.58`;
+    // --- Estado local de la vista ---
+    const viewState = {
+        stats: {
+            total: 0,
+            active: 0,
+            inactive: 0,
+            subscribers: 0, // Aún no tenemos este dato real
+            earnings: 0.00 // Aún no tenemos este dato real
+        },
+        graphs: {
+            companies: [10, 41, 35, 51, 62],
+            active: [8, 30, 30, 40, 50],
+            subscribers: [5, 20, 15, 25, 30],
+            earnings: [10, 15, 12, 18, 25]
+        }
+    };
+    
+    // --- DATOS REALES (PENDIENTES) ---
+    const subscribersPlaceholder = '0'; // Mantenemos placeholder
+    const earningsPlaceholder = `${symbol}0,00`; // Mantenemos placeholder
 
     element.innerHTML = `
     <div class="view-panel-content">
@@ -34,40 +53,44 @@ export function SuperAdminDashboard(element, state) {
 
         <div class="panel-grid mb-4">
             ${StatCard({
+                id: 'stat-total-companies', // <-- AÑADIR ID
                 title: 'Total Companies',
-                value: companiesPlaceholder,
+                value: '...', // <-- Valor inicial
                 icon: 'bi-building',
-                className: 'stat-card-companies', // 'productos' o 'inversion' etc.
-                change: { value: '+19.01%', type: 'positive' },
-                description: 'desde el último mes' // <-- Usamos description
-                // miniGraph: true // <-- ELIMINADO
+                className: 'stat-card-companies', 
+                change: { value: '+0', type: 'positive' },
+                description: 'Total de negocios registrados',
+                miniGraphData: viewState.graphs.companies
             })}
              ${StatCard({
+                id: 'stat-active-companies', // <-- AÑADIR ID
                 title: 'Active Companies',
-                value: activeCompaniesPlaceholder,
+                value: '...', // <-- Valor inicial
                 icon: 'bi-building-check',
                 className: 'stat-card-active-companies',
-                change: { value: '-12%', type: 'negative' },
-                description: 'desde el último mes'
-                // miniGraph: true // <-- ELIMINADO
+                change: { value: '+0', type: 'positive' },
+                description: 'Negocios con plan activo',
+                miniGraphData: viewState.graphs.active 
             })}
              ${StatCard({
+                id: 'stat-total-subscribers', // <-- AÑADIR ID
                 title: 'Total Subscribers',
-                value: subscribersPlaceholder,
+                value: subscribersPlaceholder, // <-- Mantenemos placeholder
                 icon: 'bi-person-badge',
                 className: 'stat-card-subscribers',
-                change: { value: '+6%', type: 'positive' },
-                description: 'desde el último mes'
-                // miniGraph: true // <-- ELIMINADO
+                change: { value: '+0%', type: 'positive' },
+                description: 'desde el último mes',
+                miniGraphData: viewState.graphs.subscribers
             })}
              ${StatCard({
+                id: 'stat-total-earnings', // <-- AÑADIR ID
                 title: 'Total Earnings',
-                value: earningsPlaceholder,
+                value: earningsPlaceholder, // <-- Mantenemos placeholder
                 icon: 'bi-currency-dollar',
                 className: 'stat-card-earnings',
-                change: { value: '+14%', type: 'positive' },
-                description: 'desde el último mes'
-                // miniGraph: true // <-- ELIMINADO
+                change: { value: '-14%', type: 'negative' },
+                description: 'desde el último mes',
+                miniGraphData: viewState.graphs.earnings
             })}
         </div>
         
@@ -150,7 +173,50 @@ export function SuperAdminDashboard(element, state) {
     </div>
     `;
 
-    // --- Funciones Helper para Listas (igual que antes) ---
+    // --- ¡NUEVAS FUNCIONES DE CARGA Y ACTUALIZACIÓN! ---
+
+    /**
+     * Actualiza los valores de las StatCards en el DOM.
+     */
+    function updateStatCards() {
+        const totalEl = element.querySelector('#stat-total-companies .stat-card-value');
+        const activeEl = element.querySelector('#stat-active-companies .stat-card-value');
+        // const subsEl = element.querySelector('#stat-total-subscribers .stat-card-value');
+        // const earnEl = element.querySelector('#stat-total-earnings .stat-card-value');
+
+        if (totalEl) totalEl.textContent = viewState.stats.total;
+        if (activeEl) activeEl.textContent = viewState.stats.active;
+        
+        // TODO: Actualizar Subscribers y Earnings cuando los datos estén disponibles
+    }
+
+    /**
+     * Carga los datos de todas las compañías y actualiza el dashboard.
+     */
+    async function loadDataAndRender() {
+        try {
+            const businesses = await loadAllBusinesses();
+            
+            // Calcular stats
+            viewState.stats.total = businesses.length;
+            viewState.stats.active = businesses.filter(b => (b.status || b.info?.subscriptionStatus) === 'active').length;
+            viewState.stats.inactive = viewState.stats.total - viewState.stats.active;
+            // viewState.stats.subscribers = ... (lógica futura)
+            // viewState.stats.earnings = ... (lógica futura)
+
+            // Actualizar la UI
+            updateStatCards();
+
+        } catch (error) {
+            Logger.error('Error cargando data en SuperAdminDashboard:', error);
+            element.querySelector('.panel-grid').innerHTML = EmptyState({
+                icon: 'bi-wifi-off',
+                message: 'Error al cargar estadísticas de compañías'
+            });
+        }
+    }
+
+    // --- (Funciones Helper para Listas) ---
     function renderListItem(title, subtitle, value, valueSubtitle, avatarClass, isAction = false) {
         return `
             <li class="dashboard-list-item">
@@ -167,43 +233,7 @@ export function SuperAdminDashboard(element, state) {
         `;
     }
 
-    // --- INICIALIZAR GRÁFICOS Y SELECTOR DE FECHAS (Sin cambios) ---
-    (function initSuperAdminUI() {
-        setTimeout(() => {
-            if (typeof ApexCharts !== 'undefined') {
-                try {
-                    renderCompaniesChart(); 
-                    renderRevenueChart();
-                    renderPlansChart();
-                    Logger.info('Gráficos del SuperAdmin renderizados.');
-                } catch (e) {
-                    Logger.error('Error al renderizar gráficos de ApexCharts:', e);
-                }
-            } else {
-                Logger.warn('ApexCharts no está definido. No se pueden renderizar los gráficos.');
-            }
-
-            if (typeof flatpickr !== 'undefined') {
-                try {
-                    flatpickr.localize(flatpickr.l10ns.es);
-                    
-                    flatpickr("#superadmin-datepicker", {
-                        mode: "range", 
-                        dateFormat: "m/d/Y", 
-                        defaultDate: ["10/21/2025", "10/27/2025"], 
-                    });
-                    Logger.info('Selector de fechas (flatpickr) inicializado.');
-                } catch (e) {
-                    Logger.error('Error al inicializar flatpickr:', e);
-                }
-            } else {
-                Logger.warn('flatpickr no está definido. No se puede renderizar el selector de fechas.');
-            }
-        }, 100);
-    })();
-
-
-    // --- Funciones de Gráficos (Sin cambios) ---
+    // --- (Funciones de Gráficos ApexCharts) ---
     function renderCompaniesChart() {
         const options = {
             series: [{ name: 'Companies', data: [10, 41, 35, 51, 49, 62, 69] }],
@@ -284,8 +314,48 @@ export function SuperAdminDashboard(element, state) {
         chart.render();
     }
 
+    // --- INICIALIZAR UI ---
+    (function initSuperAdminUI() {
+        setTimeout(() => {
+            if (typeof ApexCharts !== 'undefined') {
+                try {
+                    renderCompaniesChart(); 
+                    renderRevenueChart();
+                    renderPlansChart();
+                    Logger.info('Gráficos del SuperAdmin renderizados.');
+                } catch (e) {
+                    Logger.error('Error al renderizar gráficos de ApexCharts:', e);
+                }
+            } else {
+                Logger.warn('ApexCharts no está definido.');
+            }
+            
+            initTippy(element);
+            
+            if (typeof flatpickr !== 'undefined') {
+                try {
+                    flatpickr.localize(flatpickr.l10ns.es);
+                    flatpickr("#superadmin-datepicker", {
+                        mode: "range", 
+                        dateFormat: "m/d/Y", 
+                        defaultDate: ["10/21/2025", "10/27/2025"], 
+                    });
+                    Logger.info('Selector de fechas (flatpickr) inicializado.');
+                } catch (e) {
+                    Logger.error('Error al inicializar flatpickr:', e);
+                }
+            } else {
+                Logger.warn('flatpickr no está definido.');
+            }
+        }, 100);
+    })();
+    
+    // --- ¡LLAMAR A LA CARGA DE DATOS! ---
+    loadDataAndRender();
+
     return () => {
         Logger.info('Limpiando SuperAdminDashboard...');
+        destroyTippy(element);
         // (Añadimos destrucción de gráficos para limpiar memoria)
         ['#companies-chart', '#revenue-chart', '#plans-chart'].forEach(selector => {
             const el = document.querySelector(selector);

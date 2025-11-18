@@ -111,3 +111,12 @@ export const updateProductById = (state, productId, data) => {
      if (!activeAdapter) throw new Error("Storage service not initialized.");
     return activeAdapter.updateProduct(state, productId, data);
 };
+
+export async function loadAllBusinesses() {
+    if (!activeAdapter) throw new Error("Storage service not initialized.");
+    if (typeof activeAdapter.getAllBusinesses !== 'function') {
+         Logger.warn(`El adaptador ${activeAdapter} no implementa getAllBusinesses.`);
+         return [];
+    }
+    return await activeAdapter.getAllBusinesses();
+}

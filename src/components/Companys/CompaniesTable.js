@@ -1,6 +1,7 @@
 // ======================================================
 // ARCHIVO ACTUALIZADO: src/components/CompaniesTable.js
-// VERSIÓN 2.0: Añade "View", checkboxes y avatares SVG
+// VERSIÓN 3.0: Modificado para leer datos reales de
+//              la colección 'businesses'.
 // ======================================================
 
 import { EmptyState } from '../EmptyState.js';
@@ -10,7 +11,7 @@ import { PERMISSIONS } from '../../services/roles.config.js';
 /**
  * Renderiza la tabla de compañías.
  * @param {object} props
- * @param {Array<object>} props.companies - La lista de compañías a mostrar.
+ * @param {Array<object>} props.companies - La lista de compañías (desde Firestore).
  * @param {Set<string>} props.selectedIds - Un Set con los IDs de las filas seleccionadas.
  * @param {boolean} props.isAllSelected - Si el checkbox "Select All" debe estar marcado.
  * @returns {string} El string de HTML para la tabla.
@@ -24,21 +25,25 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
         });
     }
 
-    function renderPlanBadge(planName = 'Basic') {
-        const planLower = planName.toLowerCase();
+    function renderPlanBadge(planId = 'plan_basic') {
+        const planLower = planId.toLowerCase();
         let className = 'bg-primary-subtle text-primary-emphasis';
-        
+        let planName = 'Básico';
+
         if (planLower.includes('enterprise')) {
             className = 'bg-dark-subtle text-dark-emphasis';
+            planName = 'Empresarial';
         } else if (planLower.includes('advanced')) {
              className = 'bg-info-subtle text-info-emphasis';
-        } else if (planLower.includes('premium')) {
+             planName = 'Avanzado';
+        } else if (planLower.includes('profesional')) {
             className = 'bg-warning-subtle text-warning-emphasis';
+            planName = 'Profesional';
         }
         return `<span class="badge ${className}">${planName}</span>`;
     }
 
-    function renderStatusBadge(status = 'Active') {
+    function renderStatusBadge(status = 'active') {
         const statusLower = status.toLowerCase();
         let className = 'bg-success-subtle text-success-emphasis';
         let icon = 'bi-check-circle-fill';
@@ -52,12 +57,21 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
                 </span>`;
     }
 
-    // --- Helper para obtener un avatar SVG aleatorio ---
     function getCompanyAvatar(companyId) {
-        // Genera un número entre 1 y 28 basado en el ID de la compañía
         const avatarNum = (parseInt(companyId, 36) % 28) + 1;
         const avatarId = avatarNum.toString().padStart(2, '0');
         return `/assets/img/company/company-${avatarId}.svg`;
+    }
+
+    // --- Helper para formatear Timestamps de Firestore ---
+    function formatTimestamp(timestamp) {
+        if (!timestamp) return 'N/A';
+        // Asume que 'timestamp' es un objeto { seconds: ..., nanoseconds: ... }
+        if (timestamp.seconds) {
+            return new Date(timestamp.seconds * 1000).toLocaleDateString('es-VE');
+        }
+        // Fallback por si ya es un string
+        return new Date(timestamp).toLocaleDateString('es-VE');
     }
 
     return `
@@ -73,13 +87,11 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
                             ${isAllSelected ? 'checked' : ''}
                         >
                     </th>
-                    <th>Company Name</th>
-                    <th>Email</th>
-                    <th>Account URL</th>
+                    <th>Nombre de la Compañía</th>
                     <th>Plan</th>
-                    <th>Created Date</th>
+                    <th>Fecha de Creación</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -103,21 +115,15 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
                                 </div>
                                 <div class="company-info">
                                     <span class="company-name">${company.name}</span>
-                                    <span class="company-domain">${company.domain || 'N/A'}</span>
+                                    <span class="company-domain">ID: ${company.id}</span>
                                 </div>
                             </div>
                         </td>
-                        <td data-label="Email">
-                            <a href="mailto:${company.email}">${company.email}</a>
-                        </td>
-                        <td data-label="Account URL">
-                            <a href="${company.accountUrl}" target="_blank">${company.accountUrl.replace('https://', '')}</a>
-                        </td>
                         <td data-label="Plan">
-                            ${renderPlanBadge(company.plan)}
+                            ${renderPlanBadge(company.planId)}
                         </td>
                         <td data-label="Created Date">
-                            ${company.createdDate}
+                            ${formatTimestamp(company.createdAt)}
                         </td>
                         <td data-label="Status">
                             ${renderStatusBadge(company.status)}
