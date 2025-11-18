@@ -133,10 +133,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2.5rem;
+    padding: 0.5rem;
     text-align: center;
     color: var(--bs-gray-500);
-    min-height: 150px; /* Asegura que ocupe espacio */
+    min-height: 285px; /* Asegura que ocupe espacio */
     border: none;
     background-color: var(--bs-gray-50);
     margin: 1rem; /* Margen para separarlo del borde del card */
