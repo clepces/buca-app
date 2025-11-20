@@ -1,8 +1,8 @@
 // src/components/Login.js
 
-import { login } from '../services/auth.service.js';
-import { showToast } from '../services/toast.service.js';
-import { delay } from '../utils/retardo.js';
+import { login } from '../../services/auth.service.js';
+import { showToast } from '../../services/toast.service.js';
+import { delay } from '../../utils/retardo.js';
 
 // Se elimina el parámetro 'onLoginSuccess' que ya no se usa.
 export function LoginComponent(state) {

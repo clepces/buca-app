@@ -1,8 +1,8 @@
 // src/views/Dashboard/Business_admin/AdminDashboard.js
-import { StatCard } from '../../../components/StatCard.js';
+import { StatCard } from '../../../components/Common/StatCard.js';
 import { Logger } from '../../../services/logger.service.js';
 import { state as globalState } from '../../../store/state.js';
-import { EmptyState } from '../../../components/EmptyState.js';
+import { EmptyState } from '../../../components/Common/EmptyState.js';
 
 export function AdminDashboard(element, state) {
     const userName = globalState.session?.user?.name || 'Usuario';

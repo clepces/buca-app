@@ -8,9 +8,9 @@
 //    para evitar los "$0.00".
 // ======================================================
 
-import { EmptyState } from './EmptyState.js';
-import { can } from '../services/permissions.service.js';
-import { PERMISSIONS } from '../services/roles.config.js';
+import { EmptyState } from '../Common/EmptyState.js';
+import { can } from '../../services/permissions.service.js';
+import { PERMISSIONS } from '../../services/roles.config.js';
 
 /**
  * Renderiza la tabla que muestra la lista de productos.

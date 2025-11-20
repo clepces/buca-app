@@ -8,15 +8,12 @@
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase-config.js';
-
-window.auth = auth; // <--- ¡AÑADE ESTA LÍNEA!
-
 import { handleError } from './utils/handleError.js';
 import { Logger } from './services/logger.service.js';
 import App from './App.js';
 import { loadState, initializeStorage, loadGlobalConfig } from './services/storage.service.js';
 import { setSettings } from './store/actions.js';
-import { LoaderComponent } from './components/Loader.js';
+import { LoaderComponent } from './components/Common/Loader.js';
 async function main() {
     try {
         const appRoot = document.getElementById('app');

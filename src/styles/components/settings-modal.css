@@ -1,175 +1,201 @@
 /* ======================================================
-// ARCHIVO NUEVO: src/styles/components/settings-modal.css
-// PROPÓSITO: Estilos para el modal de configuración de 2 columnas.
-// ====================================================== */
+   SETTINGS MODAL LAYOUT
+   ====================================================== */
 
-.settings-layout {
+   .settings-layout {
     display: grid;
-    /* --- ¡CAMBIO! 3 columnas: Nav, Contenido, Atajos --- */
-    grid-template-columns: 200px 1fr 60px;
-    gap: 0; /* Sin gap, los bordes lo manejan */
-    height: 100%; /* Ocupa el 100% del modal fullscreen */
-    background-color: var(--bs-body-bg);
+    grid-template-columns: 260px 1fr 80px;
+    height: 100%;
+    background-color: var(--bs-gray-50);
 }
 
-/* 1. Columna de Navegación (Izquierda) */
+[data-bs-theme="dark"] .settings-layout {
+    background-color: #15171e;
+}
+
+/* --- 1. Sidebar de Navegación (Izquierda) --- */
+
 .settings-nav {
+    background-color: var(--bs-card-bg);
+    border-right: 1px solid var(--bs-border-color);
+    padding: 2rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 1rem;
-    border-right: 1px solid var(--bs-border-color);
-    background-color: var(--bs-card-bg); 
 }
 
-.settings-nav .nav-title {
-    font-size: 0.8rem;
-    font-weight: 600;
+.nav-section-title {
+    font-size: 0.75rem;
     text-transform: uppercase;
+    letter-spacing: 1px;
     color: var(--bs-gray-500);
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.5rem;
+    margin: 1.5rem 0 0.5rem 1rem;
+    font-weight: 700;
 }
 
 .settings-nav-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: var(--bs-border-radius);
-    font-size: 0.9rem;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    color: var(--bs-gray-600);
     font-weight: 500;
-    text-align: left;
-    color: var(--bs-heading-color);
-    background: transparent;
+    transition: all 0.2s ease;
     border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    justify-content: flex-start;
 }
 
-.settings-nav-item i {
-    font-size: 1.1rem;
-    width: 20px;
-    text-align: center;
-    color: var(--bs-gray-500);
-    transition: all var(--transition-fast);
-}
-
-.settings-nav-item:hover:not(:disabled) {
-    background-color: var(--bs-gray-50);
-    color: var(--bs-gray-900);
+.settings-nav-item:hover {
+    background-color: var(--bs-gray-100);
+    color: var(--primary-color);
 }
 
 .settings-nav-item.active {
-    background-color: var(--primary-color);
-    color: var(--bs-card-bg);
+    background-color: var(--primary-light-hover);
+    color: var(--bs-gray-50);
     font-weight: 600;
 }
 
-.settings-nav-item.active i {
-    color: var(--bs-card-bg);
-    transform: scale(1.1);
-}
-
-.settings-nav-item:disabled {
-    color: var(--bs-gray-400);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-/* Tema Oscuro */
-[data-bs-theme="dark"] .settings-nav {
-    background-color: var(--bs-gray-800);
-    border-right-color: var(--bs-gray-700);
-}
-
-/* Color de texto base para botones en modo oscuro */
 [data-bs-theme="dark"] .settings-nav-item {
-    color: var(--bs-gray-300);
-}
-[data-bs-theme="dark"] .settings-nav-item i {
-    color: var(--bs-gray-500);
+    color: var(--bs-gray-900);
 }
 
-[data-bs-theme="dark"] .settings-nav-item:hover:not(:disabled) {
-    background-color: var(--bs-gray-700);
-    color: var(--bs-gray-100);
-}
-[data-bs-theme="dark"] .settings-nav-item.active {
-    background-color: var(--primary-light-hover);
-    color: var(--primary-light);
-}
-[data-bs-theme="dark"] .settings-nav-item.active i {
-    color: var(--primary-light);
-}
-[data-bs-theme="dark"] .settings-nav-item:disabled {
-    color: var(--bs-gray-600);
+[data-bs-theme="dark"] .settings-nav-item:hover {
+    background-color: var(--bs-gray-800);
+    color: var(--bs-white);
 }
 
+/* --- 2. Contenido Principal (Centro) --- */
 
 .settings-content {
-    flex-grow: 1;
+    padding: 2rem 4rem;
     overflow-y: auto;
-    /* --- ¡CAMBIO! Padding aumentado --- */
-    padding: 2rem;
-    position: relative; 
 }
 
 .settings-panel {
+    max-width: 900px;
+    margin: 0 auto;
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Reutilizamos la tarjeta premium, pero ajustamos el padding del body */
-.settings-content .summary-card-premium .card-premium-body {
-    padding: 1.5rem;
+.settings-header-block {
+    margin-bottom: 2rem;
 }
 
-/* 3. Footer Fijo (Eliminado) */
-/* --- ¡CORRECCIÓN! Eliminamos .settings-footer --- */
+.settings-header-block h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-heading-color);
+}
 
-/* --- ¡NUEVO! 4. Columna de Atajos (Derecha) --- */
+.settings-header-block p {
+    color: var(--bs-gray-600);
+}
+
+.config-box {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s;
+}
+
+.config-box:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+}
+
+.config-box-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.config-box-header h3 {
+    font-size: 1.1rem;
+    margin: 0;
+    color: var(--bs-heading-color);
+    font-weight: 600;
+}
+
+.config-box-header i {
+    font-size: 1.2rem;
+    color: var(--bs-gray-50);
+    background: var(--primary-light-hover);
+    padding: 8px;
+    border-radius: 8px;
+}
+
+/* Estado de Mantenimiento / WIP */
+.maintenance-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bs-card-bg);
+    border-radius: 24px;
+    border: 2px dashed var(--bs-border-color);
+    margin-top: 2rem;
+}
+
+.maintenance-icon {
+    font-size: 3rem;
+    color: var(--bs-gray-400);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* --- 3. Barra de Atajos (Derecha) --- */
+
 .settings-quick-nav {
+    background-color: var(--bs-card-bg);
+    border-left: 1px solid var(--bs-border-color);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem 0.5rem;
-    border-left: 1px solid var(--bs-border-color);
-    background-color: var(--bs-card-bg);
     align-items: center;
-}
-
-[data-bs-theme="dark"] .settings-quick-nav {
-    background-color: var(--bs-gray-800);
-    border-left-color: var(--bs-gray-700);
+    padding: 2rem 0;
+    gap: 1.5rem;
 }
 
 .quick-nav-item {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: var(--bs-border-radius);
     color: var(--bs-gray-500);
-    font-size: 1.25rem;
+    background: var(--bs-gray-50);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: none;
     cursor: pointer;
-    transition: all var(--transition-fast);
+}
+
+.quick-nav-item i {
+    font-size: 1.25rem;
 }
 
 .quick-nav-item:hover {
-    background-color: var(--primary-light-hover);
-    color: var(--primary-color);
-    border-color: var(--primary-light-hover);
+    transform: scale(1.15);
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 [data-bs-theme="dark"] .quick-nav-item {
-    color: var(--bs-gray-500);
+    background-color: var(--bs-gray-800);
+    color: var(--bs-gray-400);
 }
+
 [data-bs-theme="dark"] .quick-nav-item:hover {
-    background-color: var(--primary-light-hover);
-    color: var(--primary-light);
-    border-color: var(--primary-light-hover);
+    background-color: var(--primary-color);
+    color: white;
 }

@@ -92,11 +92,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--bs-white);
+    color: #ffffff !important; /* Forzar blanco para el icono */
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
+}
+
+.btn-icon i, .nav-button i {
+    color: var(--bs-gray-700); /* Gris oscuro por defecto */
+}
+
+/* En modo oscuro, invertir a claro */
+[data-bs-theme="dark"] .btn-icon i, 
+[data-bs-theme="dark"] .nav-button i {
+    color: var(--bs-gray-300);
 }
 
 .stat-card:hover .stat-card-icon {
@@ -108,6 +118,7 @@
     font-size: 1.75rem;
     line-height: 1;
     z-index: 1;
+    color: var(--bs-gray-900);
 }
 
 /* Gradiente de fondo para el ícono */

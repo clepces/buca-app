@@ -2,13 +2,13 @@
 // ARCHIVO: src/views/Dashboard/Super_admin/SuperAdminDashboard.js
 // VERSIÓN 3.1: Conectado a datos reales (loadAllBusinesses)
 // ==========================================================================
-import { StatCard } from '../../../components/StatCard.js';
+import { StatCard } from '../../../components/Common/StatCard.js';
 import { Logger } from '../../../services/logger.service.js';
 import { state as globalState } from '../../../store/state.js';
 import { initTippy, destroyTippy } from '../../../utils/tippy-helper.js';
 // --- ¡NUEVAS IMPORTACIONES! ---
 import { loadAllBusinesses } from '../../../services/storage.service.js';
-import { EmptyState } from '../../../components/EmptyState.js';
+import { EmptyState } from '../../../components/Common/EmptyState.js';
 
 export function SuperAdminDashboard(element, state) {
     const userName = globalState.session?.user?.name || 'Admin';

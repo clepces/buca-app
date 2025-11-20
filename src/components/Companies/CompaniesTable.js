@@ -4,7 +4,7 @@
 //              la colección 'businesses'.
 // ======================================================
 
-import { EmptyState } from '../EmptyState.js';
+import { EmptyState } from '../Common/EmptyState.js';
 import { can } from '../../services/permissions.service.js';
 import { PERMISSIONS } from '../../services/roles.config.js';
 

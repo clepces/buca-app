@@ -3,19 +3,19 @@
 // VERSIÓN CORREGIDA: Separa 'change' de 'click'
 // ======================================================
 
-import { deleteProduct } from '../../../store/actions.js';
-import { showConfirmationModal, openProductModal } from '../../../services/modal.service.js';
-import { Logger } from '../../../services/logger.service.js';
-import { state as globalState } from '../../../store/state.js';
-import { can } from '../../../services/permissions.service.js';
-import { PERMISSIONS } from '../../../services/roles.config.js';
-import { EmptyState } from '../../../components/EmptyState.js';
-import { showToast } from '../../../services/toast.service.js';
-import { PaginationControls } from '../../../components/PaginationControls.js';
-import { paginate, getTotalPages } from '../../../services/pagination.service.js';
-import { debounce } from '../../../utils/debounce.js';
+import { deleteProduct } from '../../../../store/actions.js';
+import { showConfirmationModal, openProductModal } from '../../../../services/modal.service.js';
+import { Logger } from '../../../../services/logger.service.js';
+import { state as globalState } from '../../../../store/state.js';
+import { can } from '../../../../services/permissions.service.js';
+import { PERMISSIONS } from '../../../../services/roles.config.js';
+import { EmptyState } from '../../../../components/Common/EmptyState.js';
+import { showToast } from '../../../../services/toast.service.js';
+import { PaginationControls } from '../../../../components/Common/PaginationControls.js';
+import { paginate, getTotalPages } from '../../../../services/pagination.service.js';
+import { debounce } from '../../../../utils/debounce.js';
 import { renderProductCards } from './cards/ProductCards.js';
-import { initTippy, destroyTippy } from '../../../utils/tippy-helper.js';
+import { initTippy, destroyTippy } from '../../../../utils/tippy-helper.js';
 
 
 export function ProductsView(element, state) {

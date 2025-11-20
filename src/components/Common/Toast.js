@@ -7,7 +7,7 @@
 //    manualmente por el servicio de toast.
 // ======================================================
 
-import { state } from '../store/state.js';
+import { state } from '../../store/state.js';
 
 // --- Helper para mapear tipos a UI ---
 const toastConfig = {

@@ -5,7 +5,7 @@
 // VERSIÓN PREMIUM - UI MEJORADA
 // ======================================================
 
-import { diff, fText, fCurr, fPerc, fStock, fPeso } from '../utils/productFormHelpers.js';
+import { diff, fText, fCurr, fPerc, fStock, fPeso } from '../../utils/productFormHelpers.js';
 
 /**
  * Helper local para formatear números

@@ -5,12 +5,12 @@
 // negocio y delega la UI al Wizard y al Summary.
 // ======================================================
     
-import { calcularPrecioVenta } from '../services/calculation.service.js';
-import { validarCamposTexto, productoExiste } from '../services/validation.service.js';
-import { addProductToState, updateProductInState } from '../store/actions.js';
-import { showToast } from '../services/toast.service.js';
-import { state as globalState } from '../store/state.js';
-import { Logger } from '../services/logger.service.js';
+import { calcularPrecioVenta } from '../../services/calculation.service.js';
+import { validarCamposTexto, productoExiste } from '../../services/validation.service.js';
+import { addProductToState, updateProductInState } from '../../store/actions.js';
+import { showToast } from '../../services/toast.service.js';
+import { state as globalState } from '../../store/state.js';
+import { Logger } from '../../services/logger.service.js';
 
 // --- ¡NUEVAS IMPORTACIONES DE REFACTORIZACIÓN! ---
 import { initProductFormWizard } from './ProductFormWizard.js';

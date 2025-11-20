@@ -6,10 +6,10 @@
 //             plantilla 'business_mega_center').
 // ======================================================
 
-import { StatCard } from '../../components/StatCard.js';
-import { CompaniesTable } from '../../components/Companys/CompaniesTable.js';
-import { PaginationControls } from '../../components/PaginationControls.js';
-import { EmptyState } from '../../components/EmptyState.js';
+import { StatCard } from '../../components/Common/StatCard.js';
+import { CompaniesTable } from '../../components/Companies/CompaniesTable.js';
+import { PaginationControls } from '../../components/Common/PaginationControls.js';
+import { EmptyState } from '../../components/Common/EmptyState.js';
 import { Logger } from '../../services/logger.service.js';
 import { state as globalState } from '../../store/state.js';
 import { can } from '../../services/permissions.service.js';

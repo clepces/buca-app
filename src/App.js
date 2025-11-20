@@ -13,10 +13,10 @@ import { loadBusinessData } from './services/storage.service.js';
 import { initRouter } from './router/index.js';
 import { Logger } from './services/logger.service.js';
 import { LoginView } from './views/Authorization/LoginView.js';
-import { Header } from './components/Views/Header.js';
-import { MainNav } from './components/Views/MainNav.js';
-import { Footer } from './components/Views/Footer.js';
-import { LoaderComponent } from './components/Loader.js';
+import { Header } from './components/Layout/Header.js';
+import { MainNav } from './components/Layout/MainNav.js';
+import { Footer } from './components/Layout/Footer.js';
+import { LoaderComponent } from './components/Common/Loader.js';
 import { delay } from './utils/retardo.js';
 import { can } from './services/permissions.service.js';
 import { PERMISSIONS } from './services/roles.config.js';
@@ -26,7 +26,7 @@ import { ROLES } from './services/roles.config.js';
 import { initRateService } from './services/rate.service.js'; 
 import { showToast } from './services/toast.service.js';
 import { openRateUpdateModal, openSuperAdminSettingsModal } from './services/modal.service.js';
-import { initTippy } from './utils/tippy-helper.js'; // <-- ¡AÑADIR ESTA IMPORTACIÓN!
+import { initTippy } from './utils/tippy-helper.js';
 
 export default class App {
 

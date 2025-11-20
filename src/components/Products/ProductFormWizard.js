@@ -9,7 +9,7 @@
 //    (totalSteps - 1) y 'Guardar' en el paso (totalSteps).
 // ======================================================
 
-import { Logger } from '../services/logger.service.js';
+import { Logger } from '../../services/logger.service.js';
 
 /**
  * Inicializa y controla un wizard de N pasos dentro de un modal.

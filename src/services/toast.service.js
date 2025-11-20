@@ -12,7 +12,7 @@
 // import { state } from '../store/state'; // <-- ELIMINADO
 import { traceExecution } from '../utils/traceExecution';
 // import { triggerRerender } from '../store/actions'; // <-- ELIMINADO
-import { Toast } from '../components/Toast.js'; // <-- AÑADIDO
+import { Toast } from '../components/Common/Toast.js'; // <-- AÑADIDO
 
 // Timer para ocultar el toast
 let activeToast = null;

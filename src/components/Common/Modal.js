@@ -1,6 +1,6 @@
 // ======================================================
 // ARCHIVO: src/components/Modal.js
-// MEJORA: Añadido soporte para size: 'fullscreen'
+// MEJORA: Añadida clase 'modal-fullscreen-parent'
 // ======================================================
 
 export function Modal({ title, contentElement, id = 'genericModal', size = 'large' }) {
@@ -10,11 +10,13 @@ export function Modal({ title, contentElement, id = 'genericModal', size = 'larg
     modalElement.style.display = 'flex';
 
     // --- ¡INICIO DE CORRECCIÓN! ---
-    let sizeClass = 'modal-lg'; // Default
+    let sizeClass = 'modal-lg';
     if (size === 'small') {
         sizeClass = 'modal-sm';
     } else if (size === 'fullscreen') {
         sizeClass = 'modal-fullscreen';
+        // Añadimos esta clase al contenedor padre
+        modalElement.classList.add('modal-fullscreen-parent'); 
     }
     // --- FIN DE CORRECCIÓN ---
 
@@ -25,12 +27,11 @@ export function Modal({ title, contentElement, id = 'genericModal', size = 'larg
                 <button class="close" data-action="close-modal" aria-label="Cerrar">&times;</button>
             </div>
             <div class="modal-body custom-scrollbar" id="modal-body-container">
-            </div>
-            <div class="modal-footer" id="modal-footer-container">
-            </div>
+                </div>
+            <div class="modal-footer" id="modal-footer-container"></div>
         </div>
     `;
-
+    
     modalElement.querySelector('#modal-body-container').appendChild(contentElement);
 
     // Evento para cerrar al hacer clic fuera o en la X

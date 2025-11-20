@@ -1,5 +1,5 @@
 // src/views/Dashboard/Business_admin/User/UserDashboard.js
-import { StatCard } from '../../../components/StatCard.js';
+import { StatCard } from '../../../components/Common/StatCard.js';
 import { Logger } from '../../../services/logger.service.js';
 import { getDashboardStats } from '../../../services/dashboard.service.js';
 import { state as globalState } from '../../../store/state.js';

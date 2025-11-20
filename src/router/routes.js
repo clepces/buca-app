@@ -13,7 +13,7 @@ import { MODULES } from '../services/modules.config.js';
 const DashboardView = () => import('../views/Dashboard/DashboardView.js').then(m => m.DashboardView);
 const CompaniesDashboardView = () => import('../views/Companies/CompaniesView.js').then(m => m.CompaniesView);
 const InventoryDashboardView = () => import('../views/Inventory/InventoryView.js').then(m => m.InventoryDashboardView);
-const ProductsView = () => import('../views/Inventory/products/ProductsView.js').then(m => m.ProductsView);
+const ProductsView = () => import('../views/Inventory/Business_admin/products/ProductsView.js').then(m => m.ProductsView);
 const PosView = () => import('../views/Pos/PosView.js').then(m => m.PosView);
 const ClientsView = () => import('../views/People/ClientsView.js').then(m => m.ClientsView);
 

@@ -3,18 +3,18 @@
 // ACTUALIZACIÓN: openSuperAdminSettingsModal (v2.0)
 // ======================================================
 
-import { state as globalState } from '../store/state.js'; // <-- ¡NUEVO!
-import { Modal } from '../components/Modal.js';
-import { ProductForm } from '../components/ProductForm.js';
+import { state as globalState } from '../store/state.js';
+import { Modal } from '../components/Common/Modal.js';
+import { ProductForm } from '../components/Products/ProductForm.js';
 import { Logger } from './logger.service.js';
 import { fetchCurrentRates, fetchRateHistory } from './rate.service.js';
 import { showToast } from './toast.service.js';
 import { triggerRerender } from '../store/actions.js';
 import { PERMISSIONS } from './roles.config.js';
 import { can } from './permissions.service.js';
-import { CompanyForm } from '../components/Companys/CompanyForm.js';
+import { CompanyForm } from '../components/Companies/CompanyForm.js';
 import { SuperAdminSettings } from '../components/Settings/SuperAdminSettings.js';
-import { updateSingleSetting } from './settings.service.js'; // <-- ¡NUEVO!
+import { updateSingleSetting } from './settings.service.js';
 
 // --- MODAL DE CONFIRMACIÓN (PEQUEÑO) ---
 export function showConfirmationModal(title, messageHTML, onConfirm, options = {}) {
@@ -310,8 +310,8 @@ export function openRateUpdateModal() {
     }
     // --- FIN DE MEJORA ---
 
-    const simboloBase = state.settings.currencies.base.symbol || 'Bs.';
-    const currentRate = state.settings.currencies.principal.rate;
+    const simboloBase = globalState.settings.currencies.base.symbol || 'Bs.';
+    const currentRate = globalState.settings.currencies.principal.rate;
     
     const content = document.createElement('div');
     content.style.width = '100%';
@@ -471,7 +471,7 @@ export function openRateUpdateModal() {
         // --- FIN DE CORRECCIÓN ---
 
         // 2. Actualizar ESTADO GLOBAL
-        state.settings.currencies.principal.rate = finalRate;
+        globalState.settings.currencies.principal.rate = finalRate;
         
         // 3. Guardar en LocalStorage
         localStorage.setItem('buca_last_known_rate_usd', finalRate.toString());
@@ -491,7 +491,7 @@ export function openRateUpdateModal() {
     saveButton.addEventListener('click', () => {
         const input = content.querySelector('#manual-rate-input');
         const newRate = parseFloat(input.value);
-        const oldRate = state.settings.currencies.principal.rate;
+        const oldRate = globalState.settings.currencies.principal.rate;
 
         if (isNaN(newRate) || newRate <= 0) {
             showToast('Ingresa un número válido.', 'warning');

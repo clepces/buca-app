@@ -7,7 +7,7 @@
 import { Logger } from '../../services/logger.service.js';
 import { showToast } from '../../services/toast.service.js';
 import { createNewBusiness } from '../../services/admin.service.js'; // <-- ¡NUEVO SERVICIO!
-import { initProductFormWizard } from '../ProductFormWizard.js'; // Reutilizamos el wizard
+import { initProductFormWizard } from '../Products/ProductFormWizard.js'; // Reutilizamos el wizard
 
 /**
  * Componente para el Formulario de Creación de Compañía.
