@@ -100,13 +100,12 @@
 }
 
 .btn-icon i, .nav-button i {
-    color: var(--bs-gray-700); /* Gris oscuro por defecto */
+    color: var(--bs-gray-100); /* Gris oscuro por defecto */
 }
 
 /* En modo oscuro, invertir a claro */
-[data-bs-theme="dark"] .btn-icon i, 
-[data-bs-theme="dark"] .nav-button i {
-    color: var(--bs-gray-300);
+[data-bs-theme="dark"] .btn-icon i, [data-bs-theme="dark"] .nav-button i {
+    color: var(--bs-gray-900);
 }
 
 .stat-card:hover .stat-card-icon {

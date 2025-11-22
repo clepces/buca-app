@@ -4,7 +4,8 @@
 // ======================================================
 
 import { Logger } from './logger.service.js';
-import { auth } from '../firebase-config.js'; // <-- ¡IMPORTANTE!
+import { auth, db } from '../firebase-config.js'; // Asegúrate de tener 'db' importado
+import { doc, updateDoc } from 'firebase/firestore'; // Cambiamos deleteDoc por updateDoc
 
 // URL de la Cloud Function
 const CREATE_BUSINESS_URL = 'https://us-central1-buca-scdbs.cloudfunctions.net/createBusinessAndOwner';
@@ -59,5 +60,75 @@ export async function createNewBusiness(businessData, ownerData) {
     } catch (error) {
         Logger.error('Error al llamar la Cloud Function (manual fetch):', error);
         throw new Error(error.message);
+    }
+}
+
+/**
+ * Actualiza los datos de un negocio existente.
+ * @param {string} companyId - ID del documento.
+ * @param {object} updateData - Datos a actualizar { name, planId, status }.
+ */
+export async function updateBusiness(companyId, updateData) {
+    Logger.info(`[AdminService] Actualizando empresa ${companyId}...`, updateData);
+    try {
+        const companyRef = doc(db, 'businesses', companyId);
+        await updateDoc(companyRef, updateData);
+        return { success: true };
+    } catch (error) {
+        Logger.error('Error actualizando empresa:', error);
+        throw error;
+    }
+}
+
+/**
+ * Realiza un "Soft Delete" del negocio.
+ * NO borra los datos físicos, solo marca el negocio como eliminado/archivado.
+ * Esto previene la pérdida accidental de datos y subcolecciones huérfanas.
+ * * @param {string} companyId 
+ */
+export async function deleteBusiness(companyId) {
+    Logger.info(`[AdminService] Soft-deleting empresa ${companyId}...`);
+    
+    try {
+        const companyRef = doc(db, 'businesses', companyId);
+        
+        // En lugar de borrar, cambiamos el estado y añadimos metadatos
+        await updateDoc(companyRef, {
+            status: 'deleted',           // Estado "papelera"
+            isActive: false,             // Desactivar acceso inmediatamente
+            deletedAt: new Date().toISOString(), // Fecha de borrado
+            deletedBy: auth.currentUser?.uid || 'system' // Quién lo borró
+        });
+
+        Logger.info(`[AdminService] Empresa ${companyId} movida a la papelera.`);
+        return { success: true };
+
+    } catch (error) {
+        Logger.error('Error al archivar la empresa (Soft Delete):', error);
+        throw error;
+    }
+}
+
+/**
+ * Restaura un negocio eliminado (Soft Delete).
+ * Devuelve el estado a 'active' y reactiva el acceso.
+ * @param {string} companyId
+ */
+export async function restoreBusiness(companyId) {
+    Logger.info(`[AdminService] Restaurando empresa ${companyId}...`);
+    try {
+        const companyRef = doc(db, 'businesses', companyId);
+        
+        await updateDoc(companyRef, {
+            status: 'active',            // Volvemos al estado activo
+            isActive: true,              // Reactivamos el acceso
+            deletedAt: null,             // Limpiamos fecha de borrado
+            deletedBy: null
+        });
+
+        return { success: true };
+    } catch (error) {
+        Logger.error('Error al restaurar la empresa:', error);
+        throw error;
     }
 }

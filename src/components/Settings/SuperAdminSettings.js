@@ -1,26 +1,22 @@
-// ======================================================
-// ARCHIVO: src/components/Settings/SuperAdminSettings.js
-// VERSIÓN 3.0: Diseño UX/UI Mejorado y Áreas Separadas
-// ======================================================
-
 import { CategoryManager } from './CategoryManager.js';
 import { state as globalState } from '../../store/state.js';
 import { sanitizeHTML } from '../../utils/sanitize.js';
-// --- ¡NUEVA IMPORTACIÓN! ---
-import { EmptyState } from '../Common/EmptyState.js';
 
 export function SuperAdminSettings(modalElementRef) {
     const element = document.createElement('div');
     element.className = 'settings-layout';
 
-    // Datos actuales
     const appConfig = globalState.settings.appConfig || {};
     const appName = appConfig.system?.metadata?.appNameSimplify || 'B.U.C.A';
     const appNameFull = appConfig.system?.metadata?.appName || 'Business Under Control Access';
-    const defaultTax = globalState.settings.products.tax_rate;
-    const categoryManager = CategoryManager(globalState.settings.products.available_categories);
+    const defaultTax = globalState.settings.products.tax_rate || 16;
+    
+    const currentCategories = Array.isArray(globalState.settings.products.available_categories) 
+        ? globalState.settings.products.available_categories 
+        : ['General'];
 
-    // --- Helper para Estado de Construcción ---
+    const categoryManager = CategoryManager(currentCategories);
+
     const renderMaintenanceState = (title, msg) => `
         <div class="maintenance-state">
             <i class="bi bi-cone-striped maintenance-icon animate-pulse"></i>
@@ -55,13 +51,11 @@ export function SuperAdminSettings(modalElementRef) {
         </nav>
 
         <div class="settings-content custom-scrollbar">
-            
             <div id="panel-general" class="settings-panel active">
                 <div class="settings-header-block">
                     <h2>Configuración General</h2>
                     <p>Define la identidad básica de la plataforma.</p>
                 </div>
-
                 <div class="config-box">
                     <div class="config-box-header">
                         <i class="bi bi-globe"></i>
@@ -91,7 +85,6 @@ export function SuperAdminSettings(modalElementRef) {
                     <h2>Valores por Defecto</h2>
                     <p>Configura los parámetros iniciales para nuevos productos y negocios.</p>
                 </div>
-
                 <div class="config-box">
                     <div class="config-box-header">
                         <i class="bi bi-tags-fill"></i>
@@ -100,7 +93,6 @@ export function SuperAdminSettings(modalElementRef) {
                     <p class="text-muted mb-3">Estas categorías aparecerán sugeridas al crear un nuevo producto.</p>
                     <div id="category-manager-container"></div>
                 </div>
-
                 <div class="config-box">
                     <div class="config-box-header">
                         <i class="bi bi-percent"></i>
@@ -126,40 +118,28 @@ export function SuperAdminSettings(modalElementRef) {
             <div id="panel-appearance" class="settings-panel" style="display: none;">
                 ${renderMaintenanceState('Temas y Diseño', 'El constructor de temas visuales está en el taller de pintura.')}
             </div>
-
         </div>
 
         <nav class="settings-quick-nav">
-            <button class="quick-nav-item" data-tippy-content="Seguridad" data-tippy-placement="left">
-                <i class="bi bi-shield-lock"></i>
-            </button>
-            <button class="quick-nav-item" data-tippy-content="Base de Datos" data-tippy-placement="left">
-                <i class="bi bi-database"></i>
-            </button>
-            <button class="quick-nav-item" data-tippy-content="Logs del Sistema" data-tippy-placement="left">
-                <i class="bi bi-terminal"></i>
-            </button>
+            <button class="quick-nav-item" data-tippy-content="Seguridad" data-tippy-placement="left"><i class="bi bi-shield-lock"></i></button>
+            <button class="quick-nav-item" data-tippy-content="Base de Datos" data-tippy-placement="left"><i class="bi bi-database"></i></button>
+            <button class="quick-nav-item" data-tippy-content="Logs del Sistema" data-tippy-placement="left"><i class="bi bi-terminal"></i></button>
         </nav>
     `;
 
-    // Inyectar Categorías
     element.querySelector('#category-manager-container').appendChild(categoryManager.element);
 
-    // Lógica de Tabs
     const navItems = element.querySelectorAll('.settings-nav-item');
     const panels = element.querySelectorAll('.settings-panel');
 
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             const targetId = item.dataset.panel;
-            
-            // UI Updates
             navItems.forEach(n => n.classList.remove('active'));
             item.classList.add('active');
-            
             panels.forEach(p => {
                 p.style.display = (p.id === targetId) ? 'block' : 'none';
-                if(p.id === targetId) p.classList.add('active'); // Trigger animation
+                if(p.id === targetId) p.classList.add('active');
             });
         });
     });

@@ -1,27 +1,18 @@
 // ======================================================
-// ARCHIVO ACTUALIZADO: src/components/CompaniesTable.js
-// VERSIÓN 3.0: Modificado para leer datos reales de
-//              la colección 'businesses'.
+// ARCHIVO: src/components/Companies/CompaniesTable.js
+// MEJORA: Soporte visual para items 'deleted' y botón Restaurar
 // ======================================================
 
 import { EmptyState } from '../Common/EmptyState.js';
 import { can } from '../../services/permissions.service.js';
 import { PERMISSIONS } from '../../services/roles.config.js';
 
-/**
- * Renderiza la tabla de compañías.
- * @param {object} props
- * @param {Array<object>} props.companies - La lista de compañías (desde Firestore).
- * @param {Set<string>} props.selectedIds - Un Set con los IDs de las filas seleccionadas.
- * @param {boolean} props.isAllSelected - Si el checkbox "Select All" debe estar marcado.
- * @returns {string} El string de HTML para la tabla.
- */
 export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
 
     if (!companies || companies.length === 0) {
         return EmptyState({
             icon: 'bi-building-slash',
-            message: 'No se encontraron compañías'
+            message: 'No se encontraron compañías en esta vista.'
         });
     }
 
@@ -36,15 +27,20 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
         } else if (planLower.includes('advanced')) {
              className = 'bg-info-subtle text-info-emphasis';
              planName = 'Avanzado';
-        } else if (planLower.includes('profesional')) {
-            className = 'bg-warning-subtle text-warning-emphasis';
-            planName = 'Profesional';
         }
         return `<span class="badge ${className}">${planName}</span>`;
     }
 
     function renderStatusBadge(status = 'active') {
         const statusLower = status.toLowerCase();
+        
+        // --- LÓGICA PARA ESTADO ELIMINADO ---
+        if (statusLower === 'deleted') {
+            return `<span class="badge bg-secondary text-white badge-with-icon">
+                        <i class="bi bi-trash3"></i> Eliminado
+                    </span>`;
+        }
+        
         let className = 'bg-success-subtle text-success-emphasis';
         let icon = 'bi-check-circle-fill';
 
@@ -63,14 +59,11 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
         return `/assets/img/company/company-${avatarId}.svg`;
     }
 
-    // --- Helper para formatear Timestamps de Firestore ---
     function formatTimestamp(timestamp) {
         if (!timestamp) return 'N/A';
-        // Asume que 'timestamp' es un objeto { seconds: ..., nanoseconds: ... }
         if (timestamp.seconds) {
             return new Date(timestamp.seconds * 1000).toLocaleDateString('es-VE');
         }
-        // Fallback por si ya es un string
         return new Date(timestamp).toLocaleDateString('es-VE');
     }
 
@@ -79,17 +72,11 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
             <thead>
                 <tr>
                     <th>
-                        <input 
-                            type="checkbox" 
-                            class="form-check-input" 
-                            id="select-all-companies"
-                            data-action="select-all"
-                            ${isAllSelected ? 'checked' : ''}
-                        >
+                        <input type="checkbox" class="form-check-input" id="select-all-companies" data-action="select-all" ${isAllSelected ? 'checked' : ''}>
                     </th>
                     <th>Nombre de la Compañía</th>
                     <th>Plan</th>
-                    <th>Fecha de Creación</th>
+                    <th>Fecha</th>
                     <th>Status</th>
                     <th>Acciones</th>
                 </tr>
@@ -97,53 +84,52 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
             <tbody>
                 ${companies.map(company => {
                     const isSelected = selectedIds.has(company.id);
+                    const isDeleted = company.status === 'deleted'; // Detectamos si está borrada
+
                     return `
-                    <tr data-company-id="${company.id}" class="${isSelected ? 'selected' : ''}">
+                    <tr data-company-id="${company.id}" class="${isSelected ? 'selected' : ''} ${isDeleted ? 'row-deleted' : ''}">
                         <td data-label="Select">
-                            <input 
-                                type="checkbox" 
-                                class="form-check-input company-checkbox" 
-                                data-action="select-one"
-                                data-company-id="${company.id}"
-                                ${isSelected ? 'checked' : ''}
-                            >
+                            <input type="checkbox" class="form-check-input company-checkbox" data-action="select-one" data-company-id="${company.id}" ${isSelected ? 'checked' : ''}>
                         </td>
                         <td data-label="Company Name">
                             <div class="company-name-cell">
                                 <div class="company-avatar">
-                                    <img src="${getCompanyAvatar(company.id)}" alt="${company.name} logo">
+                                    <img src="${getCompanyAvatar(company.id)}" alt="${company.name} logo" style="${isDeleted ? 'filter: grayscale(100%); opacity: 0.6;' : ''}">
                                 </div>
                                 <div class="company-info">
-                                    <span class="company-name">${company.name}</span>
+                                    <span class="company-name" style="${isDeleted ? 'text-decoration: line-through; color: var(--bs-gray-500);' : ''}">${company.name}</span>
                                     <span class="company-domain">ID: ${company.id}</span>
                                 </div>
                             </div>
                         </td>
-                        <td data-label="Plan">
-                            ${renderPlanBadge(company.planId)}
-                        </td>
-                        <td data-label="Created Date">
-                            ${formatTimestamp(company.createdAt)}
-                        </td>
-                        <td data-label="Status">
-                            ${renderStatusBadge(company.status)}
-                        </td>
+                        <td data-label="Plan">${renderPlanBadge(company.planId)}</td>
+                        <td data-label="Created Date">${formatTimestamp(company.createdAt)}</td>
+                        <td data-label="Status">${renderStatusBadge(company.status)}</td>
                         <td data-label="Actions">
                             <div class="list-actions">
-                                ${can(PERMISSIONS.VIEW_COMPANIES) ? `
-                                <button class="btn-icon btn-icon-sm btn-info" data-action="view-company" title="Visualizar Compañía">
-                                    <i class="bi bi-eye-fill"></i>
-                                </button>` : ''}
-
-                                ${can(PERMISSIONS.EDIT_COMPANY) ? `
-                                <button class="btn-icon btn-icon-sm" data-action="edit-company" title="Editar Compañía">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>` : ''}
                                 
-                                ${can(PERMISSIONS.DELETE_COMPANY) ? `
-                                <button class="btn-icon btn-icon-sm danger" data-action="delete-company" title="Eliminar Compañía">
-                                    <i class="bi bi-trash3-fill"></i>
-                                </button>` : ''}
+                                ${/* Si está borrada, mostramos RESTAURAR. Si no, las acciones normales */ ''}
+                                ${isDeleted ? `
+                                    <button class="btn-icon btn-icon-sm btn-success" data-action="restore-company" title="Restaurar Compañía">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                ` : `
+                                    ${can(PERMISSIONS.VIEW_COMPANIES) ? `
+                                    <button class="btn-icon btn-icon-sm btn-info" data-action="view-company" title="Ver">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </button>` : ''}
+
+                                    ${can(PERMISSIONS.EDIT_COMPANY) ? `
+                                    <button class="btn-icon btn-icon-sm" data-action="edit-company" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>` : ''}
+                                    
+                                    ${can(PERMISSIONS.DELETE_COMPANY) ? `
+                                    <button class="btn-icon btn-icon-sm danger" data-action="delete-company" title="Mover a Papelera">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>` : ''}
+                                `}
+
                             </div>
                         </td>
                     </tr>

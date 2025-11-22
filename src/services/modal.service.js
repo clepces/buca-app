@@ -124,9 +124,13 @@ export function openProductModal(productToEdit = null) {
 }
 
 // --- MODAL DE COMPAÑÍA (GRANDE) ---
-export function openCompanyModal() {
+// Ahora acepta companyToEdit (opcional)
+export function openCompanyModal(companyToEdit = null) {
     return new Promise((resolve) => {
-        const modalTitle = '<i class="bi bi-building-fill-add me-2"></i> Crear Nueva Compañía';
+        const isEdit = companyToEdit !== null;
+        const modalTitle = isEdit 
+            ? `<i class="bi bi-pencil-square me-2"></i> Editar Compañía`
+            : `<i class="bi bi-building-fill-add me-2"></i> Crear Nueva Compañía`;
         
         const dummyContent = document.createElement('div');
         dummyContent.textContent = 'Cargando formulario...';
@@ -135,13 +139,13 @@ export function openCompanyModal() {
             title: modalTitle,
             contentElement: dummyContent,
             id: 'add-company-modal',
-            size: 'large' // Grande, como el de producto
+            size: 'large' 
         });
 
-        // Inyectamos el nuevo componente CompanyForm
-        const formElement = CompanyForm(companyModalElement);
-        const modalBodyContainer = companyModalElement.querySelector('#modal-body-container');
+        // Pasamos companyToEdit al formulario
+        const formElement = CompanyForm(companyModalElement, companyToEdit);
         
+        const modalBodyContainer = companyModalElement.querySelector('#modal-body-container');
         if (modalBodyContainer) {
             modalBodyContainer.innerHTML = '';
             modalBodyContainer.appendChild(formElement);
@@ -152,19 +156,14 @@ export function openCompanyModal() {
         const firstInput = formElement.querySelector('input, select');
         if (firstInput) firstInput.focus();
         
-        // Resolvemos la promesa cuando el modal se cierra
         const originalRemove = companyModalElement.remove;
         companyModalElement.remove = function() {
             originalRemove.call(this);
-            resolve(true); // Resuelve 'true' para indicar que se cerró
+            resolve(true); 
         };
     });
 }
-
-/**
- * Abre el modal de Configuración Global del Super Admin.
- * VERSIÓN 2.0: Fullscreen, footer real, buscador y guardado de datos.
- */
+// --- MODAL DE COMPAÑÍA (GRANDE FULL) ---
 export function openSuperAdminSettingsModal() {
     return new Promise((resolve) => {
         const modalTitle = '<i class="bi bi-shield-lock-fill me-2"></i> Configuración Global';

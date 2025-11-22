@@ -84,6 +84,7 @@ export const remove = async (collectionPath, id) => {
   }
 };
 export const getBatch = () => writeBatch(db);
+
 export const commitBatch = async (batch) => {
   try {
     await batch.commit();

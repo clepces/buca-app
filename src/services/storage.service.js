@@ -88,7 +88,6 @@ export async function saveState(state) {
      await activeAdapter.saveSettings(state);
 }
 
-// --- ¡NUEVA FUNCIÓN AÑADIDA! ---
 export async function saveNewProduct(state, productData) {
     if (!activeAdapter) throw new Error("Storage service not initialized.");
     if (typeof activeAdapter.createProduct !== 'function') {
@@ -97,7 +96,6 @@ export async function saveNewProduct(state, productData) {
     }
     return await activeAdapter.createProduct(state, productData);
 }
-// --- FIN DE LA NUEVA FUNCIÓN ---
 
 export const getUserByUsername = (username) => activeAdapter.getUserByUsername(username);
 export const saveUser = (user) => activeAdapter.saveUser(user);
@@ -120,3 +118,4 @@ export async function loadAllBusinesses() {
     }
     return await activeAdapter.getAllBusinesses();
 }
+

@@ -1,9 +1,3 @@
-// ======================================================
-// ARCHIVO: src/views/Inventory/SuperAdminInventoryView.js
-// PROPÓSITO: Vista exclusiva para Super Admin.
-//            Gestiona el Catálogo Maestro de Productos.
-// ======================================================
-
 import { EmptyState } from '../../../components/Common/EmptyState.js';
 import { Logger } from '../../../services/logger.service.js';
 
@@ -13,31 +7,21 @@ export function SuperAdminInventoryView(element) {
     <div class="view-panel-content">
         <div class="view-header">
             <div>
-                <h2 class="view-title">
-                    <i class="bi bi-database-fill-gear me-2"></i> Catálogo Maestro
-                </h2>
+                <h2 class="view-title"><i class="bi bi-database-fill-gear me-2"></i> Catálogo Maestro</h2>
                 <p class="text-muted mb-0">Define productos plantilla que los negocios pueden importar.</p>
             </div>
             <div class="view-header-actions">
-                 <button class="btn-primary">
-                    <i class="bi bi-plus-lg me-1"></i> Crear Plantilla de Producto
-                </button>
+                 <button class="btn-primary"><i class="bi bi-plus-lg me-1"></i> Crear Plantilla</button>
             </div>
         </div>
 
         <div class="d-flex gap-3 mb-4">
             <div class="config-box w-100 p-3 d-flex align-items-center justify-content-between">
-                <div>
-                    <h5 class="mb-1">Productos Globales</h5>
-                    <span class="text-muted small">Visibles para todos los negocios</span>
-                </div>
+                <div><h5 class="mb-1">Productos Globales</h5><span class="text-muted small">Visibles para todos</span></div>
                 <h2 class="mb-0 text-primary">0</h2>
             </div>
             <div class="config-box w-100 p-3 d-flex align-items-center justify-content-between">
-                <div>
-                    <h5 class="mb-1">Reportes de Stock</h5>
-                    <span class="text-muted small">Alertas críticas en negocios</span>
-                </div>
+                <div><h5 class="mb-1">Reportes de Stock</h5><span class="text-muted small">Alertas críticas</span></div>
                 <h2 class="mb-0 text-danger">0</h2>
             </div>
         </div>
@@ -53,7 +37,7 @@ export function SuperAdminInventoryView(element) {
                 ${EmptyState({
                     icon: 'bi-cloud-plus',
                     message: 'El Catálogo Maestro está vacío.',
-                    instructions: 'Crea productos genéricos (ej. "Harina PAN") para estandarizar la base de datos.'
+                    instructions: 'Crea productos genéricos para estandarizar la base de datos.'
                 })}
              </div>
         </div>

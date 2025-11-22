@@ -1,37 +1,44 @@
 // ======================================================
-// ARCHIVO NUEVO: src/components/CompanyForm.js
-// PROPÓSITO: Wizard para crear una nueva Compañía y
-//            su usuario Propietario.
+// ARCHIVO: src/components/Companies/CompanyForm.js
+// VERSIÓN: Soporte para CREAR y EDITAR (FIXED)
+// CORRECCIÓN: Definición de 'wizardStepper' agregada.
 // ======================================================
 
 import { Logger } from '../../services/logger.service.js';
 import { showToast } from '../../services/toast.service.js';
-import { createNewBusiness } from '../../services/admin.service.js'; // <-- ¡NUEVO SERVICIO!
-import { initProductFormWizard } from '../Products/ProductFormWizard.js'; // Reutilizamos el wizard
+import { createNewBusiness, updateBusiness } from '../../services/admin.service.js';
+import { initProductFormWizard } from '../Products/ProductFormWizard.js';
 
 /**
- * Componente para el Formulario de Creación de Compañía.
+ * Componente para el Formulario de Creación/Edición de Compañía.
  * @param {HTMLElement} modalElementRef - La referencia al elemento del modal.
+ * @param {object|null} companyToEdit - Objeto con datos de la empresa si se va a editar.
  */
-export function CompanyForm(modalElementRef) {
+export function CompanyForm(modalElementRef, companyToEdit = null) {
     const element = document.createElement('div');
-    // Usamos las clases premium que ya tenemos
     element.className = 'product-form-wrapper'; 
     
     let wizardAPI = null;
+    const isEditMode = !!companyToEdit; // true si estamos editando
 
-    // Planes (placeholder, deberías cargarlos desde appConfig)
+    // Planes
     const plans = [
         { id: 'plan_basic', name: 'Básico' },
         { id: 'plan_advanced', name: 'Avanzado' },
         { id: 'plan_enterprise', name: 'Empresarial' }
     ];
 
+    // Valores iniciales
+    const initialValues = {
+        name: isEditMode ? companyToEdit.name : '',
+        plan: isEditMode ? companyToEdit.planId : ''
+    };
+
     // 1. Renderizado del HTML
     element.innerHTML = `
         <div class="wizard-stepper" id="company-wizard-stepper">
             <div class="step active" data-step="1"><span>Paso 1</span>Negocio</div>
-            <div class="step" data-step="2"><span>Paso 2</span>Propietario</div>
+            <div class="step" data-step="2" style="${isEditMode ? 'display:none;' : ''}"><span>Paso 2</span>Propietario</div>
             <div class="step" data-step="3"><span>Paso 3</span>Confirmar</div>
         </div>
 
@@ -44,18 +51,24 @@ export function CompanyForm(modalElementRef) {
                             <div class="summary-card-premium">
                                 <div class="card-premium-header">
                                     <i class="bi bi-building"></i> 
-                                    <span>Detalles del Negocio</span>
+                                    <span>${isEditMode ? 'Editar Datos' : 'Detalles del Negocio'}</span>
                                 </div>
                                 <div class="card-premium-body">
                                     <div class="form-group">
                                         <label for="company-name">Nombre de la Compañía <span class="text-danger">*</span></label>
-                                        <input type="text" id="company-name" required placeholder="Ej: Abarrotes La Esquina">
+                                        <input type="text" id="company-name" required 
+                                               value="${initialValues.name}"
+                                               placeholder="Ej: Abarrotes La Esquina">
                                     </div>
                                     <div class="form-group">
                                         <label for="company-plan">Plan Asignado <span class="text-danger">*</span></label>
                                         <select id="company-plan" required>
                                             <option value="">Selecciona un plan...</option>
-                                            ${plans.map(plan => `<option value="${plan.id}">${plan.name}</option>`).join('')}
+                                            ${plans.map(plan => `
+                                                <option value="${plan.id}" ${plan.id === initialValues.plan ? 'selected' : ''}>
+                                                    ${plan.name}
+                                                </option>
+                                            `).join('')}
                                         </select>
                                     </div>
                                 </div>
@@ -73,6 +86,7 @@ export function CompanyForm(modalElementRef) {
                                     <span>Usuario Propietario</span>
                                 </div>
                                 <div class="card-premium-body">
+                                    ${isEditMode ? '<p class="text-muted p-3">La gestión del propietario se realiza desde el módulo de usuarios.</p>' : `
                                     <div class="form-group">
                                         <label for="owner-name">Nombre del Propietario <span class="text-danger">*</span></label>
                                         <input type="text" id="owner-name" required placeholder="Ej: Juan Pérez">
@@ -85,6 +99,7 @@ export function CompanyForm(modalElementRef) {
                                         <label for="owner-password">Contraseña Temporal <span class="text-danger">*</span></label>
                                         <input type="password" id="owner-password" required autocomplete="new-password">
                                     </div>
+                                    `}
                                 </div>
                             </div>
                         </div>
@@ -99,16 +114,11 @@ export function CompanyForm(modalElementRef) {
         </div>
     `;
 
-    // 2. Selectores de Elementos
-    const form = element.querySelector('#company-form');
-    const wizardStepper = element.querySelector('#company-wizard-stepper');
-    const wizardSteps = element.querySelectorAll('.wizard-step');
-    
-    // Inputs Paso 1
+    // 2. Selectores
     const companyNameInput = element.querySelector('#company-name');
     const companyPlanInput = element.querySelector('#company-plan');
     
-    // Inputs Paso 2
+    // Estos pueden ser null en modo edición si no se renderizaron
     const ownerNameInput = element.querySelector('#owner-name');
     const ownerEmailInput = element.querySelector('#owner-email');
     const ownerPasswordInput = element.querySelector('#owner-password');
@@ -124,6 +134,8 @@ export function CompanyForm(modalElementRef) {
     }
 
     function validateStep2() {
+        if (isEditMode) return true; // En edición no validamos paso 2
+
         if (!ownerNameInput.value.trim() || !ownerEmailInput.value.trim()) {
             showToast("Debes completar el nombre y email del propietario.", "warning");
             return false;
@@ -146,29 +158,15 @@ export function CompanyForm(modalElementRef) {
             plan: companyPlanInput.options[companyPlanInput.selectedIndex].text,
         };
         
-        const ownerData = {
-            name: ownerNameInput.value,
-            email: ownerEmailInput.value,
-        };
-
-        // Usamos la UI premium
-        summaryContainer.innerHTML = `
-            <div class="summary-alert-premium info">
-                <div class="alert-icon"><i class="bi bi-info-circle-fill"></i></div>
-                <div class="alert-content">
-                    <div class="alert-title">Revisa los datos</div>
-                    <div class="alert-subtitle">Confirma la creación del nuevo negocio y su propietario.</div>
-                </div>
-            </div>
-            <div class="summary-grid-premium">
-                <div class="summary-card-premium">
-                    <div class="card-premium-header"><i class="bi bi-building"></i><span>Negocio</span></div>
-                    <div class="card-premium-body">
-                        <div class="diff-item-premium unchanged"><div class="diff-header-premium"><span class="diff-label-premium">Nombre</span></div><div class="diff-value-premium"><span class="diff-current-value">${businessData.name}</span></div></div>
-                        <div class="diff-item-premium unchanged"><div class="diff-header-premium"><span class="diff-label-premium">Plan</span></div><div class="diff-value-premium"><span class="diff-current-value">${businessData.plan}</span></div></div>
-                    </div>
-                </div>
-                <div class="summary-card-premium">
+        // Si es creación, mostramos también el dueño
+        let ownerHtml = '';
+        if (!isEditMode && ownerNameInput) {
+            const ownerData = {
+                name: ownerNameInput.value,
+                email: ownerEmailInput.value,
+            };
+            ownerHtml = `
+                <div class="summary-card-premium mt-3">
                     <div class="card-premium-header"><i class="bi bi-person-fill-gear"></i><span>Propietario</span></div>
                     <div class="card-premium-body">
                         <div class="diff-item-premium unchanged"><div class="diff-header-premium"><span class="diff-label-premium">Nombre</span></div><div class="diff-value-premium"><span class="diff-current-value">${ownerData.name}</span></div></div>
@@ -176,6 +174,26 @@ export function CompanyForm(modalElementRef) {
                         <div class="diff-item-premium unchanged"><div class="diff-header-premium"><span class="diff-label-premium">Contraseña</span></div><div class="diff-value-premium"><span class="diff-current-value">********</span></div></div>
                     </div>
                 </div>
+            `;
+        }
+
+        summaryContainer.innerHTML = `
+            <div class="summary-alert-premium info">
+                <div class="alert-icon"><i class="bi bi-info-circle-fill"></i></div>
+                <div class="alert-content">
+                    <div class="alert-title">${isEditMode ? 'Confirmar Cambios' : 'Revisar Datos'}</div>
+                    <div class="alert-subtitle">Verifica la información antes de ${isEditMode ? 'actualizar' : 'crear'}.</div>
+                </div>
+            </div>
+            <div class="summary-grid-premium">
+                <div class="summary-card-premium">
+                    <div class="card-premium-header"><i class="bi bi-building"></i><span>Negocio</span></div>
+                    <div class="card-premium-body">
+                        <div class="diff-item-premium ${isEditMode ? 'changed' : 'unchanged'}"><div class="diff-header-premium"><span class="diff-label-premium">Nombre</span></div><div class="diff-value-premium"><span class="diff-current-value">${businessData.name}</span></div></div>
+                        <div class="diff-item-premium ${isEditMode ? 'changed' : 'unchanged'}"><div class="diff-header-premium"><span class="diff-label-premium">Plan</span></div><div class="diff-value-premium"><span class="diff-current-value">${businessData.plan}</span></div></div>
+                    </div>
+                </div>
+                ${ownerHtml}
             </div>
         `;
         wizardAPI.showStep(3);
@@ -186,37 +204,31 @@ export function CompanyForm(modalElementRef) {
      * Lógica de Guardado (Submit)
      */
     async function handleSave() {
-        // Doble validación
-        if (!validateStep1() || !validateStep2()) {
-            wizardAPI.showStep(1);
-            return;
-        }
+        if (!validateStep1()) { wizardAPI.showStep(1); return; }
+        if (!isEditMode && !validateStep2()) { wizardAPI.showStep(2); return; }
 
         wizardAPI.setSaveButtonBusy(true);
 
-        const businessData = {
-            name: companyNameInput.value.trim(),
-            planId: companyPlanInput.value,
-            // ... (aquí irían más datos del negocio si los hubiera)
-        };
-        
-        const ownerData = {
-            name: ownerNameInput.value.trim(),
-            email: ownerEmailInput.value.trim(),
-            password: ownerPasswordInput.value,
-        };
-
         try {
-            // ¡Llamada al nuevo servicio de admin!
-            await createNewBusiness(businessData, ownerData);
-            
-            showToast(`Negocio "${businessData.name}" creado exitosamente.`, "success");
-            modalElementRef.remove(); // Cerrar el modal
+            if (isEditMode) {
+                // --- MODO EDICIÓN ---
+                await updateBusiness(companyToEdit.id, {
+                    name: companyNameInput.value.trim(),
+                    planId: companyPlanInput.value
+                });
+                showToast("Compañía actualizada exitosamente.", "success");
+            } else {
+                // --- MODO CREACIÓN ---
+                const businessData = { name: companyNameInput.value.trim(), planId: companyPlanInput.value };
+                const ownerData = { name: ownerNameInput.value.trim(), email: ownerEmailInput.value.trim(), password: ownerPasswordInput.value };
+                await createNewBusiness(businessData, ownerData);
+                showToast(`Negocio "${businessData.name}" creado exitosamente.`, "success");
+            }
+            modalElementRef.remove(); 
 
         } catch (error) {
-            Logger.error("Error al crear negocio:", error);
-            // La Cloud Function debería devolver un error amigable
-            showToast(error.message || "Error al crear el negocio.", "error");
+            Logger.error("Error en formulario:", error);
+            showToast(error.message || "Error en la operación.", "error");
             wizardAPI.setSaveButtonBusy(false);
         }
     }
@@ -227,43 +239,46 @@ export function CompanyForm(modalElementRef) {
             onStepNext: () => {
                 const currentStep = wizardAPI.getStep();
                 if (currentStep === 1) {
-                    if (validateStep1()) wizardAPI.showStep(2);
+                    if (validateStep1()) {
+                        // Si es edición, salta el paso 2 directo al resumen
+                        isEditMode ? showSummary() : wizardAPI.showStep(2);
+                    }
+                } else if (currentStep === 2) {
+                    if (validateStep2()) showSummary();
                 }
             },
             onStepPrev: () => {
-                const currentStep = wizardAPI.getStep();
-                if (currentStep === 3) wizardAPI.showStep(2);
-                else if (currentStep === 2) wizardAPI.showStep(1);
+                const current = wizardAPI.getStep();
+                // Si es edición y estamos en el 3, volver al 1 (saltar el 2)
+                if (isEditMode && current === 3) wizardAPI.showStep(1);
+                else if (current > 1) wizardAPI.showStep(current - 1);
             },
-            onCalculate: () => { // Botón "Calcular" ahora es "Revisar"
-                if (validateStep1() && validateStep2()) {
-                    showSummary();
-                } else {
-                    wizardAPI.showStep(1); // Vuelve al paso 1 si falla
-                }
+            onCalculate: () => { 
+                if(validateStep1()) showSummary(); 
             },
-            onSubmit: () => {
-                handleSave();
-            }
+            onSubmit: handleSave
         };
 
+        // --- CORRECCIÓN: Definimos wizardStepper explícitamente ---
+        const wizardStepper = element.querySelector('#company-wizard-stepper');
+        
         wizardAPI = initProductFormWizard({
             modalElementRef,
-            wizardStepperEl: wizardStepper,
-            wizardStepsEls: wizardSteps,
-            isEditMode: false, // Siempre es modo crear
+            wizardStepperEl: wizardStepper, // <--- Ahora sí está definido
+            wizardStepsEls: element.querySelectorAll('.wizard-step'),
+            isEditMode: isEditMode, 
             callbacks: wizardCallbacks
         });
         
-        // Renombramos los botones para que tengan sentido
+        // Ajustar textos de botones
         const btnCalculate = modalElementRef.querySelector('#modal-btn-calculate');
         const btnSave = modalElementRef.querySelector('#modal-btn-save');
 
-        if (btnCalculate) {
-            btnCalculate.innerHTML = `<i class="bi bi-eye-fill me-1"></i> Revisar y Confirmar`;
-        }
+        if (btnCalculate) btnCalculate.innerHTML = `<i class="bi bi-eye-fill me-1"></i> Revisar`;
         if (btnSave) {
-            btnSave.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Crear Negocio`;
+            btnSave.innerHTML = isEditMode 
+                ? `<i class="bi bi-arrow-repeat me-1"></i> Actualizar Negocio`
+                : `<i class="bi bi-check-circle-fill me-1"></i> Crear Negocio`;
         }
 
     }, 50);
