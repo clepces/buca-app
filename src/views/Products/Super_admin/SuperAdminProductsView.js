@@ -1,66 +1,84 @@
 // ======================================================
 // ARCHIVO: src/views/Products/Super_admin/SuperAdminProductsView.js
 // PROPÓSITO: Gestión del Catálogo Maestro Global.
+// VERSIÓN: 2.0 (Usando Componentes Reutilizables)
 // ======================================================
 
-import { EmptyState } from '../../../components/Common/EmptyState.js';
-import { Logger } from '../../../services/logger.service.js';
-import { showToast } from '../../../services/toast.service.js';
+import { Logger } from '../../../../services/logger.service.js';
+import { ViewHeader } from '../../../../components/Common/ViewHeader.js'; // Componente Nuevo
+import { DataTable } from '../../../../components/Common/DataTable.js';   // Componente Nuevo
+import { showToast } from '../../../../services/toast.service.js';
 
 export function SuperAdminProductsView(element, state) {
     
-    Logger.info('[SuperAdminProductsView] Inicializando Catálogo Maestro...');
+    Logger.info('[SuperAdminProductsView] Inicializando...');
 
-    // Renderizado inicial
-    element.innerHTML = `
-        <div class="view-panel-content">
-            <div class="view-header">
-                <div>
-                    <h2 class="view-title">
-                        <i class="bi bi-globe-americas me-2"></i> 
-                        Catálogo Maestro
-                    </h2>
-                    <p class="text-muted mb-0">Plantillas de productos globales para todos los negocios.</p>
-                </div>
-                <div class="view-header-actions">
-                    <div class="search-container">
-                        <i class="bi bi-search search-icon"></i>
-                        <input type="search" id="search-templates" class="form-control" placeholder="Buscar plantilla...">
-                    </div>
-                    <button class="btn-primary" data-action="create-template">
-                        <i class="bi bi-plus-circle-fill me-1"></i> Nueva Plantilla Global
-                    </button>
-                </div>
+    // 1. Datos simulados (Mock Data) - Luego conectaremos a Firebase
+    const templates = [
+        { id: 't1', name: 'Coca Cola 2L', category: 'Bebidas', basePrice: 1.50, status: 'active' },
+        { id: 't2', name: 'Harina PAN', category: 'Alimentos', basePrice: 1.10, status: 'active' },
+        { id: 't3', name: 'Jabón Ace', category: 'Limpieza', basePrice: 2.50, status: 'draft' },
+    ];
+
+    // 2. Definición de Columnas para la Tabla
+    const columns = [
+        { header: 'Nombre Plantilla', key: 'name', render: (item) => `<strong>${item.name}</strong>` },
+        { header: 'Categoría', key: 'category' },
+        { header: 'Precio Base Ref.', render: (item) => `$${item.basePrice.toFixed(2)}` },
+        { header: 'Estado', render: (item) => 
+            `<span class="badge ${item.status === 'active' ? 'bg-success-subtle text-success-emphasis' : 'bg-warning-subtle text-warning-emphasis'}">
+                ${item.status}
+            </span>` 
+        },
+        { header: 'Acciones', render: (item) => `
+            <div class="list-actions">
+                <button class="btn-icon btn-icon-sm" data-action="edit" data-id="${item.id}"><i class="bi bi-pencil"></i></button>
+                <button class="btn-icon btn-icon-sm danger" data-action="delete" data-id="${item.id}"><i class="bi bi-trash"></i></button>
             </div>
+        `}
+    ];
 
-            <div class="product-list-container">
-                ${EmptyState({
-                    icon: 'bi-database-add',
-                    message: 'Gestión de Plantillas Globales',
-                    instructions: 'Los productos creados aquí podrán ser importados por cualquier negocio.'
+    // 3. Renderizado
+    const render = () => {
+        element.innerHTML = `
+            <div class="view-panel-content">
+                ${ViewHeader({
+                    title: 'Catálogo Maestro',
+                    subtitle: 'Plantillas globales para todos los negocios..',
+                    icon: 'bi-globe-americas',
+                    actions: [
+                        { label: 'Nueva Plantilla', action: 'create-template', icon: 'bi-plus-lg' }
+                    ]
                 })}
-            </div>
-        </div>
-    `;
 
-    // Manejador de eventos
+                <div id="templates-table-container" class="mt-4">
+                    ${DataTable({ columns, data: templates })}
+                </div>
+            </div>
+        `;
+    };
+
+    // 4. Manejo de Eventos
     const handleActions = (e) => {
         const btn = e.target.closest('[data-action]');
         if(!btn) return;
         
         const action = btn.dataset.action;
+        const id = btn.dataset.id;
 
         if(action === 'create-template') {
-            // Aquí abriremos el modal en el futuro, pero con una bandera isGlobal=true
-            showToast('Próximamente: Crear Plantilla Global', 'info');
+            showToast('Abrir modal de creación global', 'info');
+        }
+        if(action === 'delete') {
+            if(confirm('¿Eliminar plantilla?')) showToast(`Plantilla ${id} eliminada (simulado)`);
         }
     };
 
+    // Inicialización
+    render();
     element.addEventListener('click', handleActions);
 
-    // Limpieza
     return () => {
         element.removeEventListener('click', handleActions);
-        Logger.info('Limpiando SuperAdminProductsView...');
     };
 }
