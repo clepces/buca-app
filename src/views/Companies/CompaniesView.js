@@ -16,7 +16,7 @@ import { initTippy, destroyTippy } from '../../utils/tippy-helper.js';
 import { openCompanyModal, showConfirmationModal } from '../../services/modal.service.js';
 import { loadAllBusinesses } from '../../services/storage.service.js'; 
 import { showToast } from '../../services/toast.service.js';
-import { deleteBusiness, restoreBusiness } from '../../services/admin.service.js'; // <-- Importamos restore
+import { deleteBusiness, restoreBusiness } from '../../services/admin.service.js';
 
 export function CompaniesView(element, state) {
     const canCreate = can(PERMISSIONS.CREATE_COMPANY);
@@ -35,7 +35,6 @@ export function CompaniesView(element, state) {
     
     let paginatedCompanies = [];
 
-    // --- LÓGICA DE FILTRADO ---
     const applyFilters = () => {
         // 1. Filtrar por Estado (Activo vs Papelera)
         let filtered = viewState.allBusinesses.filter(b => {
@@ -208,7 +207,6 @@ export function CompaniesView(element, state) {
         const action = btn.dataset.action;
         const companyId = btn.closest('[data-company-id]')?.dataset.companyId;
 
-        // --- CAMBIO DE PESTAÑA (ACTIVOS vs PAPELERA) ---
         if (action === 'filter-view') {
             const newFilter = btn.dataset.filter;
             if (viewState.filterStatus !== newFilter) {
@@ -230,19 +228,18 @@ export function CompaniesView(element, state) {
             return;
         }
         
-        // --- EDITAR ---
         if (action === 'edit-company') {
             const companyData = viewState.allBusinesses.find(c => c.id === companyId);
             if (companyData && await openCompanyModal(companyData)) loadData();
             return;
         }
 
-        // --- MOVER A PAPELERA (SOFT DELETE) ---
         if (action === 'delete-company') {
             const companyData = viewState.allBusinesses.find(c => c.id === companyId);
             showConfirmationModal(
                 'Mover a Papelera',
-                `¿Desactivar <strong>${companyData?.name}</strong>?<br><small class="text-muted">Podrás restaurarlo después.</small>`,
+                `¿Desactivar <strong>${companyData?.name}</strong>?<br>
+                <small class="text-muted">Podrás restaurarlo después.</small>`,
                 async () => {
                     try {
                         await deleteBusiness(companyId);
@@ -260,7 +257,8 @@ export function CompaniesView(element, state) {
             const companyData = viewState.allBusinesses.find(c => c.id === companyId);
             showConfirmationModal(
                 'Restaurar Empresa',
-                `¿Reactivar <strong>${companyData?.name}</strong>?<br><small class="text-success">Volverá a estar visible y operativa.</small>`,
+                `¿Reactivar <strong>${companyData?.name}</strong>?<br>
+                <small class="text-success">Volverá a estar visible y operativa.</small>`,
                 async () => {
                     try {
                         await restoreBusiness(companyId);
@@ -268,7 +266,11 @@ export function CompaniesView(element, state) {
                         loadData();
                     } catch (e) { showToast(e.message, 'error'); }
                 },
-                { confirmText: 'Restaurar', confirmButtonClass: 'btn-success', icon: 'bi bi-arrow-counterclockwise text-success' }
+                { 
+                    confirmText: 'Restaurar', 
+                    confirmButtonClass: 'btn-success', 
+                    icon: 'bi bi-arrow-counterclockwise text-success' 
+                }
             );
             return;
         }
@@ -279,7 +281,6 @@ export function CompaniesView(element, state) {
     loadData();
     
     element.addEventListener('click', handleActions);
-    // ... (otros listeners igual que antes)
     element.addEventListener('input', (e) => {
         if (e.target.id === 'search-companies') {
             viewState.searchTerm = e.target.value.toLowerCase();
