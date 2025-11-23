@@ -1,45 +1,84 @@
-import { EmptyState } from '../../../components/Common/EmptyState.js';
+import { StatCard } from '../../../components/Common/StatCard.js'; // Reutilizamos las cards
 import { Logger } from '../../../services/logger.service.js';
 
 export function SuperAdminInventoryView(element) {
     
+    Logger.info('[SuperAdminInventoryView] Cargando Analítica de Catálogo...');
+
+    // Datos simulados de inteligencia (luego vendrán de Firebase)
+    const stats = {
+        totalGlobales: 150, // Plantillas creadas por ti
+        totalPrivados: 8500, // Productos creados por clientes
+        topCategoria: 'Alimentos',
+        plantillasMasUsadas: 45 // % de adopción
+    };
+
     element.innerHTML = `
     <div class="view-panel-content">
         <div class="view-header">
             <div>
-                <h2 class="view-title"><i class="bi bi-database-fill-gear me-2"></i> Catálogo Maestro</h2>
-                <p class="text-muted mb-0">Define productos plantilla que los negocios pueden importar.</p>
+                <h2 class="view-title"><i class="bi bi-graph-up-arrow me-2"></i> Inteligencia de Catálogo</h2>
+                <p class="text-muted mb-0">Monitoreo del uso de productos en toda la plataforma.</p>
             </div>
             <div class="view-header-actions">
-                 <button class="btn-primary"><i class="bi bi-plus-lg me-1"></i> Crear Plantilla</button>
+                <button class="btn-secondary" onclick="alert('Generar Reporte Global')">
+                    <i class="bi bi-download me-1"></i> Reporte de Uso
+                </button>
             </div>
         </div>
 
-        <div class="d-flex gap-3 mb-4">
-            <div class="config-box w-100 p-3 d-flex align-items-center justify-content-between">
-                <div><h5 class="mb-1">Productos Globales</h5><span class="text-muted small">Visibles para todos</span></div>
-                <h2 class="mb-0 text-primary">0</h2>
-            </div>
-            <div class="config-box w-100 p-3 d-flex align-items-center justify-content-between">
-                <div><h5 class="mb-1">Reportes de Stock</h5><span class="text-muted small">Alertas críticas</span></div>
-                <h2 class="mb-0 text-danger">0</h2>
-            </div>
+        <div class="panel-grid mb-4">
+             ${StatCard({ 
+                title: 'Plantillas Globales', 
+                value: stats.totalGlobales, 
+                icon: 'bi-globe-americas', 
+                className: 'productos' 
+             })}
+             ${StatCard({ 
+                title: 'Productos Privados', 
+                value: stats.totalPrivados, 
+                icon: 'bi-incognito', 
+                className: 'stock',
+                description: 'Creados por clientes'
+             })}
+             ${StatCard({ 
+                title: 'Adopción', 
+                value: stats.plantillasMasUsadas + '%', 
+                icon: 'bi-check-circle', 
+                className: 'ganancia',
+                description: 'Clientes usan plantillas'
+             })}
         </div>
 
-        <div class="table-container-wrapper">
-             <div class="table-filters">
-                <div class="search-container">
-                    <i class="bi bi-search search-icon"></i>
-                    <input type="search" class="form-control" placeholder="Buscar en el catálogo maestro...">
+        <div class="dashboard-grid-2-col">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h4 class="dashboard-card-title">Categorías Más Populares</h4>
                 </div>
-             </div>
-             <div class="p-5">
-                ${EmptyState({
-                    icon: 'bi-cloud-plus',
-                    message: 'El Catálogo Maestro está vacío.',
-                    instructions: 'Crea productos genéricos para estandarizar la base de datos.'
-                })}
-             </div>
+                <div class="dashboard-card-body d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                    <p class="text-muted">Gráfico de distribución próximamente...</p>
+                    </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h4 class="dashboard-card-title">Plantillas Más Importadas</h4>
+                </div>
+                <ul class="dashboard-list">
+                    <li class="dashboard-list-item">
+                        <div class="list-item-info"><span class="list-item-title">Harina PAN 1kg</span></div>
+                        <div class="list-item-value">1,204 Tiendas</div>
+                    </li>
+                    <li class="dashboard-list-item">
+                        <div class="list-item-info"><span class="list-item-title">Coca-Cola 2L</span></div>
+                        <div class="list-item-value">980 Tiendas</div>
+                    </li>
+                    <li class="dashboard-list-item">
+                        <div class="list-item-info"><span class="list-item-title">Arroz Mary</span></div>
+                        <div class="list-item-value">850 Tiendas</div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
     `;

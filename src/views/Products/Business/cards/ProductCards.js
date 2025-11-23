@@ -3,7 +3,7 @@
 // ACTUALIZACIÓN: Tooltips precisos y uso de tasa normalizada
 // ======================================================
 
-import { EmptyState } from '../../../../../components/Common/EmptyState.js';
+import { EmptyState } from '../../../../components/Common/EmptyState.js';
 
 function formatNumberAbbreviated(num) {
     if (num < 10000) { 

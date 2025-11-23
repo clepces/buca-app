@@ -2,7 +2,6 @@
 // ARCHIVO: src/services/modal.service.js
 // ACTUALIZACIÓN: openSuperAdminSettingsModal (v2.0)
 // ======================================================
-
 import { state as globalState } from '../store/state.js';
 import { Modal } from '../components/Common/Modal.js';
 import { ProductForm } from '../components/Products/ProductForm.js';
@@ -84,13 +83,18 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
 }
 
 // --- MODAL DE PRODUCTO (GRANDE) ---
-export function openProductModal(productToEdit = null) {
-    // ... (código sin cambios) ...
+export function openProductModal(productToEdit = null, options = {}) { 
+    const { isGlobal = false } = options; // Extraemos la opción
+
     return new Promise((resolve) => {
         const isEditMode = productToEdit !== null;
+        
+        // Títulos dinámicos según si es Producto o Plantilla
+        const entityName = isGlobal ? 'Plantilla Global' : 'Producto';
+        
         const modalTitle = isEditMode 
-            ? `<i class="bi bi-pencil-fill me-2"></i> Editar Producto`
-            : '<i class="bi bi-plus-circle-fill me-2"></i> Añadir Nuevo Producto';
+            ? `<i class="bi bi-pencil-fill me-2"></i> Editar ${entityName}`
+            : `<i class="bi bi-plus-circle-fill me-2"></i> Nueva ${entityName}`;
         
         const dummyContent = document.createElement('div');
         dummyContent.textContent = 'Cargando...';
@@ -102,7 +106,7 @@ export function openProductModal(productToEdit = null) {
             size: 'large' // <--- TAMAÑO GRANDE (por defecto)
         });
 
-        const formElement = ProductForm(productToEdit, productModalElement);
+        const formElement = ProductForm(productToEdit, productModalElement, isGlobal);
         const modalBodyContainer = productModalElement.querySelector('#modal-body-container');
         
         if (modalBodyContainer) {

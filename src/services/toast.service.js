@@ -7,12 +7,8 @@
 //    igual que el modal.service.js.
 // 3. Esto evita que la vista principal se recargue.
 // ======================================================
-
-// --- ¡IMPORTS MODIFICADOS! ---
-// import { state } from '../store/state'; // <-- ELIMINADO
 import { traceExecution } from '../utils/traceExecution';
-// import { triggerRerender } from '../store/actions'; // <-- ELIMINADO
-import { Toast } from '../components/Common/Toast.js'; // <-- AÑADIDO
+import { Toast } from '../components/Common/Toast.js';
 
 // Timer para ocultar el toast
 let activeToast = null;
@@ -26,9 +22,6 @@ let toastTimer = null;
  * @param {number} [duration=3000] - Duración en milisegundos.
  */
 export const showToast = traceExecution('toast.service', 'showToast')((message, type = 'info', duration = 3000) => {
-  
-  // --- ¡INICIO DE CORRECCIÓN! ---
-  
   // Si hay un toast activo, eliminarlo inmediatamente
   if (activeToast) {
     hideToast(true); // Ocultar sin animación
@@ -53,7 +46,6 @@ export const showToast = traceExecution('toast.service', 'showToast')((message, 
   toastTimer = setTimeout(() => {
     hideToast();
   }, duration);
-  // --- FIN DE CORRECCIÓN! ---
 });
 
 /**
@@ -62,7 +54,6 @@ export const showToast = traceExecution('toast.service', 'showToast')((message, 
  */
 export const hideToast = traceExecution('toast.service', 'hideToast')((immediate = false) => {
   
-  // --- ¡INICIO DE CORRECCIÓN! ---
   if (toastTimer) {
     clearTimeout(toastTimer);
     toastTimer = null;
@@ -84,5 +75,4 @@ export const hideToast = traceExecution('toast.service', 'hideToast')((immediate
     
     if(immediate) activeToast = null; // Limpiar la referencia
   }
-  // --- FIN DE CORRECCIÓN! ---
 });

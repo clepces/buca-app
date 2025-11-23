@@ -7,26 +7,14 @@
     
 import { calcularPrecioVenta } from '../../services/calculation.service.js';
 import { validarCamposTexto, productoExiste } from '../../services/validation.service.js';
-import { addProductToState, updateProductInState } from '../../store/actions.js';
+import { addProductToState, updateProductInState, addTemplateToState, updateTemplateInState } from '../../store/actions.js';
 import { showToast } from '../../services/toast.service.js';
 import { state as globalState } from '../../store/state.js';
 import { Logger } from '../../services/logger.service.js';
-
-// --- ¡NUEVAS IMPORTACIONES DE REFACTORIZACIÓN! ---
 import { initProductFormWizard } from './ProductFormWizard.js';
-import { 
-    renderNewProductSummary, 
-    renderEditProductSummary, 
-    bindOfferButtonEvents, 
-    bindCurrencyToggleEvents 
-} from './ProductFormSummary.js';
+import { renderNewProductSummary, renderEditProductSummary, bindOfferButtonEvents, bindCurrencyToggleEvents } from './ProductFormSummary.js';
 
-/**
- * Componente principal del Formulario de Producto.
- * @param {object | null} productToEdit - El producto a editar, o null si es nuevo.
- * @param {HTMLElement} modalElementRef - La referencia al elemento del modal (pasada por modal.service).
- */
-export function ProductForm(productToEdit = null, modalElementRef) {
+export function ProductForm(productToEdit = null, modalElementRef, isGlobal = false) {
     const element = document.createElement('div');
     element.className = 'product-form-wrapper';
     
@@ -425,22 +413,36 @@ export function ProductForm(productToEdit = null, modalElementRef) {
             productData.id = productToEdit.id;
         }
         
-        // Guardar en la base de datos
+        // LÓGICA DE GUARDADO CONDICIONAL
         try { 
-            if (isEditMode) { 
-                await updateProductInState(globalState, productData.id, productData); 
-                showToast(`Producto "${nombre}" actualizado.`, "success"); 
-            } else { 
-                if (productoExiste(nombre, marca, globalState.products)) { 
-                    showToast("Ya existe producto con nombre y marca.", "error"); 
-                    wizardAPI.showStep(1); 
-                    throw new Error("Producto duplicado"); 
+            if (isGlobal) {
+                // --- MODO PLANTILLA GLOBAL ---
+                if (isEditMode) {
+                    await updateTemplateInState(productToEdit.id, productData);
+                    showToast(`Plantilla "${nombre}" actualizada.`, "success");
                 } else {
-                    await addProductToState(globalState, productData); 
-                    showToast(`Producto "${nombre}" creado.`, "success"); 
+                    await addTemplateToState(productData);
+                    showToast(`Plantilla "${nombre}" creada.`, "success");
+                }
+            } else {
+                // --- MODO PRODUCTO DE NEGOCIO (EXISTENTE) ---
+                if (isEditMode) { 
+                    await updateProductInState(globalState, productData.id, productData); 
+                    showToast(`Producto "${nombre}" actualizado.`, "success"); 
+                } else { 
+                    
+                    if (productoExiste(nombre, marca, globalState.products)) { 
+                        showToast("Ya existe producto con nombre y marca.", "error"); 
+                        wizardAPI.showStep(1); 
+                        throw new Error("Producto duplicado"); 
+                    } else {
+                        await addProductToState(globalState, productData); 
+                        showToast(`Producto "${nombre}" creado.`, "success"); 
+                    } 
                 } 
-            } 
+            }
             modalElementRef.remove(); // Cerrar el modal
+
         } catch (error) { 
             Logger.error("Error al guardar:", error); 
             if (error.message !== "Producto duplicado") { 

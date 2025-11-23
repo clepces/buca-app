@@ -212,14 +212,33 @@ export default class App {
             return;
         }
         const actionElement = e.target.closest('[data-action]');
-        if (!actionElement) return;       
+        if (!actionElement) return;     
+
         const action = actionElement.dataset.action;
+
+        // 1. MANEJO DEL MENÚ DESPLEGABLE
+        const profileDropdown = document.getElementById('header-profile-dropdown');
+        if (action === 'toggle-profile-menu') {
+            e.stopPropagation(); // Evitar que el clic cierre el menú inmediatamente
+            profileDropdown?.classList.toggle('show');
+            return;
+        }
+        // Cerrar el menú si se hace clic en cualquier otra cosa
+        if (action !== 'toggle-profile-menu' && profileDropdown?.classList.contains('show')) {
+            profileDropdown.classList.remove('show');
+        }
+
         const dropdown = document.getElementById('actions-menu-dropdown');
         if (action !== 'toggle-actions-menu' && dropdown?.classList.contains('show')) {
             dropdown.classList.remove('show');
         }
+
         if (action === 'logout') {
             this.handleLogoutSequence();
+        } else if (action === 'view-profile-details' || action === 'app-settings') {
+            showToast('Esta sección está en desarrollo (WIP).', 'info');
+        } else if (action === 'toggle-notifications') {
+            showToast('No hay notificaciones nuevas.', 'info');
         } else {
             switch (action) {
                 case 'open-rate-modal':

@@ -1,265 +1,332 @@
-/* ==========================================================================
-   HEADER COMPONENT (VERSIÃ“N FINAL CON BREAKPOINTS ESTÃNDAR)
-   ========================================================================== */
+/* ======================================================
+// ARCHIVO: src/styles/components/header.css
+// CORRECCIONES: Buscador, Notificaciones y Menú Perfil
+// ====================================================== */
 
-/* ... (Las secciones 1, 2 y 3 del header.css se mantienen igual) ... */
-
-/* SECCIONES 1, 2 y 3 (SIN CAMBIOS) */
-/* --------------------------------------
-   1. BARRA DE NAVEGACIÃ“N PRINCIPAL
--------------------------------------- */
-.top-nav{
-    background-color:var(--primary-color);
-    color:var(--bs-white);
-    padding:.5rem 1rem;
-    position:sticky;
-    top:0;
-    z-index:1000;
-    box-shadow:var(--shadow-md)}
-.nav-container{
-    max-width:1400px;
-    margin:0 auto;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:1.5rem;
-    position:relative
-}
-/* --------------------------------------
-   2. BRAND Y TÃTULO
--------------------------------------- */
-.nav-brand{
-    display:flex;
-    align-items:center;
-    gap:.75rem;
-    color:var(--bs-white);
-    text-decoration:none;
-    flex-shrink:1;
-    min-width:0
+.app-header {
+    height: 72px;
+    background-color: var(--bs-card-bg); /* Blanco en tema claro */
+    border-bottom: 1px solid var(--bs-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.nav-brand i{
-    font-size:2rem
-}
-.nav-title-app{
-    display:flex;
-    flex-direction:column;
-    overflow:hidden
+/* --- SECCIÓN IZQUIERDA --- */
+.header-section.left {
+    min-width: 200px;
 }
 
-#nav-store-name{
-    font-size:1.1rem;font-weight:600
-}
-#nav-store-description{
-    font-size:.8rem;
-    color:var(--bs-gray-300);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    max-width:232px
-}
-
-/* --------------------------------------
-   3. ESTADÃSTICAS SUPERIORES
--------------------------------------- */
-.nav-stats{
-    flex-grow:1;
-    display:flex;
-    justify-content:flex-end
-}
-.stats-grid{
-    display:grid;
-    grid-template-columns:repeat(6,auto);
-    gap:1.5rem;
-    align-items:center
-}
-.stat-item{
-    display:flex;
-    flex-direction:column;
-    text-align:right
-}
-.stat-label{
-    font-size:.75rem;
-    opacity:.85;
-    display:flex;
-    align-items:center;
-    white-space:nowrap
-}
-.stat-value{
-    font-size:.95rem;
-    font-weight:600
-}
-.tasa-variacion{
-    font-weight:600;
-    margin-left:.35rem;
-    padding:.1rem .3rem;
-    border-radius:.25rem;
-    font-size:.7rem
-}
-.tasa-variacion::before{
-    font-family:'Font Awesome 5 Free';
-    font-weight:900;
-    margin-right:.25rem
-}
-
-.tasa-subida{background-color:#DFFFEA;color:#17C653}
-.tasa-subida::before{content:'\f062'}
-
-.tasa-bajada{background-color:#FFEEF3;color:#F8285A}
-.tasa-bajada::before{content:'\f063'}
-
-.tasa-neutral{background-color:#E5E7EB;color:#6B7280}
-.tasa-neutral::before{content:'\f061'}
-
-
-/* ==========================================================================
-   4. BARRA DE HERRAMIENTAS SECUNDARIA
-   ========================================================================== */
-
-/*
-    el css se movio a /components/mainnav.css
-*/
-
-
-/* ==========================================================================
-   5. DISEÃ‘O RESPONSIVO DEL HEADER
-   ========================================================================== */
-   
-.mobile-menu-toggle { 
-    display: none;
-    background: none;
-    border: none;
-    color: var(--bs-white);
+.brand-text {
     font-size: 1.5rem;
-    cursor: pointer;
-    z-index: 1001;
-    width: 44px;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    letter-spacing: 1px;
+}
+
+/* --- SECCIÓN CENTRAL (BUSCADOR) --- */
+.header-section.center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 1rem;
+}
+
+.global-search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+}
+
+.global-search-input {
+    width: 100%;
     height: 44px;
+    /* CORRECCIÓN: Padding extra a la izquierda y derecha para que no choque */
+    padding: 0 4rem 0 3rem; 
+    border-radius: 12px;
+    border: 1px solid var(--bs-border-color);
+    background-color: var(--bs-gray-50); /* Gris muy claro */
+    color: var(--bs-heading-color);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.global-search-input:focus {
+    background-color: var(--bs-card-bg);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--bs-gray-500);
+    pointer-events: none;
+}
+
+.keyboard-shortcut {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--bs-gray-500);
+    border: 1px solid var(--bs-border-color);
+    background-color: var(--bs-card-bg);
+    padding: 2px 6px;
+    border-radius: 6px;
+    pointer-events: none;
+}
+
+/* --- SECCIÓN DERECHA --- */
+.header-section.right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.separator-vertical {
+    width: 1px;
+    height: 28px;
+    background-color: var(--bs-border-color);
+    margin: 0 0.25rem;
+}
+
+/* Widget de Tasa (Estilo Ticket) */
+.header-rate-widget {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    background-color: rgba(243, 244, 246, 0.5);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+.header-rate-widget.clickable:hover {
+    background-color: var(--bs-gray-100);
+    cursor: pointer;
+    border-color: var(--primary-light);
+}
+
+.rate-icon-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* --- Tablets y Escritorios PequeÃ±os (hasta 1024px) --- */
-@media (max-width: 1024px) {
-    .mobile-menu-toggle { 
-        display: inline-flex; 
-    }
-    
-    .nav-stats {
-        display: none;
-        position: absolute;
-        top: 120%;
-        left: 0px;
-        right: 0px;
-        width: 100%;
-        background-color: var(--primary-dark);
-        padding: 1rem;
-        box-shadow: var(--shadow-lg);
-        border-top: 2px solid var(--primary-light);
-        z-index: 999;
-        animation: slideUp 0.3s ease-out;
-    }
-    .nav-stats.active {
-        display: block;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 0.75rem;
-    }
-    .stat-item {
-        flex-direction: column;
-        text-align: left;
-        background: rgba(255, 255, 255, 0.1);
-        padding: 0.75rem;
-        border-radius: var(--bs-border-radius-sm);
-    }
-    .stat-label {
-        font-size: 0.7rem;
-    }
-    .stat-value {
-        font-size: 1.1rem;
-    }
-}
-
-/* --- Breakpoint Small (< 576px): Oculta el texto y activa las flechas --- */
-@media (max-width: 575.98px) {
-    .breadcrumb .nav-button span {
-        display: none;
-    }
-    .breadcrumb .nav-button {
-        width: 44px;
-        padding: 0;
-        justify-content: center;
-        flex-shrink: 0; /* Evita que los Ã­conos se encojan */
-    }
-
-    .toolbar-scroll-wrapper:hover .toolbar-scroll-arrow.visible {
-        opacity: 1;
-        pointer-events: all;
-    }
-}
-
-/* --- Pantallas muy pequeÃ±as --- */
-@media (max-width: 480px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 375px) {
-    .nav-container {
-        gap: 0.5rem;
-    }
-    .nav-brand {
-        gap: 0.5rem;
-    }
-    #nav-store-description {
-        display: none;
-    }
-}
-
-.bcv-updater .input-group {
+.rate-text-group {
     display: flex;
-    align-items: center; /* ¡Esta es la propiedad clave que alinea todo! */
+    flex-direction: column;
+    line-height: 1.1;
 }
 
-/* ==========================================================================
-   6. TASA DE CAMBIO CLICKEABLE (AÑADIDO)
-   ========================================================================== */
+.rate-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--bs-gray-500);
+    font-weight: 600;
+}
 
-   .stat-item.stat-item-clickable {
-    background: none;
+.rate-amount {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+}
+
+/* Botones Icono */
+.header-icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     border: none;
-    cursor: pointer;
-    border-radius: var(--bs-border-radius-sm);
-    padding: 0.25rem 0.5rem; /* Añadir un poco de padding para el hover */
-    margin: -0.25rem -0.5rem; /* Compensar el padding */
-    transition: background-color var(--transition-fast);
-    /* Resetea los estilos de <button> */
-    text-align: right;
-    color: var(--bs-white);
-    font-family: var(--bs-font-sans-serif);
-}
-
-.stat-item.stat-item-clickable:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.stat-item.stat-item-clickable .stat-label {
+    background: transparent;
+    color: var(--bs-gray-600);
     display: flex;
     align-items: center;
-    justify-content: flex-end; /* Alinear a la derecha */
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: background-color 0.2s;
 }
 
-.stat-item.stat-item-clickable .stat-label i {
+.header-icon-btn:hover {
+    background-color: var(--bs-gray-100);
+    color: var(--primary-color);
+}
+
+/* CORRECCIÓN: Notificación Badge Ajustado */
+.notification-dot {
+    position: absolute;
+    top: 4px;      /* Ajustado */
+    right: 6px;    /* Ajustado */
+    min-width: 16px;
+    height: 16px;
+    background-color: var(--error-color);
+    color: white;
     font-size: 0.65rem;
-    margin-left: 0.35rem;
-    opacity: 0;
-    transition: opacity var(--transition-fast);
+    font-weight: 700;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    border: 2px solid var(--bs-card-bg);
 }
 
-.stat-item.stat-item-clickable:hover .stat-label i {
-    opacity: 0.7;
+/* --- PERFIL DE USUARIO Y DROPDOWN --- */
+.user-profile-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.35rem 0.5rem 0.35rem 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    position: relative; /* Para el dropdown absoluto */
+}
+
+.user-profile-container:hover {
+    background-color: var(--bs-gray-50);
+    border-color: var(--bs-border-color);
+}
+
+.user-text-info {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
+}
+
+.user-role {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.user-avatar-circle {
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-dark);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.dropdown-caret {
+    font-size: 0.8rem;
+    color: var(--bs-gray-400);
+}
+
+/* --- MENU DESPLEGABLE (Funcionalidad) --- */
+.profile-dropdown-menu {
+    display: none; /* Oculto por defecto */
+    position: absolute;
+    top: 120%; /* Debajo del header */
+    right: 0;
+    width: 240px;
+    background-color: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 0.5rem;
+    animation: fadeInMenu 0.2s ease-out;
+    z-index: 1100;
+}
+
+/* Esta clase se activa con JS */
+.profile-dropdown-menu.show {
+    display: block;
+}
+
+@keyframes fadeInMenu {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+    padding: 1rem;
+}
+
+.dropdown-user-details strong {
+    display: block;
+    color: var(--bs-heading-color);
+}
+.dropdown-user-details span {
+    font-size: 0.8rem;
+    color: var(--bs-gray-500);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: var(--bs-border-color);
+    margin: 0.5rem 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--bs-gray-700);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bs-gray-50);
+    color: var(--primary-color);
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--error-color);
+}
+
+.badge-wip {
+    margin-left: auto;
+    background-color: var(--bs-gray-200);
+    color: var(--bs-gray-600);
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 992px) {
+    .keyboard-shortcut, .user-text-info { display: none; }
+    .global-search-wrapper { max-width: 200px; }
+    .global-search-input { padding-right: 1rem; }
+}
+@media (max-width: 768px) {
+    .header-section.center { display: none; } /* Ocultar búsqueda en móvil */
 }

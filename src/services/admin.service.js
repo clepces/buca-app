@@ -1,20 +1,9 @@
-// ======================================================
-// ARCHIVO: src/services/admin.service.js (VUELTA A FETCH MANUAL)
-// PROPÓSITO: Llama a la Cloud Function como un endpoint HTTP.
-// ======================================================
-
 import { Logger } from './logger.service.js';
-import { auth, db } from '../firebase-config.js'; // Asegúrate de tener 'db' importado
-import { doc, updateDoc } from 'firebase/firestore'; // Cambiamos deleteDoc por updateDoc
+import { auth, db } from '../firebase-config.js';
+import { doc, updateDoc } from 'firebase/firestore';
 
-// URL de la Cloud Function
 const CREATE_BUSINESS_URL = 'https://us-central1-buca-scdbs.cloudfunctions.net/createBusinessAndOwner';
 
-/**
- * Llama a la Cloud Function para crear un nuevo negocio y su propietario.
- * @param {object} businessData - { name, planId }
- * @param {object} ownerData - { name, email, password }
- */
 export async function createNewBusiness(businessData, ownerData) {
     Logger.info('Llamando a Cloud Function (manual fetch): createBusinessAndOwner...', { businessData, ownerData });
 
@@ -63,11 +52,6 @@ export async function createNewBusiness(businessData, ownerData) {
     }
 }
 
-/**
- * Actualiza los datos de un negocio existente.
- * @param {string} companyId - ID del documento.
- * @param {object} updateData - Datos a actualizar { name, planId, status }.
- */
 export async function updateBusiness(companyId, updateData) {
     Logger.info(`[AdminService] Actualizando empresa ${companyId}...`, updateData);
     try {
@@ -80,12 +64,6 @@ export async function updateBusiness(companyId, updateData) {
     }
 }
 
-/**
- * Realiza un "Soft Delete" del negocio.
- * NO borra los datos físicos, solo marca el negocio como eliminado/archivado.
- * Esto previene la pérdida accidental de datos y subcolecciones huérfanas.
- * * @param {string} companyId 
- */
 export async function deleteBusiness(companyId) {
     Logger.info(`[AdminService] Soft-deleting empresa ${companyId}...`);
     
@@ -109,23 +87,16 @@ export async function deleteBusiness(companyId) {
     }
 }
 
-/**
- * Restaura un negocio eliminado (Soft Delete).
- * Devuelve el estado a 'active' y reactiva el acceso.
- * @param {string} companyId
- */
 export async function restoreBusiness(companyId) {
     Logger.info(`[AdminService] Restaurando empresa ${companyId}...`);
     try {
         const companyRef = doc(db, 'businesses', companyId);
-        
         await updateDoc(companyRef, {
             status: 'active',            // Volvemos al estado activo
             isActive: true,              // Reactivamos el acceso
             deletedAt: null,             // Limpiamos fecha de borrado
             deletedBy: null
         });
-
         return { success: true };
     } catch (error) {
         Logger.error('Error al restaurar la empresa:', error);

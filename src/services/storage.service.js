@@ -3,7 +3,6 @@
 // VERSION APP: 3.0.0 - MODULE:{NAME}: 1.0.1 - FILE: 1.0.1
 // CORRECCIÓN: Añadida la función 'saveNewProduct'.
 // ======================================================
-
 import { db } from '../firebase-config.js';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { getInitialState } from '../store/state.js';
@@ -12,11 +11,7 @@ import { firebaseAdapter } from './storage-adapters/firebase.adapter.js';
 import { localStorageAdapter } from './storage-adapters/localStorage.adapter.js';
 import { Logger } from './logger.service.js';
 
-const adapters = {
-    indexedDB: indexedDbAdapter,
-    firebase: firebaseAdapter,
-    localStorage: localStorageAdapter
-};
+const adapters = { indexedDB: indexedDbAdapter, firebase: firebaseAdapter, localStorage: localStorageAdapter };
 
 let activeAdapter;
 
@@ -97,9 +92,6 @@ export async function saveNewProduct(state, productData) {
     return await activeAdapter.createProduct(state, productData);
 }
 
-export const getUserByUsername = (username) => activeAdapter.getUserByUsername(username);
-export const saveUser = (user) => activeAdapter.saveUser(user);
-
 export const deleteProductById = (state, productId) => {
     if (!activeAdapter) throw new Error("Storage service not initialized.");
     return activeAdapter.deleteProduct(state, productId);
@@ -119,3 +111,36 @@ export async function loadAllBusinesses() {
     return await activeAdapter.getAllBusinesses();
 }
 
+export async function loadGlobalTemplates() {
+    if (!activeAdapter) throw new Error("Storage not initialized.");
+    if (activeAdapter.getAll) {
+        return await activeAdapter.getAll('global_templates');
+    }
+    return [];
+}
+
+export async function saveGlobalTemplate(templateData) {
+    if (!activeAdapter) throw new Error("Storage not initialized.");
+    if (activeAdapter.create) {
+        return await activeAdapter.create('global_templates', templateData);
+    }
+    return null;
+}
+
+export async function updateGlobalTemplate(id, data) {
+    if (!activeAdapter) throw new Error("Storage not initialized.");
+    if (activeAdapter.update) {
+        await activeAdapter.update('global_templates', id, data);
+    }
+}
+
+export async function deleteGlobalTemplate(id) {
+    if (!activeAdapter) throw new Error("Storage not initialized.");
+    if (activeAdapter.remove) {
+        await activeAdapter.remove('global_templates', id);
+    }
+}
+
+export const getUserByUsername = (username) => activeAdapter.getUserByUsername(username);
+
+export const saveUser = (user) => activeAdapter.saveUser(user);
