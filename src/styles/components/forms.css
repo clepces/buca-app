@@ -43,3 +43,74 @@ textarea.invalid {
 
 /* ANÁLISIS: Se han eliminado las clases obsoletas .form-label, .form-hint,
    .form-progress y .progress-step ya que no se utilizan en el HTML actual. */
+
+/* ======================================================
+   3. TOGGLE SWITCH (Interruptor Moderno)
+   ====================================================== */
+   .form-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    cursor: pointer;
+}
+
+.form-switch .form-check-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 2.5rem;
+    height: 1.35rem;
+    background-color: var(--bs-gray-300);
+    border-radius: 2rem;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    border: 1px solid transparent;
+    flex-shrink: 0; /* Evita que se aplaste */
+}
+
+.form-switch .form-check-input::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: calc(1.35rem - 6px);
+    height: calc(1.35rem - 6px);
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.form-switch .form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.form-switch .form-check-input:checked::after {
+    transform: translateX(1.15rem);
+}
+
+.switch-label-group {
+    display: flex;
+    flex-direction: column;
+    margin-right: 1rem;
+}
+
+.switch-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+
+.switch-desc {
+    font-size: 0.8rem;
+    color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .form-switch .form-check-input {
+    background-color: var(--bs-gray-600);
+}
+[data-bs-theme="dark"] .form-switch .form-check-input:checked {
+    background-color: var(--primary-color);
+}

@@ -10,6 +10,7 @@
 import { MODULES } from '../services/modules.config.js';
 
 export const getInitialState = () => ({
+
 	isAuthenticated: false, // <-- Obsoleto, pero se mantiene por ahora
 	isLoading: false,
   
@@ -20,37 +21,50 @@ export const getInitialState = () => ({
   	},
 	
 	settings: {
+
 		store: {
 	  		store_name: 'Mi Tienda',
 	  		store_description: 'Descripción de la tienda'
 		},
+
 		currencies: {
-	  		principal: {
-				symbol: '$', rate: 1},
-				base: { symbol: 'Bs.'}
-			},
+	  		principal: { symbol: '$', rate: 1},
+			base: { symbol: 'Bs.'}
+		},
+		
 		products: {
 			available_categories: ['General', 'Alimentos', 'Bebidas', 'Limpieza', 'cat_viveres'],
 			tax_rate: 16,
 			calculation_method: 'markup'
 		},
-	appConfig: null,
-	exchangeRates: null,
-	permissions: null,
-  },
 
-  products: [],
-  clients: [],
-  sales: [],
-  
-  ui: {
-	navContext: MODULES.CORE,
-	toast: {
-	  isVisible: false,
-	  message: '',
-	  type: 'info',
+		// --- NUEVO: Configuración de Apariencia ---
+        appearance: {
+            header: {
+                showFullscreen: true,
+                showMessages: true,     // WIP feature
+                showNotifications: true,
+                showSettings: true,
+                showRate: true,         // Tasa BCV
+                showLanguage: true      // Selector Idioma
+            }
+        },
+
+		appConfig: null,
+		exchangeRates: null,
+		permissions: null,
+  	},
+
+	products: [], clients: [], sales: [],
+	
+	ui: {
+		navContext: MODULES.CORE,
+		toast: {
+			isVisible: false,
+			message: '',
+			type: 'info',
+		},
 	},
-  },
 });
 
 export const state = getInitialState();

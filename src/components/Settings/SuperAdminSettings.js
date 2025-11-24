@@ -11,6 +11,12 @@ export function SuperAdminSettings(modalElementRef) {
     const appNameFull = appConfig.system?.metadata?.appName || 'Business Under Control Access';
     const defaultTax = globalState.settings.products.tax_rate || 16;
     
+    // 1. Leer configuración actual de apariencia
+    const appearanceConfig = globalState.settings.appearance?.header || {
+        showFullscreen: true, showMessages: true, showNotifications: true, 
+        showSettings: true, showRate: true, showLanguage: true
+    };
+
     const currentCategories = Array.isArray(globalState.settings.products.available_categories) 
         ? globalState.settings.products.available_categories 
         : ['General'];
@@ -25,7 +31,17 @@ export function SuperAdminSettings(modalElementRef) {
             <button class="btn-secondary mt-4" disabled>Notificarme cuando esté listo</button>
         </div>
     `;
-
+    // --- FUNCIÓN HELPER PARA RENDERIZAR SWITCHES ---
+    const renderSwitch = (id, title, desc, isChecked) => `
+        <label class="form-switch" for="${id}">
+            <div class="switch-label-group">
+                <span class="switch-title">${title}</span>
+                <span class="switch-desc">${desc}</span>
+            </div>
+            <input type="checkbox" id="${id}" class="form-check-input" ${isChecked ? 'checked' : ''}>
+        </label>
+        <hr style="margin: 0.5rem 0; border-color: var(--bs-border-color); opacity: 0.5;">
+    `;
     element.innerHTML = `
         <nav class="settings-nav custom-scrollbar">
             <div class="nav-section-title">Sistema</div>
@@ -41,16 +57,19 @@ export function SuperAdminSettings(modalElementRef) {
                 <i class="bi bi-credit-card-2-front"></i> Planes y Suscripción
             </button>
             <button class="settings-nav-item" data-panel="panel-integrations">
-                <i class="bi bi-plugin"></i> Integraciones <span class="badge bg-warning-subtle text-warning-emphasis ms-auto">WIP</span>
+                <i class="bi bi-plugin"></i> Integraciones 
+                <span class="badge bg-warning-subtle text-warning-emphasis ms-auto">WIP</span>
             </button>
             
-             <div class="nav-section-title">Personalización</div>
+            <div class="nav-section-title">Personalización</div>
             <button class="settings-nav-item" data-panel="panel-appearance">
-                <i class="bi bi-palette"></i> Apariencia <span class="badge bg-warning-subtle text-warning-emphasis ms-auto">WIP</span>
+                <i class="bi bi-palette"></i> Apariencia 
+                <!--<span class="badge bg-warning-subtle text-warning-emphasis ms-auto">WIP</span>-->
             </button>
         </nav>
 
         <div class="settings-content custom-scrollbar">
+
             <div id="panel-general" class="settings-panel active">
                 <div class="settings-header-block">
                     <h2>Configuración General</h2>
@@ -81,6 +100,7 @@ export function SuperAdminSettings(modalElementRef) {
             </div>
 
             <div id="panel-defaults" class="settings-panel" style="display: none;">
+
                 <div class="settings-header-block">
                     <h2>Valores por Defecto</h2>
                     <p>Configura los parámetros iniciales para nuevos productos y negocios.</p>
@@ -93,6 +113,7 @@ export function SuperAdminSettings(modalElementRef) {
                     <p class="text-muted mb-3">Estas categorías aparecerán sugeridas al crear un nuevo producto.</p>
                     <div id="category-manager-container"></div>
                 </div>
+
                 <div class="config-box">
                     <div class="config-box-header">
                         <i class="bi bi-percent"></i>
@@ -107,6 +128,7 @@ export function SuperAdminSettings(modalElementRef) {
                         <small class="text-muted">Esta tasa se aplicará si el negocio no define una propia.</small>
                     </div>
                 </div>
+
             </div>
 
             <div id="panel-plans" class="settings-panel" style="display: none;">
@@ -115,9 +137,29 @@ export function SuperAdminSettings(modalElementRef) {
             <div id="panel-integrations" class="settings-panel" style="display: none;">
                 ${renderMaintenanceState('Integraciones API', 'Próximamente podrás conectar pasarelas de pago y servicios de envío.')}
             </div>
+
             <div id="panel-appearance" class="settings-panel" style="display: none;">
-                ${renderMaintenanceState('Temas y Diseño', 'El constructor de temas visuales está en el taller de pintura.')}
+                <div class="settings-header-block">
+                    <h2>Personalización de Interfaz</h2>
+                    <p>Controla qué elementos son visibles en la barra superior (Header).</p>
+                </div>
+
+                <div class="config-box">
+                    <div class="config-box-header">
+                        <i class="bi bi-layout-text-window-reverse"></i>
+                        <h3>Acciones de Cabecera</h3>
+                    </div>
+                    <div class="p-2">
+                        ${renderSwitch('toggle-show-fullscreen', 'Pantalla Completa', 'Botón para expandir la vista', appearanceConfig.showFullscreen)}
+                        ${renderSwitch('toggle-show-rate', 'Widget de Tasa BCV', 'Muestra la tasa de cambio actual', appearanceConfig.showRate)}
+                        ${renderSwitch('toggle-show-language', 'Selector de Idioma', 'Bandera y menú de región', appearanceConfig.showLanguage)}
+                        ${renderSwitch('toggle-show-messages', 'Mensajes (WIP)', 'Acceso directo a bandeja de entrada', appearanceConfig.showMessages)}
+                        ${renderSwitch('toggle-show-notifications', 'Notificaciones', 'Campana de alertas del sistema', appearanceConfig.showNotifications)}
+                        ${renderSwitch('toggle-show-settings', 'Acceso Rápido Configuración', 'Engranaje de ajustes directos', appearanceConfig.showSettings)}
+                    </div>
+                </div>
             </div>
+            
         </div>
 
         <nav class="settings-quick-nav">
@@ -150,7 +192,19 @@ export function SuperAdminSettings(modalElementRef) {
             appName: sanitizeHTML(element.querySelector('#setting-app-name').value),
             appNameFull: sanitizeHTML(element.querySelector('#setting-app-name-full').value),
             defaultTax: parseFloat(element.querySelector('#setting-default-tax').value) || 0,
-            defaultCategories: categoryManager.getCategories()
+            defaultCategories: categoryManager.getCategories(),
+            
+            // NUEVO: Retornar objeto de apariencia
+            appearance: {
+                header: {
+                    showFullscreen: element.querySelector('#toggle-show-fullscreen').checked,
+                    showRate: element.querySelector('#toggle-show-rate').checked,
+                    showLanguage: element.querySelector('#toggle-show-language').checked,
+                    showMessages: element.querySelector('#toggle-show-messages').checked,
+                    showNotifications: element.querySelector('#toggle-show-notifications').checked,
+                    showSettings: element.querySelector('#toggle-show-settings').checked
+                }
+            }
         })
     };
 }

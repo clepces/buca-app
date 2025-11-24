@@ -1,9 +1,8 @@
 // ======================================================
 // ARCHIVO: src/App.js
-// VERSION APP: 3.0.0 - MODULE:CORE: 1.2.0 - FILE: 1.4.5
-// CORRECCIÓN: (Error Crítico) El listener 'online'
-//             ahora llama a 'this.handleNavigation(path)'
-//             en lugar de 'this.refreshCurrentView()'.
+// VERSION APP: 3.0.0 - MODULE:CORE: 1.2.1 - FILE: 1.4.6
+// CORRECCIÓN: Integrado Listener Global para cerrar menús
+//             al hacer clic fuera (click outside).
 // ======================================================
 
 import { state } from './store/state.js';
@@ -62,6 +61,44 @@ export default class App {
             
             const currentPath = window.location.hash || '#/';
             this.handleNavigation(currentPath); 
+        });
+    }
+
+    initGlobalClickListener() {
+        document.addEventListener('click', (e) => {
+            const profileMenu = document.getElementById('header-profile-dropdown');
+            const profileButton = e.target.closest('[data-action="toggle-profile-menu"]');
+
+            if (profileMenu && 
+                profileMenu.classList.contains('show') && 
+                !profileButton && 
+                !profileMenu.contains(e.target)) {
+                
+                profileMenu.classList.remove('show');
+            }
+
+            const actionsMenu = document.getElementById('actions-menu-dropdown');
+            const actionsButton = e.target.closest('[data-action="toggle-actions-menu"]');
+
+            if (actionsMenu && 
+                actionsMenu.classList.contains('show') && 
+                !actionsButton && 
+                !actionsMenu.contains(e.target)) {
+                
+                actionsMenu.classList.remove('show');
+            }
+
+            // 3. Manejo del Dropdown de Idioma (NUEVO)
+            const langMenu = document.getElementById('header-language-dropdown');
+            const langBtn = e.target.closest('[data-action="toggle-language-menu"]');
+
+            if (langMenu && 
+                langMenu.classList.contains('show') && 
+                !langBtn && 
+                !langMenu.contains(e.target)) {
+                
+                langMenu.classList.remove('show');
+            }
         });
     }
     
@@ -170,10 +207,15 @@ export default class App {
         await delay(50);        
         Logger.trace('ιχ Llamando a initRouter después de posible redirección.');
         initRouter(this.handleNavigation.bind(this));
+        
         if (!this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
+            
+            // --- ¡AQUÍ INICIAMOS EL LISTENER DE CIERRE DE MENÚS! ---
+            this.initGlobalClickListener(); 
+            
             this.hasGlobalListener = true;
-            Logger.info('Listener de acciones globales añadido.');
+            Logger.info('Listeners globales añadidos.');
         }
     }
 
@@ -216,18 +258,67 @@ export default class App {
 
         const action = actionElement.dataset.action;
 
-        // 1. MANEJO DEL MENÚ DESPLEGABLE
+        // NUEVO: Manejo del Menú de Idioma
+        const langMenu = document.getElementById('header-language-dropdown');
+        
+        if (action === 'toggle-language-menu') {
+            e.stopPropagation();
+            langMenu?.classList.toggle('show');
+            
+            // Cerrar otros menús si están abiertos
+            document.getElementById('header-profile-dropdown')?.classList.remove('show');
+            return;
+        }
+
+        // Si clic en cualquier otra cosa, cerrar idioma
+        if (action !== 'toggle-language-menu' && langMenu?.classList.contains('show')) {
+            langMenu.classList.remove('show');
+        }
+
+        // NUEVOS CASOS AGREGADOS
+        if (action === 'wip-feature') {
+            showToast('Función en desarrollo (WIP)', 'info');
+            return;
+        }
+
+        if (action === 'toggle-fullscreen') {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => Logger.error(e));
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+            return;
+        }
+
+        if (action === 'add-product') {
+            // Reutilizamos el permiso de crear producto
+            if (can(PERMISSIONS.CREATE_PRODUCT)) {
+                // Importamos dinámicamente para evitar ciclos si es necesario, o usamos el helper global
+                // Idealmente, emite un evento o llama a la función si está disponible.
+                // Por ahora, redirigimos a productos donde está el botón real
+                window.location.hash = '#/inventory/products';
+                showToast('Redirigiendo a gestión de productos...', 'info');
+            } else {
+                showToast('No tienes permisos para añadir productos.', 'warning');
+            }
+            return;
+       }
+
+        // 1. ABRIR/CERRAR MENÚ DESPLEGABLE (PERFIL)
         const profileDropdown = document.getElementById('header-profile-dropdown');
         if (action === 'toggle-profile-menu') {
-            e.stopPropagation(); // Evitar que el clic cierre el menú inmediatamente
+            e.stopPropagation(); // Evitar que el listener global lo cierre inmediatamente
             profileDropdown?.classList.toggle('show');
             return;
         }
-        // Cerrar el menú si se hace clic en cualquier otra cosa
+        // Cerrar si se hace clic en una opción del menú
         if (action !== 'toggle-profile-menu' && profileDropdown?.classList.contains('show')) {
             profileDropdown.classList.remove('show');
         }
 
+        // 2. ABRIR/CERRAR MENÚ DE ACCIONES (NAV)
         const dropdown = document.getElementById('actions-menu-dropdown');
         if (action !== 'toggle-actions-menu' && dropdown?.classList.contains('show')) {
             dropdown.classList.remove('show');
@@ -245,10 +336,10 @@ export default class App {
                     openRateUpdateModal();
                     break;
                 case 'open-config':
-                        // Verificamos permisos (aunque el botón no debería existir si no los tiene)
+                        // Verificamos permisos
                         if (can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) || can(PERMISSIONS.EDIT_SETTINGS_SYSTEM)) {
                             Logger.info('Abriendo modal de Configuración Global...');
-                            openSuperAdminSettingsModal(); // <-- ¡LLAMAMOS AL NUEVO MODAL!
+                            openSuperAdminSettingsModal();
                         } else {
                             Logger.warn('Intento de abrir config sin permisos.');
                         }
@@ -258,6 +349,7 @@ export default class App {
                     break;
                 default:
                      if (action === 'toggle-actions-menu') {
+                        e.stopPropagation(); // Evitar cierre inmediato
                         dropdown?.classList.toggle('show');
                     } else {
                         Logger.warn(`Acción desconocida: ${action}`);
@@ -280,15 +372,12 @@ export default class App {
             </div>
         `;
         
-        // --- ¡INICIO DE CORRECCIÓN TIPPY! ---
-        // Inicializa Tippy en todo el layout (Header, Nav, Footer)
-        // Esto convertirá automáticamente cualquier 'title' restante.
+        // Inicializa Tippy en todo el layout
         initTippy(this.root);
-        // --- FIN DE CORRECCIÓN TIPPY! ---
 
         if (state.session.isLoggedIn && !this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
-            this.hasGlobalListener = true;
+            // (La inicialización del listener global ahora se hace en bootAuthenticatedApp)
         }
     }
 

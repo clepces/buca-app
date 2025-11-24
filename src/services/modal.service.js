@@ -1,6 +1,6 @@
 // ======================================================
 // ARCHIVO: src/services/modal.service.js
-// ACTUALIZACIÓN: openSuperAdminSettingsModal (v2.0)
+// VERSION: 2.1 (Fix: Guardado de Apariencia y Persistencia)
 // ======================================================
 import { state as globalState } from '../store/state.js';
 import { Modal } from '../components/Common/Modal.js';
@@ -13,11 +13,10 @@ import { PERMISSIONS } from './roles.config.js';
 import { can } from './permissions.service.js';
 import { CompanyForm } from '../components/Companies/CompanyForm.js';
 import { SuperAdminSettings } from '../components/Settings/SuperAdminSettings.js';
-import { updateSingleSetting } from './settings.service.js';
+import { saveState } from './storage.service.js'; 
 
 // --- MODAL DE CONFIRMACIÓN (PEQUEÑO) ---
 export function showConfirmationModal(title, messageHTML, onConfirm, options = {}) {
-    // ... (código sin cambios) ...
     const defaults = {
         icon: 'bi bi-exclamation-triangle-fill text-warning',
         confirmText: 'Sí, continuar',
@@ -31,7 +30,6 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
     const config = { ...defaults, ...options };
 
     const content = document.createElement('div');
-    // Estilo centrado para el modal pequeño
     content.innerHTML = `
         <div style="text-align: center; padding: 1rem 0;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">
@@ -56,13 +54,12 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
     cancelButton.innerHTML = `<i class="${config.cancelIcon} me-1"></i> ${config.cancelText}`;
 
     const modal = Modal({
-        title: '', // Sin título en el header para confirmaciones, se ve más limpio
+        title: '', 
         contentElement: content,
         id: config.modalId,
-        size: 'small' // <--- TAMAÑO PEQUEÑO
+        size: 'small' 
     });
 
-    // Ocultamos el borde del header para que se vea más fluido
     modal.querySelector('.modal-header').style.borderBottom = 'none';
     modal.querySelector('.modal-header').style.paddingBottom = '0';
 
@@ -84,12 +81,10 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
 
 // --- MODAL DE PRODUCTO (GRANDE) ---
 export function openProductModal(productToEdit = null, options = {}) { 
-    const { isGlobal = false } = options; // Extraemos la opción
+    const { isGlobal = false } = options; 
 
     return new Promise((resolve) => {
         const isEditMode = productToEdit !== null;
-        
-        // Títulos dinámicos según si es Producto o Plantilla
         const entityName = isGlobal ? 'Plantilla Global' : 'Producto';
         
         const modalTitle = isEditMode 
@@ -103,7 +98,7 @@ export function openProductModal(productToEdit = null, options = {}) {
             title: modalTitle,
             contentElement: dummyContent,
             id: isEditMode ? 'edit-product-modal' : 'add-product-modal',
-            size: 'large' // <--- TAMAÑO GRANDE (por defecto)
+            size: 'large'
         });
 
         const formElement = ProductForm(productToEdit, productModalElement, isGlobal);
@@ -128,7 +123,6 @@ export function openProductModal(productToEdit = null, options = {}) {
 }
 
 // --- MODAL DE COMPAÑÍA (GRANDE) ---
-// Ahora acepta companyToEdit (opcional)
 export function openCompanyModal(companyToEdit = null) {
     return new Promise((resolve) => {
         const isEdit = companyToEdit !== null;
@@ -146,7 +140,6 @@ export function openCompanyModal(companyToEdit = null) {
             size: 'large' 
         });
 
-        // Pasamos companyToEdit al formulario
         const formElement = CompanyForm(companyModalElement, companyToEdit);
         
         const modalBodyContainer = companyModalElement.querySelector('#modal-body-container');
@@ -167,11 +160,11 @@ export function openCompanyModal(companyToEdit = null) {
         };
     });
 }
-// --- MODAL DE COMPAÑÍA (GRANDE FULL) ---
+
+// --- MODAL DE CONFIGURACIÓN GLOBAL (FULLSCREEN) ---
 export function openSuperAdminSettingsModal() {
     return new Promise((resolve) => {
         const modalTitle = '<i class="bi bi-shield-lock-fill me-2"></i> Configuración Global';
-        
         const dummyContent = document.createElement('div');
         dummyContent.textContent = 'Cargando configuración...';
 
@@ -179,12 +172,10 @@ export function openSuperAdminSettingsModal() {
             title: modalTitle,
             contentElement: dummyContent,
             id: 'super-admin-settings-modal',
-            size: 'fullscreen' // <-- ¡CAMBIO!
+            size: 'fullscreen'
         });
 
-        // --- ¡INICIO DE CORRECCIÓN! (Layout y Footer) ---
-        
-        // 1. Inyectar el buscador en el header
+        // 1. Inyectar buscador en header
         const modalHeader = settingsModalElement.querySelector('.modal-header');
         const closeBtn = settingsModalElement.querySelector('.close');
         if (modalHeader && closeBtn) {
@@ -199,11 +190,10 @@ export function openSuperAdminSettingsModal() {
             modalHeader.insertBefore(headerActions, closeBtn);
         }
 
-        // 2. Ocultar el padding del body (el layout interno lo maneja)
         const modalBody = settingsModalElement.querySelector('#modal-body-container');
         modalBody.style.padding = '0';
         
-        // 3. Inyectar el componente de settings
+        // 2. Inyectar componente de settings
         const { element: settingsElement, getSettingsData } = SuperAdminSettings(settingsModalElement);
         
         if (modalBody) {
@@ -211,7 +201,7 @@ export function openSuperAdminSettingsModal() {
             modalBody.appendChild(settingsElement);
         }
         
-        // 4. Crear y conectar los botones del footer REAL
+        // 3. Crear Footer y Botones
         const modalFooterTarget = settingsModalElement.querySelector('#modal-footer-container');
         
         const saveButton = document.createElement('button');
@@ -222,49 +212,56 @@ export function openSuperAdminSettingsModal() {
         const cancelButton = document.createElement('button');
         cancelButton.className = 'btn-secondary';
         cancelButton.innerHTML = `Cancelar`;
-        // El 'data-action="close-modal"' no es necesario,
-        // el listener de 'click' del modal lo capturará
         
         modalFooterTarget.append(cancelButton, saveButton);
 
-        // 5. Conectar lógica de guardado
-        saveButton.addEventListener('click', () => {
+        // --- 4. LÓGICA DE GUARDADO CORREGIDA ---
+        saveButton.addEventListener('click', async () => {
+            // Añadimos estado de carga al botón
+            const originalBtnText = saveButton.innerHTML;
+            saveButton.innerHTML = `<i class="bi bi-hourglass-split animate-spin me-1"></i> Guardando...`;
+            saveButton.disabled = true;
+
             try {
                 const data = getSettingsData();
                 Logger.info('Guardando configuración global...', data);
 
-                // --- Conectamos al servicio de guardado ---
-                // (Simulación, descomentar para guardar de verdad)
-                
-                // updateSingleSetting(globalState, 'appConfig.system.metadata.appNameSimplify', data.appName);
-                // updateSingleSetting(globalState, 'appConfig.system.metadata.appName', data.appNameFull);
-                // updateSingleSetting(globalState, 'products.tax_rate', data.defaultTax);
-                // updateSingleSetting(globalState, 'products.available_categories', data.defaultCategories);
-                
-                // Actualizamos el estado local para reflejar los cambios SIN recargar
+                // A) Actualizar estado local
+                if (!globalState.settings.appConfig.system) globalState.settings.appConfig.system = {};
+                if (!globalState.settings.appConfig.system.metadata) globalState.settings.appConfig.system.metadata = {};
+
                 globalState.settings.appConfig.system.metadata.appNameSimplify = data.appName;
                 globalState.settings.appConfig.system.metadata.appName = data.appNameFull;
                 globalState.settings.products.tax_rate = data.defaultTax;
                 globalState.settings.products.available_categories = data.defaultCategories;
+                
+                // ✅ CLAVE: Guardar Apariencia
+                if (data.appearance) {
+                    globalState.settings.appearance = data.appearance;
+                }
 
-                showToast('Configuración guardada.', 'success');
+                // B) Persistir en DB (Firebase/IndexedDB)
+                await saveState(globalState);
+
+                showToast('Configuración guardada exitosamente.', 'success');
                 settingsModalElement.remove();
                 
-                // Forzar un re-render del Header/Nav para ver el nuevo nombre
+                // C) Refrescar UI (Header, etc.)
                 triggerRerender(); 
 
             } catch (error) {
                 Logger.error('Error al guardar configuración:', error);
                 showToast('Error al guardar: ' + error.message, 'error');
+                
+                // Restaurar botón en caso de error
+                saveButton.innerHTML = originalBtnText;
+                saveButton.disabled = false;
             }
         });
 
-        // 6. Conectar botón de cancelar
         cancelButton.addEventListener('click', () => {
             settingsModalElement.remove();
         });
-        
-        // --- FIN DE CORRECCIÓN ---
 
         document.body.appendChild(settingsModalElement);
         
@@ -278,26 +275,16 @@ export function openSuperAdminSettingsModal() {
 
 // --- MODAL DE TASA (GRANDE) ---
 export function openRateUpdateModal() {
-    // ... (código sin cambios) ...
-    
     if (!can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) && !can(PERMISSIONS.EDIT_SETTINGS_SYSTEM)) {
         Logger.warn('Intento de abrir modal de tasa sin permisos.');
         return;
     }
 
-    // --- INICIO DE MEJORA: Helper de formato Fintech ---
-    /**
-     * Formatea un número al estilo "Fintech" (236.4601)
-     * @param {number} rate - Tasa completa
-     * @param {string} symbol - Símbolo de moneda
-     */
     function formatFintechRate(rate, symbol) {
         const rateStr = rate.toString();
         const parts = rateStr.split('.');
         const integer = parts[0];
         const fraction = parts[1] || '00';
-        
-        // 236 grande, .46 normal, .01 más opaco
         const mainFraction = fraction.substring(0, 2);
         const extraFraction = fraction.substring(2); 
 
@@ -311,7 +298,6 @@ export function openRateUpdateModal() {
             </span>
         `;
     }
-    // --- FIN DE MEJORA ---
 
     const simboloBase = globalState.settings.currencies.base.symbol || 'Bs.';
     const currentRate = globalState.settings.currencies.principal.rate;
@@ -319,7 +305,6 @@ export function openRateUpdateModal() {
     const content = document.createElement('div');
     content.style.width = '100%';
 
-    // HTML Estructura
     content.innerHTML = `
         <div id="temp-header-widget" style="display:none;">
             <div class="header-status-widget">
@@ -331,9 +316,7 @@ export function openRateUpdateModal() {
         </div>
 
         <div class="rate-modal-grid">
-            
             <div class="rate-control-panel">
-                
                 <div class="rate-hero-card">
                     <span class="hero-badge"><i class="bi bi-lightning-charge-fill"></i> Tasa Automática</span>
                     <div class="hero-amount" id="hero-rate-display">
@@ -362,7 +345,6 @@ export function openRateUpdateModal() {
                         Este valor prevalecerá para todos los cálculos.
                     </div>
                 </div>
-
             </div>
 
             <div class="history-panel-card">
@@ -376,11 +358,9 @@ export function openRateUpdateModal() {
                     </li>
                     </ul>
             </div>
-
         </div>
     `;
 
-    // --- Botones ---
     const saveButton = document.createElement('button');
     saveButton.className = 'btn-primary';
     saveButton.innerHTML = `<i class="bi bi-check-lg me-1"></i> Aplicar Nueva Tasa`;
@@ -406,7 +386,6 @@ export function openRateUpdateModal() {
         modalFooterSlot.appendChild(footerContainer);
     }
 
-    // --- INYECCIÓN DE WIDGET EN HEADER ---
     const headerWidget = content.querySelector('#temp-header-widget').firstElementChild;
     const modalHeader = modal.querySelector('.modal-header');
     const closeBtn = modal.querySelector('.close');
@@ -414,39 +393,28 @@ export function openRateUpdateModal() {
         modalHeader.insertBefore(headerWidget, closeBtn);
     }
 
-    // --- LÓGICA DE CONECTIVIDAD EN VIVO ---
     const wifiIcon = headerWidget.querySelector('#wifi-status-icon');
     const heroDateDisplay = content.querySelector('#hero-rate-date');
     
-    // Función para actualizar la UI inmediatamente
     const updateConnectivityUI = () => {
         const isOnline = navigator.onLine;
-        
-        // 1. Actualizar Icono WiFi
         wifiIcon.className = isOnline ? 'status-wifi online' : 'status-wifi offline';
         wifiIcon.innerHTML = isOnline ? '<i class="bi bi-wifi"></i>' : '<i class="bi bi-wifi-off"></i>';
         wifiIcon.title = isOnline ? 'En línea' : 'Sin conexión';
 
-        // 2. Actualizar Texto en Tarjeta Hero
         if (!isOnline) {
             heroDateDisplay.innerHTML = `<span class="text-danger">● Offline</span> • Sin conexión a API`;
         } else {
-            // Si vuelve a estar online, intentamos recuperar el texto original o re-sincronizar
             if (heroDateDisplay.innerText.includes('Offline')) {
                 heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Listo para sincronizar`;
-                // Opcional: Llamar a fetchCurrentRates() aquí automáticamente
             }
         }
     };
 
-    // Escuchar eventos del navegador (esto hace la magia en vivo)
     window.addEventListener('online', updateConnectivityUI);
     window.addEventListener('offline', updateConnectivityUI);
-    
-    // Ejecutar una vez al inicio
     updateConnectivityUI();
 
-    // --- RELOJ ---
     const clockEl = headerWidget.querySelector('#live-clock');
     const updateClock = () => {
         const now = new Date();
@@ -455,7 +423,6 @@ export function openRateUpdateModal() {
     const clockInterval = setInterval(updateClock, 1000);
     updateClock();
 
-    // --- LIMPIEZA AL CERRAR ---
     const originalRemove = modal.remove;
     modal.remove = function() {
         clearInterval(clockInterval);
@@ -464,30 +431,17 @@ export function openRateUpdateModal() {
         originalRemove.call(this);
     };
 
-    // --- LÓGICA DE GUARDADO (CRÍTICA PARA EL CÁLCULO) ---
     const performSave = (newRate) => {
-        
-        // --- INICIO DE CORRECCIÓN: No truncar a 2 decimales ---
-        // 1. Convertir a número flotante
         const finalRate = parseFloat(newRate);
-        // const finalRate = Number(parseFloat(newRate).toFixed(2)); // <-- ERROR ANTIGUO
-        // --- FIN DE CORRECCIÓN ---
-
-        // 2. Actualizar ESTADO GLOBAL
         globalState.settings.currencies.principal.rate = finalRate;
         
-        // 3. Guardar en LocalStorage
+        // Persistir Tasa
+        saveState(globalState); 
         localStorage.setItem('buca_last_known_rate_usd', finalRate.toString());
         
         Logger.info(`Tasa aplicada correctamente: ${finalRate}`);
-        
-        // 4. ¡IMPORTANTE! Forzar actualización de TODA la interfaz (Productos, Header, etc.)
         triggerRerender(); 
-        
-        // --- INICIO DE CORRECCIÓN: Usar .toString() en el toast ---
         showToast(`Tasa actualizada a ${simboloBase} ${finalRate.toString()}`, 'success');
-        // --- FIN DE CORRECCIÓN ---
-        
         modal.remove();
     };
 
@@ -517,7 +471,6 @@ export function openRateUpdateModal() {
     cancelButton.addEventListener('click', () => modal.remove());
     document.body.appendChild(modal);
 
-    // --- CARGA INICIAL DE DATOS ---
     if (navigator.onLine) {
         const spinner = content.querySelector('#api-loading-spinner');
         const heroRateDisplay = content.querySelector('#hero-rate-display');
@@ -530,9 +483,7 @@ export function openRateUpdateModal() {
             const apiDate = new Date(data.current.date + 'T12:00:00'); 
             
             if (!isNaN(apiRate)) {
-                // --- INICIO DE MEJORA: Aplicar formato fintech y .toString() ---
                 heroRateDisplay.innerHTML = formatFintechRate(apiRate, simboloBase);
-                
                 const dateStr = apiDate.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' });
                 heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Oficial: <strong>${dateStr}</strong>`;
                 
@@ -540,14 +491,12 @@ export function openRateUpdateModal() {
                 if(input && Math.abs(parseFloat(input.value) - currentRate) < 0.01) {
                     input.value = apiRate.toString();
                 }
-                // --- FIN DE MEJORA ---
             }
         }).catch(() => {
             spinner.style.display = 'none';
             heroDateDisplay.innerHTML = `<span class="text-warning">● API Inaccesible</span>`;
         });
 
-        // Historial
         fetchRateHistory(6).then(history => {
             const listEl = content.querySelector('#rate-history-list');
             if (history && history.length > 0) {
@@ -600,21 +549,16 @@ export function openRateUpdateModal() {
                     </li>`;
                 }).join('');
             } else {
-                // --- INICIO DE MEJORA: Usar clase history-empty-state ---
                 listEl.innerHTML = `<li class="history-empty-state"><i class="bi bi-info-circle"></i><span>Sin historial disponible.</span></li>`;
-                // --- FIN DE MEJORA ---
             }
         });
     } else {
-        // Si arranca offline
         const listEl = content.querySelector('#rate-history-list');
-        // --- INICIO DE MEJORA: Usar clase history-empty-state ---
         listEl.innerHTML = `
             <li class="history-empty-state">
                 <i class="bi bi-wifi-off"></i>
                 <span>Sin conexión para cargar historial.</span>
             </li>
         `;
-        // --- FIN DE MEJORA ---
     }
 }
