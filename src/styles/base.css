@@ -33,6 +33,7 @@
     --primary-color: #2563eb;
     --primary-light: #3b82f6;
     --primary-dark: #1d4ed8;
+
     --secondary-color: #059669;
     --warning-color: #d97706;
     --error-color: #dc2626;
@@ -96,7 +97,9 @@
     color: var(--bs-heading-color);
 }
 
-[data-bs-theme="dark"] input, [data-bs-theme="dark"] select, [data-bs-theme="dark"] textarea {
+[data-bs-theme="dark"] input,
+[data-bs-theme="dark"] select,
+[data-bs-theme="dark"] textarea {
     background-color: #1a1c23;
     color: var(--bs-body-color);
     border-color: var(--bs-border-color);
@@ -184,7 +187,10 @@ body {
    3. TIPOGRAFÍA
    ========================================================================== */
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
     font-weight: 600;
     line-height: 1.25;
     color: var(--bs-heading-color);
@@ -198,6 +204,7 @@ h1, h2, h3, h4 {
     align-items: center;
     gap: 0.75rem;
 }
+
 .view-title i {
     color: var(--primary-color);
     font-size: 1.5rem;
@@ -230,8 +237,9 @@ input[type="password"],
 input[type="text"],
 input[type="date"],
 input[type="email"],
-input[type="tel"], 
-select, textarea {
+input[type="tel"],
+select,
+textarea {
     width: 100%;
     padding: 0.75rem;
     font-size: 0.75rem;
@@ -248,24 +256,30 @@ textarea {
     min-height: 224px;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* REGLA NUEVA (CORREGIDA) */
-input:disabled, button:disabled, select:disabled {
+input:disabled,
+button:disabled,
+select:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    background-color:#2563eb; /* Color gris claro */
+    background-color: #2563eb;
+    /* Color gris claro */
 }
 
 /* Y AÑADE LA VERSIÓN PARA TEMA OSCURO */
-[data-bs-theme="dark"] input:disabled, 
-[data-bs-theme="dark"] button:disabled, 
+[data-bs-theme="dark"] input:disabled,
+[data-bs-theme="dark"] button:disabled,
 [data-bs-theme="dark"] select:disabled {
-    background-color: var(--bs-gray-700); /* Color gris oscuro */
+    background-color: var(--bs-gray-700);
+    /* Color gris oscuro */
     color: var(--bs-gray-400);
     border-color: var(--bs-gray-600);
 }
@@ -279,6 +293,7 @@ input:disabled, button:disabled, select:disabled {
     color: var(--bs-gray-500);
     transition: color var(--transition-fast);
 }
+
 .toggle-password:hover {
     color: var(--primary-color);
 }
@@ -323,18 +338,22 @@ button:hover:not(:disabled) {
     scrollbar-width: thin;
     scrollbar-color: var(--bs-gray-300) var(--bs-body-bg);
 }
+
 .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: var(--bs-gray-300);
     border-radius: 4px;
     border: 2px solid var(--bs-body-bg);
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: var(--bs-gray-400);
 }
@@ -342,10 +361,12 @@ button:hover:not(:disabled) {
 [data-bs-theme="dark"] .custom-scrollbar {
     scrollbar-color: var(--bs-gray-700) var(--bs-body-bg);
 }
+
 [data-bs-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: var(--bs-gray-700);
     border-color: var(--bs-body-bg);
 }
+
 [data-bs-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: var(--bs-gray-600);
 }
@@ -378,7 +399,8 @@ body.modal-open {
 
     /* --- 1. Contenedor Principal --- */
     .container {
-         padding: 0 0.5rem;  /* 12px de padding en lugar de 16px */
+        padding: 0 0.5rem;
+        /* 12px de padding en lugar de 16px */
     }
 
     /* --- 2. Tarjetas de la Calculadora --- */
@@ -387,6 +409,7 @@ body.modal-open {
     .pos-layout {
         grid-template-columns: 1fr;
     }
+
     .pos-ticket {
         min-width: 0;
     }
@@ -395,6 +418,7 @@ body.modal-open {
     .stat-card {
         padding: 1rem;
     }
+
     .panel-grid {
         grid-template-columns: 1fr;
     }
@@ -412,7 +436,7 @@ body.is-offline .top-nav {
 
 /* Opcional: Hacer las cosas un poco grisáceas para indicar desconexión */
 body.is-offline main {
-    filter: grayscale(0.5); 
+    filter: grayscale(0.5);
 }
 
 /* ======================================================

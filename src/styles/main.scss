@@ -16,7 +16,7 @@
 @import './components/modal.css';
 @import './components/toast.css';
 @import './components/loader.css';
-@import './components/login.css';
+@import './components/login3.css';
 @import './components/error-notifications.css';
 
 /* 4. Componentes de Layout y Vistas */
@@ -30,13 +30,14 @@
 @import './components/tabs.css';
 @import './components/historial.css';
 @import './components/product-form.css';
-@import './components/company-form.css'; 
+@import './components/company-form.css';
 @import './components/settings-modal.css';
-@import './components/category-manager.css'; /* <-- ¡AÑADIR ESTA LÍNEA! */
+@import './components/category-manager.css';
+/* <-- ¡AÑADIR ESTA LÍNEA! */
 
 /* 5. 🆕 ESTILOS PREMIUM (Correctos) */
 @import './components/stat-cards-premium.css';
-@import './components/dashboard-premium.css'; 
+@import './components/dashboard-premium.css';
 
 /* 6. Otros y Media Queries */
 @import './components/message.css';

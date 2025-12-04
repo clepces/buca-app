@@ -1,6 +1,6 @@
-import { LoginComponent } from '../../components/Auth/Login.js';
+import { LoginComponent } from '../../components/Auth/Login3.js';
 
 export function LoginView(element, state) {
     element.innerHTML = '';
-    element.appendChild(LoginComponent(state)); 
+    element.appendChild(LoginComponent(state));
 }
