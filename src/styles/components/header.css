@@ -18,6 +18,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     color: white;
 }
+
 /* ==============================================
    1. IZQUIERDA (Logo & Toggle)
    ============================================== */
@@ -28,27 +29,32 @@
     gap: 1rem;
     min-width: 150px;
 }
+
 .brand-logo {
     display: flex;
     align-items: center;
     gap: 0.75rem;
 }
+
 .logo-img {
     height: 36px;
     width: auto;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
+
 .brand-text-group {
     display: flex;
     flex-direction: column;
     line-height: 1;
 }
+
 .brand-title {
     font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: 0.5px;
     color: white;
 }
+
 .brand-subtitle {
     font-size: 0.65rem;
     font-weight: 500;
@@ -56,6 +62,7 @@
     letter-spacing: 1px;
     margin-top: 2px;
 }
+
 .mobile-menu-btn {
     display: none;
     background: none;
@@ -64,6 +71,7 @@
     font-size: 1.5rem;
     cursor: pointer;
 }
+
 /* ==============================================
    2. DERECHA & BUSCADOR
    ============================================== */
@@ -75,6 +83,7 @@
     justify-content: flex-end;
     flex-grow: 1;
 }
+
 .header-search-wrapper {
     position: relative;
     height: 40px;
@@ -83,6 +92,7 @@
     margin-right: auto;
     margin-left: 1rem;
 }
+
 /* --- Input (Expansible) --- */
 
 .header-search-wrapper input.header-search-input {
@@ -120,15 +130,18 @@
     z-index: 10;
     transition: color 0.3s;
 }
+
 /* --- Estados: Hover & Focus --- */
 
 .header-search-wrapper:hover input.header-search-input {
     border: 1px solid rgba(255, 255, 255, 0.15);
     background-color: rgba(255, 255, 255, 0.1);
 }
+
 .header-search-wrapper:hover .header-search-icon {
     color: #fff;
 }
+
 .header-search-wrapper input.header-search-input:focus {
     width: 240px !important;
     background-color: rgba(255, 255, 255, 0.15);
@@ -139,12 +152,15 @@
     padding-right: 45px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
 .header-search-input::placeholder {
     color: transparent;
 }
+
 .header-search-input:focus::placeholder {
     color: rgba(255, 255, 255, 0.6);
 }
+
 /* --- Atajo de Teclado --- */
 
 .keyboard-shortcut {
@@ -163,9 +179,11 @@
     z-index: 11;
     transition: opacity 0.2s ease 0.1s;
 }
+
 .header-search-input:focus~.keyboard-shortcut {
     opacity: 1;
 }
+
 /* ==============================================
    3. WIDGET TASA DE CAMBIO
    ============================================== */
@@ -181,22 +199,26 @@
     transition: all 0.2s;
     height: 45px;
 }
+
 .header-widget-rate:hover {
     background-color: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
 }
+
 .hw-icon {
     color: #ffda6a;
     font-size: 1.1rem;
     display: flex;
     align-items: center;
 }
+
 .hw-content {
     display: flex;
     flex-direction: column;
     justify-content: center;
     line-height: 1;
 }
+
 .hw-label {
     font-size: 0.6rem;
     font-weight: 700;
@@ -204,21 +226,25 @@
     letter-spacing: 0.5px;
     margin-bottom: 2px;
 }
+
 .hw-value-group {
     display: flex;
     align-items: baseline;
     gap: 3px;
 }
+
 .hw-currency {
     font-size: 0.75rem;
     font-weight: 400;
     opacity: 0.9;
 }
+
 .hw-amount {
     font-size: 0.95rem;
     font-weight: 800;
     color: white;
 }
+
 /* ==============================================
    4. WIDGET IDIOMA
    ============================================== */
@@ -226,19 +252,21 @@
 .language-capsule {
     display: flex;
     align-items: center;
-    height: 38px;
-    padding: 0 10px;
+    height: 45px;
+    padding: 0.35rem 0.85rem;
     background-color: transparent;
     border: 1px solid transparent;
-    border-radius: 20px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
 }
+
 .language-capsule:hover {
     background-color: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.3);
 }
+
 .lang-flag {
     font-size: 1.2rem;
     display: flex;
@@ -246,12 +274,14 @@
     height: 100%;
     padding-bottom: 2px;
 }
+
 .lang-separator {
     width: 1px;
     height: 14px;
     background-color: rgba(255, 255, 255, 0.3);
     margin: 0 8px;
 }
+
 .lang-code {
     font-size: 0.75rem;
     font-weight: 700;
@@ -261,11 +291,13 @@
     align-items: center;
     height: 100%;
 }
+
 .lang-arrow {
     font-size: 0.6rem;
     opacity: 0.7;
     transition: transform 0.2s;
 }
+
 /* --- Dropdown Idioma --- */
 
 .language-dropdown-menu {
@@ -282,10 +314,12 @@
     z-index: 1100;
     animation: fadeInDown 0.2s ease-out;
 }
+
 .language-dropdown-menu.show {
     display: flex;
     flex-direction: column;
 }
+
 .lang-menu-header {
     font-size: 0.65rem;
     font-weight: 700;
@@ -295,6 +329,7 @@
     border-bottom: 1px solid var(--bs-border-color);
     margin-bottom: 0.25rem;
 }
+
 .lang-item {
     display: flex;
     align-items: center;
@@ -312,15 +347,18 @@
     transition: background 0.1s;
     justify-content: flex-start;
 }
+
 .lang-item:hover {
     background-color: var(--bs-gray-100);
     color: var(--primary-color);
 }
+
 .lang-item.active {
     background-color: rgba(37, 99, 235, 0.08);
     color: var(--primary-color);
     font-weight: 700;
 }
+
 /* ==============================================
    5. ACCIONES RÁPIDAS (Botones Circulares)
    ============================================== */
@@ -331,11 +369,13 @@
     background-color: rgba(255, 255, 255, 0.15);
     margin: 0 0.25rem;
 }
+
 .header-actions-group {
     display: flex;
     align-items: center;
     gap: 0.25rem;
 }
+
 .header-icon-btn {
     width: 38px;
     height: 38px;
@@ -351,10 +391,12 @@
     position: relative;
     transition: all 0.2s;
 }
+
 .header-icon-btn:hover {
     background-color: rgba(255, 255, 255, 0.15);
     color: white;
 }
+
 .notification-badge {
     position: absolute;
     top: -1px;
@@ -371,6 +413,7 @@
     justify-content: center;
     border: 2px solid var(--primary-color);
 }
+
 .notification-dot {
     position: absolute;
     top: 9px;
@@ -381,6 +424,7 @@
     border: 2px solid var(--primary-color);
     border-radius: 50%;
 }
+
 /* ==============================================
    6. PERFIL DE USUARIO & DROPDOWN PREMIUM
    ============================================== */
@@ -399,10 +443,13 @@
     border: 1px solid transparent;
     margin-left: 0.5rem;
 }
-.user-profile-wrapper:hover, .user-profile-wrapper[aria-expanded="true"] {
+
+.user-profile-wrapper:hover,
+.user-profile-wrapper[aria-expanded="true"] {
     background-color: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.15);
 }
+
 .user-avatar-circle {
     width: 36px;
     height: 36px;
@@ -417,28 +464,33 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
+
 .user-profile-mini-info {
     display: flex;
     flex-direction: column;
     line-height: 1.1;
     align-items: flex-start;
 }
+
 .user-name-mini {
     font-size: 0.85rem;
     font-weight: 700;
     color: white;
 }
+
 .user-role-mini {
     font-size: 0.65rem;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.7);
     text-transform: uppercase;
 }
+
 .dropdown-arrow {
     font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.6);
     margin-right: 0.5rem;
 }
+
 /* --- 6.2. Contenedor Tarjeta Flotante (El Menú) --- */
 
 .profile-dropdown-card {
@@ -457,9 +509,11 @@
     flex-direction: column;
     cursor: default;
 }
+
 .profile-dropdown-card.show {
     display: flex;
 }
+
 /* --- 6.3. Cabecera Interna del Menú --- */
 
 .dropdown-header-modern {
@@ -467,6 +521,7 @@
     background: linear-gradient(to right, var(--bs-card-bg), var(--bs-gray-50));
     border-bottom: 1px solid var(--bs-border-color);
 }
+
 .user-avatar-large {
     width: 56px;
     height: 56px;
@@ -481,6 +536,7 @@
     position: relative;
     box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.3);
 }
+
 .status-indicator {
     position: absolute;
     bottom: -2px;
@@ -490,20 +546,24 @@
     border-radius: 50%;
     border: 2px solid var(--bs-card-bg);
 }
+
 .status-indicator.online {
     background-color: var(--bs-success);
 }
+
 .user-details-modern {
     display: flex;
     flex-direction: column;
     flex: 1;
 }
+
 .name-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 2px;
 }
+
 .name-row strong {
     font-size: 1rem;
     color: var(--bs-heading-color);
@@ -512,6 +572,7 @@
     text-overflow: ellipsis;
     max-width: 140px;
 }
+
 .plan-badge {
     font-size: 0.65rem;
     font-weight: 800;
@@ -520,14 +581,17 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+
 .plan-badge.warning {
     background-color: rgba(245, 158, 11, 0.15);
     color: #d97706;
 }
+
 .user-email-modern {
     font-size: 0.8rem;
     color: var(--bs-gray-500);
 }
+
 /* --- 6.4. Cuerpo del Menú (Opciones) --- */
 
 .dropdown-scroll-content {
@@ -535,9 +599,11 @@
     overflow-y: auto;
     padding: 0.5rem 0;
 }
+
 .menu-group {
     padding: 0.5rem 0;
 }
+
 .group-label {
     display: block;
     padding: 0 1.25rem 0.5rem 1.25rem;
@@ -547,6 +613,7 @@
     color: var(--bs-gray-400);
     letter-spacing: 0.8px;
 }
+
 .menu-item-modern {
     display: flex;
     align-items: center;
@@ -561,14 +628,17 @@
     position: relative;
     justify-content: flex-start;
 }
+
 .menu-item-modern:hover {
     background-color: var(--bs-gray-50);
 }
+
 .menu-item-modern:hover .icon-box {
     background-color: var(--primary-color);
     color: white;
     transform: scale(1.1);
 }
+
 .icon-box {
     width: 36px;
     height: 36px;
@@ -581,24 +651,29 @@
     font-size: 1.1rem;
     transition: all 0.2s ease;
 }
+
 .item-content {
     display: flex;
     flex-direction: column;
 }
+
 .item-content span {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--bs-heading-color);
 }
+
 .item-content small {
     font-size: 0.75rem;
     color: var(--bs-gray-500);
 }
+
 .menu-separator {
     height: 1px;
     background-color: var(--bs-border-color);
     margin: 0.25rem 1rem;
 }
+
 /* --- 6.5. Footer del Menú (Cerrar Sesión) --- */
 
 .dropdown-footer-modern {
@@ -606,6 +681,7 @@
     background-color: var(--bs-gray-50);
     border-top: 1px solid var(--bs-border-color);
 }
+
 .menu-item-logout {
     display: flex;
     align-items: center;
@@ -621,46 +697,56 @@
     font-size: 0.9rem;
     transition: all 0.2s;
 }
+
 .menu-item-logout:hover {
     background-color: var(--error-color);
     color: white;
     box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
 }
+
 /* --- 6.6. Tema Oscuro & Animaciones --- */
 
 [data-bs-theme="dark"] .dropdown-header-modern {
     background: linear-gradient(to right, var(--bs-card-bg), #1f2937);
 }
+
 [data-bs-theme="dark"] .menu-item-modern:hover {
     background-color: rgba(255, 255, 255, 0.03);
 }
+
 [data-bs-theme="dark"] .icon-box {
     background-color: rgba(255, 255, 255, 0.05);
     color: var(--bs-gray-400);
 }
+
 [data-bs-theme="dark"] .dropdown-footer-modern {
     background-color: rgba(0, 0, 0, 0.2);
 }
+
 @keyframes menuSlideIn {
     from {
         opacity: 0;
         transform: translateY(10px) scale(0.98);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
+
 @keyframes fadeInDown {
     from {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
+
 /* ==============================================
    7. RESPONSIVIDAD
    ============================================== */
@@ -669,9 +755,11 @@
     .header-search-wrapper {
         display: none;
     }
+
     .user-profile-mini-info {
         display: none;
     }
+
     .mobile-menu-btn {
         display: block;
     }

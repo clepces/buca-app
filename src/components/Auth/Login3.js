@@ -25,7 +25,7 @@ export function LoginComponent(state) {
                 <div class="logo-container">
                     <div class="logo-circle">
                         <!-- Light Mode Logo (Dark Icon) -->
-                        <img src="/assets/icons/logo-dark.svg" class="logo-img logo-light-mode" alt="Logo" />
+                        <img src="/assets/icons/logo-light.svg" class="logo-img logo-light-mode" alt="Logo" />
                         <!-- Dark Mode Logo (Light Icon) -->
                         <img src="/assets/icons/logo-light.svg" class="logo-img logo-dark-mode" alt="Logo" />
                     </div>

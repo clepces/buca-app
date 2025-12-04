@@ -108,7 +108,7 @@
     width: 36px;
     height: 36px;
     object-fit: contain;
-    display: none;
+    /* display: none; */
     /* Por defecto oculto, se activa según el modo */
 }
 

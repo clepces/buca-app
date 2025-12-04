@@ -9,10 +9,10 @@ import { PERMISSIONS } from '../../services/roles.config.js';
 
 export function Header(state) {
     const appConfig = state.settings.appConfig;
-    
+
     // 1. Configuración de Apariencia (Con Fallback de seguridad)
     const uiConfig = state.settings.appearance?.header || {
-        showFullscreen: true, showMessages: true, showNotifications: true, 
+        showFullscreen: true, showMessages: true, showNotifications: true,
         showSettings: true, showRate: true, showLanguage: true
     };
 
@@ -27,7 +27,7 @@ export function Header(state) {
     const tasaBcv = state.settings.currencies.principal.rate;
     const tasaDisplay = tasaBcv.toFixed(2);
     const canEditRate = can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) || can(PERMISSIONS.EDIT_SETTINGS_SYSTEM);
-    
+
     const rateWidgetHTML = uiConfig.showRate ? `
         <div class="header-widget-rate ${canEditRate ? 'clickable' : ''}" 
             ${canEditRate ? 'data-action="open-rate-modal" title="Actualizar Tasa"' : ''}>
@@ -43,7 +43,7 @@ export function Header(state) {
     ` : '';
 
     // 3. Widget Idioma (Condicional)
-    const currentLang = { code: 'ES', flag: '🇻🇪' };    
+    const currentLang = { code: 'ES', flag: '🇻🇪' };
     const languageWidgetHTML = uiConfig.showLanguage ? `
         <div class="language-capsule" data-action="toggle-language-menu" title="Cambiar Idioma">
             <span class="lang-flag">${currentLang.flag}</span>
@@ -64,9 +64,9 @@ export function Header(state) {
     ` : '';
 
     // Simulamos datos extra para la UI (luego vendrán del state real)
-    const userPlan = 'Enterprise'; 
+    const userPlan = 'Enterprise';
     const planColor = 'warning'; // success, warning, info
-    
+
     // --- NUEVA ESTRUCTURA DEL MENÚ DE PERFIL ---
     const profileMenuHTML = `
         <div class="profile-dropdown-card" id="header-profile-dropdown">
@@ -142,7 +142,7 @@ export function Header(state) {
         </div>
     `;
 
-    const logoLight = 'assets/icons/logo-light.svg'; 
+    const logoLight = 'assets/icons/logo-light.svg';
 
     return `
         <header class="app-header">
@@ -174,9 +174,7 @@ export function Header(state) {
                     ${rateWidgetHTML}
                 </div>
 
-                ${(uiConfig.showRate && uiConfig.showLanguage) ? '<div class="header-separator /*d-none*/ d-md-block"></div>' : '' }
-
-                <div class="header-separator /*d-none*/ d-md-block"></div>
+                ${(uiConfig.showRate && uiConfig.showLanguage) ? '<div class="header-separator /*d-none*/ d-md-block"></div>' : ''}
 
                 <div class="header-item /*d-none*/ d-sm-flex">
                     ${languageWidgetHTML}
