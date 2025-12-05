@@ -1,7 +1,8 @@
-/* ==========================================================================
-   LOGIN VIEW (DISEÑO MODERNO CON COLORES CORREGIDOS)
-   ========================================================================== */
+/* ============================================================
+   LOGIN SCREEN V3.5 - CORRECCIONES DE PRIORIDAD CSS
+   ============================================================ */
 
+/* --- 1. CONTENEDOR Y FONDO --- */
 .login-container {
     display: flex;
     position: fixed;
@@ -9,129 +10,370 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--bs-body-bg);
     justify-content: center;
     align-items: center;
     z-index: 9998;
-
     padding: 1rem;
-    animation: fadeIn 0.4s ease;
+    background-color: var(--bs-body-bg);
+    overflow: hidden;
 }
 
-.login-container::before {
-    content: '';
+.login-background {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
-    clip-path: polygon(0 0, 100% 0, 100% 40%, 0 70%);
+    background: radial-gradient(circle at top right, var(--bs-gray-200), var(--bs-body-bg));
+    z-index: -2;
+}
+
+.gradient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
     z-index: -1;
+    animation: floatOrb 15s ease-in-out infinite;
 }
 
+.orb-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--primary-light);
+    top: -150px;
+    right: -150px;
+}
+
+.orb-2 {
+    width: 300px;
+    height: 300px;
+    background: var(--secondary-color);
+    bottom: -100px;
+    left: -100px;
+    animation-delay: -7s;
+}
+
+@keyframes floatOrb {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(-30px, 30px) scale(1.05);
+    }
+}
+
+/* --- 2. TARJETA --- */
 .login-card {
-    background: var(--bs-card-bg);
-    padding: 2rem;
-    border-radius: var(--bs-border-radius-lg);
     width: 100%;
-    max-width: 420px;
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--bs-border-color);
-    animation: slideUp 0.5s ease-out;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    position: relative;
 }
 
+/* --- 3. HEADER & LOGO EXTERNO --- */
 .login-header {
     text-align: center;
     margin-bottom: 2rem;
 }
 
-.login-brand-icon {
-    font-size: 3.5rem;
-    color: var(--primary-color);
+.logo-container {
+    display: flex;
+    justify-content: center;
     margin-bottom: 1rem;
-    line-height: 1;
 }
 
-#login-store-name {
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: var(--bs-heading-color); /* CORRECCIÓN: Usar color de encabezado del tema */
+.logo-circle {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+}
+
+/* Estilos para el Logo Imagen */
+.logo-img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    /* display: none; */
+    /* Por defecto oculto, se activa según el modo */
+}
+
+/* Modo Claro (Default): Muestra logo oscuro (logo-dark.svg) */
+.logo-light-mode {
+    display: block;
+}
+
+.logo-dark-mode {
+    display: none;
+}
+
+.login-text-contrast {
+    color: #1a1f2c !important;
+    transition: color 0.3s ease;
+}
+
+.brand-title {
+    font-size: 1.6rem;
+    font-weight: 800;
     margin: 0;
+    letter-spacing: -0.5px;
 }
 
-#login-store-description {
-    font-size: 1rem;
-    color: var(--bs-gray-600); /* CORRECCIÓN: Usar color de texto secundario */
+.brand-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.8;
     margin-top: 0.25rem;
 }
 
-.login-form .form-group {
-    margin-bottom: 1.5rem;
+/* --- 4. INPUTS (SOLUCIÓN DE SUPERPOSICIÓN) --- */
+.form-group {
+    margin-bottom: 1.25rem;
 }
 
-.login-form label {
-    color: var(--bs-gray-700); /* CORRECCIÓN: Etiqueta con color oscuro y legible */
-    font-weight: 500;
+.form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
-.login-form .input-wrapper input {
-    padding-left: 2.5rem;
+.input-wrapper-login {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
-.login-form .input-icon {
+/* ¡CORRECCIÓN PRIORITARIA! 
+   Usamos 'input.form-control-login' para ganar especificidad sobre 'input[type=...]'
+   y !important en el padding para forzar el espacio del icono.
+*/
+input.form-control-login {
+    width: 100%;
+    /* Arriba | Derecha (espacio ojo) | Abajo | Izquierda (espacio icono) */
+    padding: 0.85rem 3rem 0.85rem 3.2rem !important;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--bs-body-color);
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 0 1px var(--bs-border-color) inset;
+}
+
+input.form-control-login:focus {
+    background-color: white;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1) !important;
+    outline: none;
+}
+
+/* El icono debe estar encima del input visualmente pero bajo el click */
+.input-icon {
     position: absolute;
-    left: 1rem;
+    left: 1.1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--bs-gray-400);
+    color: var(--bs-gray-500);
+    font-size: 1.2rem;
     pointer-events: none;
+    z-index: 10;
 }
 
-.btn-login {
+input.form-control-login:focus~.input-icon {
+    color: var(--primary-color);
+}
+
+/* --- 5. BOTÓN OJO (SOLUCIÓN SALTO) --- */
+.toggle-password-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    /* Centrado fijo */
+    background: transparent;
+    border: none;
+    color: var(--bs-gray-500);
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+    /* NO transition de transform */
+}
+
+/* ANULAMOS CUALQUIER EFECTO GLOBAL QUE MUEVA EL BOTÓN */
+.toggle-password-btn:hover,
+.toggle-password-btn:focus,
+.toggle-password-btn:active {
+    transform: translateY(-50%) !important;
+    /* Mantiene la posición fija */
+    box-shadow: none !important;
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--bs-gray-700);
+}
+
+/* --- 6. DEMÁS ELEMENTOS --- */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    padding: 0 0.25rem;
+}
+
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.custom-checkbox input {
+    display: none;
+}
+
+.checkmark {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--bs-gray-400);
+    border-radius: 5px;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.custom-checkbox input:checked~.checkmark {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.custom-checkbox input:checked~.checkmark::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.link-forgot {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-login-primary {
     width: 100%;
-    padding: 0.85rem;
-    font-size: 1.1rem;
-    margin-top: 1rem;
+    padding: 0.9rem;
+    background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    height: 52px;
 }
 
-/* AÑADIR AL FINAL DE: src/styles/components/login.css */
-
-.btn-login.success {
-    background-color: var(--bs-success) !important;
+.btn-login-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
 }
 
-.btn-login.welcome {
-    background-color: var(--secondary-color) !important;
+.btn-login-primary.success {
+    background: var(--bs-success);
 }
 
-.btn-login.error {
-    background-color: var(--error-color) !important;
+.btn-login-primary.error {
+    background: var(--error-color);
 }
 
-
-.btn-login span {
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+.login-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.7;
 }
 
-.btn-login span.fade-out {
-    opacity: 0;
-    transform: translateY(-10px);
+.login-footer a {
+    text-decoration: none;
+    font-weight: 600;
 }
 
-.btn-login span.fade-in {
-    opacity: 1;
-    transform: translateY(0);
+.separator {
+    margin: 0 0.5rem;
+    opacity: 0.5;
 }
 
-[data-bs-theme="dark"] .login-container::before {
-     opacity: 0.6;
+/* --- MODO OSCURO --- */
+[data-bs-theme="dark"] .login-background {
+    background: radial-gradient(circle at top right, #0f172a, #020617);
 }
 
-/* En el tema oscuro, el texto de la tarjeta debe ser claro */
-[data-bs-theme="dark"] .login-form label {
-    color: var(--bs-gray-300);
+[data-bs-theme="dark"] .login-card {
+    background: rgba(30, 41, 59, 0.75);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-bs-theme="dark"] .login-text-contrast,
+[data-bs-theme="dark"] .login-footer a {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .input-icon {
+    color: var(--bs-gray-400);
+}
+
+[data-bs-theme="dark"] input.form-control-login {
+    background-color: rgba(15, 23, 42, 0.6);
+    color: white;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+[data-bs-theme="dark"] input.form-control-login:focus {
+    background-color: rgba(15, 23, 42, 0.9);
+    border-color: var(--primary-light) !important;
+}
+
+[data-bs-theme="dark"] .toggle-password-btn:hover {
+    color: var(--bs-gray-200);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- LOGO EN MODO OSCURO --- */
+[data-bs-theme="dark"] .logo-light-mode {
+    display: none;
+}
+
+[data-bs-theme="dark"] .logo-dark-mode {
+    display: block;
 }
