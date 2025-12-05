@@ -45,11 +45,12 @@ export const PERMISSIONS = {
     DELETE_COMPANY: 'company:delete',                   // Eliminar una empresa
     MANAGE_COMPANY_USERS: 'company:manage_users',       // Gestionar usuarios de una empresa
     MANAGE_COMPANY_PLAN: 'company:manage_plan',         // Cambiar el plan/suscripción
+    MANAGE_MY_TEAM: 'people:manage_team',               // Nuevo permiso
 
     // --- Configuración ---
     EDIT_SETTINGS_BUSINESS: 'settings:edit_business',   // Editar configuración DEL NEGOCIO (Admin)
     EDIT_SETTINGS_SYSTEM: 'settings:edit_system',       // Editar configuración DEL SISTEMA (Super Admin)
-    
+
 };
 
 // --- ¡INICIO DE CORRECCIÓN! ---
@@ -68,7 +69,7 @@ export const rolesConfig = {
             PERMISSIONS.DELETE_COMPANY,
             PERMISSIONS.MANAGE_COMPANY_USERS,
             PERMISSIONS.MANAGE_COMPANY_PLAN,
-            
+
             // Sistema
             PERMISSIONS.EDIT_SETTINGS_SYSTEM,
             PERMISSIONS.EDIT_SETTINGS_BUSINESS, // reporal para depuracion y desarrollo
@@ -97,6 +98,7 @@ export const rolesConfig = {
             PERMISSIONS.USE_POS,
             PERMISSIONS.VIEW_CLIENTS_MODULE,
             PERMISSIONS.EDIT_SETTINGS_BUSINESS,
+            PERMISSIONS.MANAGE_MY_TEAM,
         ]
     },
     [ROLES.OPERADOR]: { // Antes: [ROLES.USER]
