@@ -13,7 +13,10 @@
 .modal {
     display: none;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(7, 20, 55, 0.8);
     z-index: 10000;
     backdrop-filter: blur(4px);
@@ -24,13 +27,21 @@
     animation: fadeInModal 0.2s ease-out forwards;
 }
 
-@keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
 
 .modal-content {
     background-color: var(--bs-body-bg);
     margin: auto;
     border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -40,19 +51,25 @@
     width: 100%;
 }
 
-@keyframes scaleInModal { to { transform: scale(1); } }
-
-.modal-content.modal-lg { 
-    max-width: 980px; 
+@keyframes scaleInModal {
+    to {
+        transform: scale(1);
+    }
 }
-.modal-content.modal-sm { 
-    max-width: 420px; 
-    text-align: center; 
+
+.modal-content.modal-lg {
+    max-width: 980px;
+}
+
+.modal-content.modal-sm {
+    max-width: 420px;
+    text-align: center;
 }
 
 .modal.modal-fullscreen-parent {
     padding: 0 !important;
-    align-items: stretch !important; /* Estirar verticalmente */
+    align-items: stretch !important;
+    /* Estirar verticalmente */
 }
 
 .modal-content.modal-fullscreen {
@@ -65,28 +82,35 @@
     margin: 0 !important;
     display: flex;
     flex-direction: column;
-    background-color: var(--bs-body-bg); /* Fondo sólido */
+    background-color: var(--bs-body-bg);
+    /* Fondo sólido */
 }
 
 .modal-content.modal-fullscreen .modal-header,
 .modal-content.modal-fullscreen .modal-footer {
-    flex-shrink: 0; /* No encoger */
-    padding: 1rem 2rem; /* Más aire lateral */
+    flex-shrink: 0;
+    /* No encoger */
+    padding: 1rem 2rem;
+    /* Más aire lateral */
     border-bottom: 1px solid var(--bs-border-color);
 }
 
 .modal-content.modal-fullscreen .modal-body {
     flex-grow: 1;
-    padding: 0; /* El layout interno maneja el padding */
-    overflow: hidden; /* Evitar doble scroll */
+    padding: 0;
+    /* El layout interno maneja el padding */
+    overflow: hidden;
+    /* Evitar doble scroll */
 }
 
 .modal-content.modal-fullscreen .modal-header {
-    padding: 0.75rem 1.5rem; /* Header más delgado */
+    padding: 0.75rem 1.5rem;
+    /* Header más delgado */
 }
 
 .modal-content.modal-fullscreen .modal-footer {
-    padding: 0.75rem 1.5rem; /* Footer más delgado */
+    padding: 0.75rem 1.5rem;
+    /* Footer más delgado */
 }
 
 /* --------------------------------------------------------------------------
@@ -95,47 +119,54 @@
 .modal-header {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--bs-border-color);
-    display: flex; 
+    display: flex;
     /* ¡CAMBIO! Espacio para el buscador */
-    justify-content: flex-start; 
+    justify-content: flex-start;
     align-items: center;
-    gap: 1.5rem; /* Espacio entre título y buscador */
+    gap: 1.5rem;
+    /* Espacio entre título y buscador */
     background-color: var(--bs-card-bg);
 }
 
-.modal-title { 
-    font-size: 1.25rem; 
-    font-weight: 700; 
-    color: var(--bs-heading-color); 
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
     margin: 0;
-    flex-shrink: 0; /* Evita que el título se encoja */
+    flex-shrink: 0;
+    /* Evita que el título se encoja */
 }
 
-.close { 
-    background: none; 
-    border: none; 
-    font-size: 1.5rem; 
-    cursor: pointer; 
+.close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
     color: var(--bs-gray-400);
     transition: all 0.2s ease;
     padding: 0.25rem;
     border-radius: 4px;
-    margin-left: auto; /* Empuja el botón X a la derecha */
+    margin-left: auto;
+    /* Empuja el botón X a la derecha */
     flex-shrink: 0;
 }
 
-.close:hover { 
+.close:hover {
     color: var(--error-color);
     background-color: rgba(220, 38, 38, 0.1);
 }
 
 .modal-header-actions {
-    flex-grow: 1; /* Ocupa el espacio central */
+    flex-grow: 1;
+    /* Ocupa el espacio central */
     display: flex;
-    justify-content: center; /* Centra el buscador */
+    justify-content: center;
+    /* Centra el buscador */
 }
+
 .modal-header-actions .search-container {
-    max-width: 400px; /* Ancho máximo del buscador */
+    max-width: 400px;
+    /* Ancho máximo del buscador */
     width: 100%;
     position: relative;
 }
@@ -152,9 +183,11 @@
 
 .modal-header-actions .form-control {
     padding-left: 2.5rem;
-    height: 38px; /* Ligeramente más bajo para el header */
+    height: 38px;
+    /* Ligeramente más bajo para el header */
     font-size: 0.9rem;
-    background-color: var(--bs-body-bg); /* Color de fondo del body */
+    background-color: var(--bs-body-bg);
+    /* Color de fondo del body */
 }
 
 .modal-body {
@@ -171,23 +204,27 @@
 
 /* --- 🆕 FOOTER CON MEJOR ESPACIADO --- */
 .modal-footer {
-    padding: 1.25rem 1.5rem; /* 🎯 Más padding vertical */
+    padding: 1.25rem 1.5rem;
+    /* 🎯 Más padding vertical */
     border-top: 1px solid var(--bs-border-color);
     background-color: var(--bs-card-bg);
-    display: flex; 
-    justify-content: flex-end; 
-    gap: 0.75rem; /* 🎯 Más espacio entre botones */
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    /* 🎯 Más espacio entre botones */
 }
 
-.modal-content.modal-sm .modal-footer { 
-    justify-content: center; 
+.modal-content.modal-sm .modal-footer {
+    justify-content: center;
 }
 
 /* --- 🆕 BOTONES DE FOOTER MEJORADOS --- */
 .modal-footer button {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0.875rem 1.5rem; /* 🎯 Más padding para botones */
-    font-size: 1rem; /* 🎯 Texto un poco más grande */
+    padding: 0.875rem 1.5rem;
+    /* 🎯 Más padding para botones */
+    font-size: 1rem;
+    /* 🎯 Texto un poco más grande */
     font-weight: 600;
 }
 
@@ -202,14 +239,14 @@
 }
 
 .modal-footer .btn-primary:hover:not(:disabled) {
-     background-color: var(--primary-dark);
-     box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4);
+    background-color: var(--primary-dark);
+    box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4);
 }
 
 .modal-footer .btn-secondary:hover:not(:disabled) {
-     background-color: var(--bs-gray-300);
-     border-color: var(--bs-gray-400);
-     box-shadow: 0 8px 16px -4px rgba(108, 117, 125, 0.3);
+    background-color: var(--bs-gray-300);
+    border-color: var(--bs-gray-400);
+    box-shadow: 0 8px 16px -4px rgba(108, 117, 125, 0.3);
 }
 
 /* --------------------------------------------------------------------------
@@ -218,162 +255,169 @@
 
 /* Header Widget (Reloj y Wifi) */
 .header-status-widget {
-    display: flex; 
-    align-items: center; 
-    gap: 1rem; 
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     font-size: 0.85rem;
-    background-color: var(--bs-gray-50); 
+    background-color: var(--bs-gray-50);
     padding: 0.35rem 0.75rem;
-    border-radius: 20px; 
-    border: 1px solid var(--bs-border-color); 
+    border-radius: 20px;
+    border: 1px solid var(--bs-border-color);
     margin-right: 1rem;
 }
 
-.status-clock { 
-    font-variant-numeric: tabular-nums; 
-    font-weight: 600; 
-    color: var(--bs-gray-600); 
+.status-clock {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--bs-gray-600);
 }
 
-.status-wifi.online { color: var(--bs-success); }
-.status-wifi.offline { 
-    color: var(--error-color); 
-    animation: pulse 2s infinite; 
+.status-wifi.online {
+    color: var(--bs-success);
+}
+
+.status-wifi.offline {
+    color: var(--error-color);
+    animation: pulse 2s infinite;
 }
 
 /* Layout Grid */
-.rate-modal-grid { 
-    display: grid; 
-    grid-template-columns: 1.2fr 1fr; 
-    gap: 1.5rem; 
-    align-items: start; 
+.rate-modal-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
 }
 
 /* Tarjetas Tasa */
-.rate-hero-card, .manual-input-card, .history-panel-card {
-    background: var(--bs-card-bg); 
-    border: 1px solid var(--bs-border-color); 
-    border-radius: 16px; 
+.rate-hero-card,
+.manual-input-card,
+.history-panel-card {
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 16px;
     overflow: hidden;
 }
 
-.rate-control-panel { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 1rem; 
-    height: 100%; 
-}
-
-/* --- Tarjeta Hero --- */
-.rate-hero-card { 
-    padding: 1rem; 
-    text-align: center; 
-    position: relative; 
-    height: 100%; 
-}
-
-.rate-hero-card::before { 
-    content: ''; 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 5px; 
-    background: linear-gradient(90deg, var(--primary-color), var(--bs-cyan)); 
-}
-
-.hero-badge { 
-    display: inline-flex; 
-    padding: 0.3rem 0.8rem; 
-    background: var(--primary-color); 
-    color: white; 
-    border-radius: 20px; 
-    font-size: 0.75rem; 
-    font-weight: 700; 
-    text-transform: uppercase; 
-    margin-bottom: 1rem; 
-}
-
-.hero-amount { 
-    font-size: 3.5rem; 
-    font-weight: 800; 
-    color: var(--bs-heading-color); 
-    line-height: 1; 
-    letter-spacing: -1px; 
-}
-
-.hero-date { 
-    font-size: 0.9rem; 
-    color: var(--bs-gray-500); 
-    margin-top: 0.5rem; 
-}
-
-/* --- Tasa Manual --- */
-.manual-input-card { 
-    padding: 1.5rem; 
-    margin-top: 1.5rem;  
+.rate-control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     height: 100%;
 }
 
-.manual-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 1rem; 
+/* --- Tarjeta Hero --- */
+.rate-hero-card {
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+    height: 100%;
 }
 
-.manual-header h5 { 
-    margin: 0; 
-    font-size: 1rem; 
-    font-weight: 600; 
-    color: var(--bs-gray-700); 
+.rate-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-color), var(--bs-cyan));
 }
 
-.fintech-input-group { 
-    position: relative; 
+.hero-badge {
+    display: inline-flex;
+    padding: 0.3rem 0.8rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
 }
 
-.fintech-input-group span { 
-    position: absolute; 
-    left: 1rem; 
-    top: 50%; 
-    transform: translateY(-50%); 
-    font-size: 1.2rem; 
-    font-weight: 600; 
-    color: var(--bs-gray-400); 
+.hero-amount {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--bs-heading-color);
+    line-height: 1;
+    letter-spacing: -1px;
 }
 
-.fintech-input-group input { 
-    width: 100%; 
-    padding: 0.8rem 1rem 0.8rem 2.5rem; 
-    font-size: 1.4rem; 
-    font-weight: 700; 
-    border: 2px solid var(--bs-border-color); 
-    border-radius: 12px; 
-    background: var(--bs-gray-50); 
+.hero-date {
+    font-size: 0.9rem;
+    color: var(--bs-gray-500);
+    margin-top: 0.5rem;
+}
+
+/* --- Tasa Manual --- */
+.manual-input-card {
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    height: 100%;
+}
+
+.manual-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.manual-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bs-gray-700);
+}
+
+.fintech-input-group {
+    position: relative;
+}
+
+.fintech-input-group span {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--bs-gray-400);
+}
+
+.fintech-input-group input {
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 2.5rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    border: 2px solid var(--bs-border-color);
+    border-radius: 12px;
+    background: var(--bs-gray-50);
 }
 
 /* --- 🆕 HISTORIAL CON BOTÓN DE REFRESCAR --- */
-.history-panel-card { 
-    height: 100%; 
-    display: flex; 
-    flex-direction: column; 
+.history-panel-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .history-header-panel {
-    padding: 1.25rem; 
-    border-bottom: 1px solid var(--bs-border-color); 
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
     background-color: var(--bs-gray-50);
-    display: flex; /* 🎯 Flexbox para el botón */
-    justify-content: space-between; /* 🎯 Espacio entre título y botón */
+    display: flex;
+    /* 🎯 Flexbox para el botón */
+    justify-content: space-between;
+    /* 🎯 Espacio entre título y botón */
     align-items: center;
 }
 
-.history-header-panel h5 { 
-    margin: 0; 
-    font-size: 0.95rem; 
-    font-weight: 700; 
-    text-transform: uppercase; 
+.history-header-panel h5 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 /* --- 🆕 BOTÓN DE REFRESCAR HISTORIAL --- */
@@ -407,84 +451,101 @@
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* --- Lista de Historial --- */
-.history-list { 
-    list-style: none; 
-    padding: 0; 
-    margin: 0; 
-    overflow-y: auto; 
-    max-height: 320px; 
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    max-height: 320px;
 }
 
 .history-item {
-    display: flex; 
-    justify-content: space-between; 
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.25rem; 
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--bs-border-color);
 }
 
-.history-item.is-active-day { 
-    background-color: rgba(37, 99, 235, 0.05); 
-    position: relative; 
+.history-item.is-active-day {
+    background-color: rgba(37, 99, 235, 0.05);
+    position: relative;
 }
 
 .history-item.is-active-day::before {
-    content: ''; 
-    position: absolute; 
-    left: 0; 
-    top: 0; 
-    bottom: 0; 
-    width: 4px; 
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
     background-color: var(--primary-color);
 }
 
-.day-name { 
-    font-weight: 700; 
-    color: var(--bs-heading-color); 
-    font-size: 0.95rem; 
-    text-transform: capitalize; 
+.day-name {
+    font-weight: 700;
+    color: var(--bs-heading-color);
+    font-size: 0.95rem;
+    text-transform: capitalize;
 }
 
-.full-date { 
-    font-size: 0.75rem; 
-    color: var(--bs-gray-500); 
-    display: block; 
+.full-date {
+    font-size: 0.75rem;
+    color: var(--bs-gray-500);
+    display: block;
 }
 
-.rate-val { 
-    font-size: 1rem; 
-    font-weight: 700; 
-    color: var(--bs-heading-color); 
+.rate-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--bs-heading-color);
 }
 
 .day-badge {
-    font-size: 0.65rem; 
-    padding: 2px 6px; 
-    border-radius: 4px; 
-    font-weight: 700; 
-    text-transform: uppercase; 
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
     margin-left: 0.5rem;
 }
 
-.day-badge.tomorrow { background-color: var(--bs-indigo); color: white; }
-.day-badge.today { background-color: var(--bs-success); color: white; }
+.day-badge.tomorrow {
+    background-color: var(--bs-indigo);
+    color: white;
+}
 
-.rate-change { 
-    font-size: 0.75rem; 
-    font-weight: 600; 
-    display: flex; 
-    align-items: center; 
-    gap: 2px; 
+.day-badge.today {
+    background-color: var(--bs-success);
+    color: white;
+}
+
+.rate-change {
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 2px;
     justify-content: flex-end;
 }
 
-.rate-change.positive { color: var(--bs-success); }
-.rate-change.negative { color: var(--error-color); }
+.rate-change.positive {
+    color: var(--bs-success);
+}
+
+.rate-change.negative {
+    color: var(--error-color);
+}
 
 /* --------------------------------------------------------------------------
    4. 🆕 FORMATO FINTECH REFINADO (MÁS COMPACTO)
@@ -494,33 +555,38 @@
 .fintech-rate {
     display: inline-block;
     line-height: 1;
-    letter-spacing: -0.02em; /* 🎯 Reduce espacio entre caracteres */
+    letter-spacing: -0.025em;
+    /* 🎯 Reduce espacio entre caracteres */
 }
 
 .fintech-symbol {
     font-size: 0.6em;
     font-weight: 500;
     color: var(--bs-gray-500);
-    margin-right: 0.1em; /* 🎯 Menos espacio después del símbolo */
+    margin-right: 0.1em;
+    /* 🎯 Menos espacio después del símbolo */
     vertical-align: 0.3em;
 }
 
 .fintech-integer {
     font-weight: 800;
-    letter-spacing: -0.03em; /* 🎯 Números más juntos */
+    letter-spacing: -0.03em;
+    /* 🎯 Números más juntos */
     color: var(--bs-heading-color);
 }
 
 .fintech-decorator {
     font-weight: 800;
     color: var(--bs-gray-400);
-    margin: 0 0.05em; /* 🎯 Espacio mínimo alrededor del punto */
+    margin: 0 0.05em;
+    /* 🎯 Espacio mínimo alrededor del punto */
 }
 
 .fintech-fraction {
     font-weight: 700;
     color: var(--bs-heading-color);
-    letter-spacing: -0.02em; /* 🎯 Decimales más compactos */
+    letter-spacing: -0.02em;
+    /* 🎯 Decimales más compactos */
 }
 
 .fintech-extra {
@@ -528,54 +594,55 @@
     color: var(--bs-gray-500);
     font-size: 0.9em;
     opacity: 0.8;
-    letter-spacing: 0; /* 🎯 Sin espacio extra */
+    letter-spacing: 0;
+    /* 🎯 Sin espacio extra */
     margin-left: 0.05em;
 }
 
 /* Ajuste para Hero (los números grandes) */
-.hero-amount .fintech-symbol { 
-    font-size: 1em; 
-    vertical-align: 0em; 
+.hero-amount .fintech-symbol {
+    font-size: 1em;
+    vertical-align: 0em;
 }
 
-.hero-amount .fintech-extra { 
-    font-size: 0.8em; 
+.hero-amount .fintech-extra {
+    font-size: 0.8em;
 }
 
 /* Ajuste para Historial (los números pequeños) */
-.rate-val .fintech-rate { 
-    font-size: 1rem; 
+.rate-val .fintech-rate {
+    font-size: 1rem;
 }
 
-.rate-val .fintech-symbol { 
-    font-size: 0.8em; 
-    vertical-align: baseline; 
+.rate-val .fintech-symbol {
+    font-size: 1em;
+    vertical-align: baseline;
 }
 
-.rate-val .fintech-integer { 
-    font-weight: 700; 
+.rate-val .fintech-integer {
+    font-weight: 700;
 }
 
-.rate-val .fintech-fraction { 
-    font-weight: 700; 
+.rate-val .fintech-fraction {
+    font-weight: 700;
 }
 
-.rate-val .fintech-extra { 
-    font-size: 0.9em; 
+.rate-val .fintech-extra {
+    font-size: 0.9em;
 }
 
 /* --------------------------------------------------------------------------
    5. RESPONSIVE
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
-    .rate-modal-grid { 
-        grid-template-columns: 1fr; 
+    .rate-modal-grid {
+        grid-template-columns: 1fr;
     }
-    
-    .header-status-widget { 
-        display: none; 
+
+    .header-status-widget {
+        display: none;
     }
-    
+
     .modal-footer button {
         padding: 0.75rem 1.25rem;
         font-size: 0.9375rem;
@@ -585,26 +652,26 @@
 /* --------------------------------------------------------------------------
    6. DARK MODE
    -------------------------------------------------------------------------- */
-[data-bs-theme="dark"] .modal-header, 
-[data-bs-theme="dark"] .modal-footer, 
-[data-bs-theme="dark"] .rate-hero-card, 
-[data-bs-theme="dark"] .manual-input-card, 
-[data-bs-theme="dark"] .history-panel-card, 
+[data-bs-theme="dark"] .modal-header,
+[data-bs-theme="dark"] .modal-footer,
+[data-bs-theme="dark"] .rate-hero-card,
+[data-bs-theme="dark"] .manual-input-card,
+[data-bs-theme="dark"] .history-panel-card,
 [data-bs-theme="dark"] .history-header-panel {
     background-color: var(--bs-card-bg);
 }
 
-[data-bs-theme="dark"] #rate-update-modal .modal-body { 
-    background-color: #15171e; 
+[data-bs-theme="dark"] #rate-update-modal .modal-body {
+    background-color: #15171e;
 }
 
-[data-bs-theme="dark"] .fintech-input-group input { 
-    background-color: rgba(0,0,0,0.2); 
-    border-color: var(--bs-gray-700); 
+[data-bs-theme="dark"] .fintech-input-group input {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-color: var(--bs-gray-700);
 }
 
-[data-bs-theme="dark"] .header-status-widget { 
-    background-color: rgba(255,255,255,0.05); 
+[data-bs-theme="dark"] .header-status-widget {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 [data-bs-theme="dark"] .history-header-panel .btn-refresh {
