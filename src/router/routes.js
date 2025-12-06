@@ -13,6 +13,7 @@ const InventoryDashboardView = () => import('../views/Inventory/InventoryView.js
 const ProductsView = () => import('../views/products/ProductsView.js').then(m => m.ProductsView);
 const PosView = () => import('../views/Pos/PosView.js').then(m => m.PosView);
 const ClientsView = () => import('../views/People/ClientsView.js').then(m => m.ClientsView);
+const TeamView = () => import('../views/Team/TeamView.js').then(m => m.TeamView);
 
 export const routes = [
     // --- Módulo CORE ---
@@ -71,6 +72,16 @@ export const routes = [
         context: MODULES.CRM,
         isMainModule: true,
         label: 'Clientes',
+        icon: 'bi-people'
+    },
+    // --- Módulo EQUIPO ---
+    {
+        path: '#/team',
+        component: TeamView,
+        permission: PERMISSIONS.VIEW_TEAM_MODULE,
+        context: MODULES.CRM,
+        isMainModule: true,
+        label: 'Equipo',
         icon: 'bi-people'
     },
 ];

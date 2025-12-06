@@ -37,6 +37,11 @@ export const PERMISSIONS = {
     VIEW_CLIENTS: 'view:clients',
     // TODO: Añadir permisos CREATE_CLIENT, EDIT_CLIENT, etc. si es necesario
 
+    // --- Equipo ---
+    VIEW_TEAM_MODULE: 'view:team_module',               // Ver el módulo de Equipo
+    VIEW_TEAM: 'view:team',
+    // TODO: Añadir permisos CREATE_TEAM, EDIT_TEAM, etc. si es necesario
+
     // --- Empresas (Super Admin) --- NUEVO ---
     VIEW_COMPANIES_MODULE: 'view:companies_module',     // Ver el módulo de Empresas (Super Admin)
     VIEW_COMPANIES: 'view:companies',                   // Ver la lista de empresas
@@ -84,21 +89,31 @@ export const rolesConfig = {
             PERMISSIONS.VIEW_POS_MODULE,        //
             PERMISSIONS.USE_POS,                //
             PERMISSIONS.VIEW_CLIENTS_MODULE,    //
+
+            PERMISSIONS.VIEW_TEAM_MODULE,
+            PERMISSIONS.VIEW_TEAM,
+            PERMISSIONS.MANAGE_MY_TEAM
         ]
     },
     [ROLES.PROPIETARIO]: { // Antes: [ROLES.ADMIN]
         permissions: [
             PERMISSIONS.VIEW_DASHBOARD,
+
             PERMISSIONS.VIEW_INVENTORY_MODULE,
             PERMISSIONS.VIEW_PRODUCTS,
             PERMISSIONS.CREATE_PRODUCT,
             PERMISSIONS.EDIT_PRODUCT,
             PERMISSIONS.DELETE_PRODUCT,
+
             PERMISSIONS.VIEW_POS_MODULE,
             PERMISSIONS.USE_POS,
+
             PERMISSIONS.VIEW_CLIENTS_MODULE,
             PERMISSIONS.EDIT_SETTINGS_BUSINESS,
-            PERMISSIONS.MANAGE_MY_TEAM,
+
+            PERMISSIONS.VIEW_TEAM_MODULE,
+            PERMISSIONS.VIEW_TEAM,
+            PERMISSIONS.MANAGE_MY_TEAM
         ]
     },
     [ROLES.OPERADOR]: { // Antes: [ROLES.USER]
