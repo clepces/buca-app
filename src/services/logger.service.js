@@ -24,7 +24,7 @@ export async function logActivity(logData) {
   const businessId = state.session?.business?.id || 'unknown_business';
   const departmentId = state.session?.business?.departmentId || 'unknown_dept';
   // --- FIN DE CORRECCIÓN! ---
-  
+
   const fullLogData = {
     ...logData,
     timestamp: serverTimestamp(),
@@ -59,6 +59,11 @@ class ConsoleLogger {
   }
   error(message, ...args) {
     console.error(`[ERROR] 🔴 ${message}`, ...args);
+  }
+  debug(message, ...args) {
+    if (!this.IS_PRODUCTION) {
+      console.debug(`[DEBUG] 🐞 ${message}`, ...args);
+    }
   }
   trace(message, ...args) {
     if (!this.IS_PRODUCTION) {

@@ -34,15 +34,17 @@ export function MainNav(activeRoute = '#/', state, currentContext = MODULES.CORE
         contextSubRoutes = routes.filter(
             route => route.context === currentContext && can(route.permission) && !route.isMainModule
         );
-        mainRouteOfContext = routes.find(r => r.context === currentContext && r.isMainModule);
+        // CORRECCIÓN: Priorizar la ruta activa si es un módulo principal
+        mainRouteOfContext = routes.find(r => r.path === activeRoute && r.isMainModule)
+            || routes.find(r => r.context === currentContext && r.isMainModule);
 
         if (mainRouteOfContext) {
-             sectionTitle = mainRouteOfContext.label;
-             sectionPath = mainRouteOfContext.path;
+            sectionTitle = mainRouteOfContext.label;
+            sectionPath = mainRouteOfContext.path;
         } else {
-             sectionTitle = 'Sección';
-             sectionPath = '#/';
-             console.warn(`[MainNav] No se encontró ruta principal para el contexto: ${currentContext}`);
+            sectionTitle = 'Sección';
+            sectionPath = '#/';
+            console.warn(`[MainNav] No se encontró ruta principal para el contexto: ${currentContext}`);
         }
     }
 

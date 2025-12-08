@@ -1,19 +1,22 @@
 // ======================================================
 // ARCHIVO: src/services/modal.service.js
-// VERSION: 2.1 (Fix: Guardado de Apariencia y Persistencia)
+// ACTUALIZACIÓN: Inclusión de openEmployeeModal
 // ======================================================
 import { state as globalState } from '../store/state.js';
 import { Modal } from '../components/Common/Modal.js';
 import { ProductForm } from '../components/Products/ProductForm.js';
+import { CompanyForm } from '../components/Companies/CompanyForm.js';
+// 1. Importamos el formulario de Empleado
+import { EmployeeForm } from '../components/Team/EmployeeForm.js';
 import { Logger } from './logger.service.js';
 import { fetchCurrentRates, fetchRateHistory } from './rate.service.js';
 import { showToast } from './toast.service.js';
 import { triggerRerender } from '../store/actions.js';
 import { PERMISSIONS } from './roles.config.js';
 import { can } from './permissions.service.js';
-import { CompanyForm } from '../components/Companies/CompanyForm.js';
 import { SuperAdminSettings } from '../components/Settings/SuperAdminSettings.js';
-import { saveState } from './storage.service.js'; 
+import { saveState } from './storage.service.js';
+
 
 // --- MODAL DE CONFIRMACIÓN (PEQUEÑO) ---
 export function showConfirmationModal(title, messageHTML, onConfirm, options = {}) {
@@ -40,9 +43,9 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
             </p>
         </div>
     `;
-    
+
     if (document.documentElement.getAttribute('data-bs-theme') === 'dark') {
-         content.querySelector('p').style.color = 'var(--bs-gray-300)';
+        content.querySelector('p').style.color = 'var(--bs-gray-300)';
     }
 
     const confirmButton = document.createElement('button');
@@ -54,10 +57,10 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
     cancelButton.innerHTML = `<i class="${config.cancelIcon} me-1"></i> ${config.cancelText}`;
 
     const modal = Modal({
-        title: '', 
+        title: '',
         contentElement: content,
         id: config.modalId,
-        size: 'small' 
+        size: 'small'
     });
 
     modal.querySelector('.modal-header').style.borderBottom = 'none';
@@ -65,7 +68,7 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
 
     const modalFooterTarget = modal.querySelector('#modal-footer-container');
     if (modalFooterTarget) {
-         modalFooterTarget.append(cancelButton, confirmButton);
+        modalFooterTarget.append(cancelButton, confirmButton);
     }
 
     const closeModalFunc = () => modal.remove();
@@ -80,17 +83,17 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
 }
 
 // --- MODAL DE PRODUCTO (GRANDE) ---
-export function openProductModal(productToEdit = null, options = {}) { 
-    const { isGlobal = false } = options; 
+export function openProductModal(productToEdit = null, options = {}) {
+    const { isGlobal = false } = options;
 
     return new Promise((resolve) => {
         const isEditMode = productToEdit !== null;
         const entityName = isGlobal ? 'Plantilla Global' : 'Producto';
-        
-        const modalTitle = isEditMode 
+
+        const modalTitle = isEditMode
             ? `<i class="bi bi-pencil-fill me-2"></i> Editar ${entityName}`
             : `<i class="bi bi-plus-circle-fill me-2"></i> Nueva ${entityName}`;
-        
+
         const dummyContent = document.createElement('div');
         dummyContent.textContent = 'Cargando...';
 
@@ -103,7 +106,7 @@ export function openProductModal(productToEdit = null, options = {}) {
 
         const formElement = ProductForm(productToEdit, productModalElement, isGlobal);
         const modalBodyContainer = productModalElement.querySelector('#modal-body-container');
-        
+
         if (modalBodyContainer) {
             modalBodyContainer.innerHTML = '';
             modalBodyContainer.appendChild(formElement);
@@ -113,9 +116,9 @@ export function openProductModal(productToEdit = null, options = {}) {
 
         const firstInput = formElement.querySelector('input, select');
         if (firstInput) firstInput.focus();
-        
+
         const originalRemove = productModalElement.remove;
-        productModalElement.remove = function() {
+        productModalElement.remove = function () {
             originalRemove.call(this);
             resolve(true);
         };
@@ -126,10 +129,10 @@ export function openProductModal(productToEdit = null, options = {}) {
 export function openCompanyModal(companyToEdit = null) {
     return new Promise((resolve) => {
         const isEdit = companyToEdit !== null;
-        const modalTitle = isEdit 
+        const modalTitle = isEdit
             ? `<i class="bi bi-pencil-square me-2"></i> Editar Compañía`
             : `<i class="bi bi-building-fill-add me-2"></i> Crear Nueva Compañía`;
-        
+
         const dummyContent = document.createElement('div');
         dummyContent.textContent = 'Cargando formulario...';
 
@@ -137,11 +140,11 @@ export function openCompanyModal(companyToEdit = null) {
             title: modalTitle,
             contentElement: dummyContent,
             id: 'add-company-modal',
-            size: 'large' 
+            size: 'large'
         });
 
         const formElement = CompanyForm(companyModalElement, companyToEdit);
-        
+
         const modalBodyContainer = companyModalElement.querySelector('#modal-body-container');
         if (modalBodyContainer) {
             modalBodyContainer.innerHTML = '';
@@ -152,11 +155,103 @@ export function openCompanyModal(companyToEdit = null) {
 
         const firstInput = formElement.querySelector('input, select');
         if (firstInput) firstInput.focus();
-        
+
         const originalRemove = companyModalElement.remove;
-        companyModalElement.remove = function() {
+        companyModalElement.remove = function () {
             originalRemove.call(this);
-            resolve(true); 
+            resolve(true);
+        };
+    });
+}
+
+// --- MODAL DE CLIENTE (MEDIANO) ---
+export function openClientModal(clientToEdit = null) {
+    return new Promise((resolve) => {
+        const isEdit = clientToEdit !== null;
+        const modalTitle = isEdit
+            ? `<i class="bi bi-person-fill-gear me-2"></i> Editar Cliente`
+            : `<i class="bi bi-person-plus-fill me-2"></i> Nuevo Cliente`;
+
+        const dummyContent = document.createElement('div');
+        dummyContent.textContent = 'Cargando...';
+
+        const modalElement = Modal({
+            title: modalTitle,
+            contentElement: dummyContent,
+            id: 'client-modal',
+            size: 'medium'
+        });
+
+        // Dynamic Import para evitar ciclos si fuera necesario, 
+        // aunque aquí lo importamos arriba (ver imports).
+        // Vamos a asumir que lo añadimos a los imports estáticos.
+
+        import('../components/People/ClientForm.js').then(({ ClientForm }) => {
+            const formElement = ClientForm(modalElement, clientToEdit);
+            const body = modalElement.querySelector('#modal-body-container');
+            if (body) {
+                body.innerHTML = '';
+                body.appendChild(formElement);
+            }
+
+            // Focus
+            const firstInput = formElement.querySelector('input');
+            if (firstInput) firstInput.focus();
+        });
+
+        document.body.appendChild(modalElement);
+
+        const originalRemove = modalElement.remove;
+        modalElement.remove = function () {
+            originalRemove.call(this);
+            resolve(true);
+        };
+    });
+}
+
+// --- MODAL DE EMPLEADO (MEDIANO) ---
+export function openEmployeeModal(employeeToEdit = null) {
+    return new Promise((resolve) => {
+        const isEditMode = employeeToEdit !== null;
+
+        const modalTitle = isEditMode
+            ? `<i class="bi bi-person-gear me-2"></i> Editar Empleado`
+            : `<i class="bi bi-person-plus-fill me-2"></i> Nuevo Empleado`;
+
+        const dummyContent = document.createElement('div');
+        dummyContent.textContent = 'Cargando formulario...';
+
+        // Creamos el Modal Wrapper
+        const modalElement = Modal({
+            title: modalTitle,
+            contentElement: dummyContent,
+            id: isEditMode ? 'edit-employee-modal' : 'add-employee-modal',
+            size: 'medium' // Tamaño mediano es suficiente para empleados
+        });
+
+        // Instanciamos el Formulario (que ahora usará el Wizard internamente)
+        const formElement = EmployeeForm(modalElement, employeeToEdit);
+
+        const modalBodyContainer = modalElement.querySelector('#modal-body-container');
+
+        if (modalBodyContainer) {
+            modalBodyContainer.innerHTML = '';
+            // Quitamos padding si el wizard lo requiere, o lo dejamos si EmployeeForm lo maneja
+            // modalBodyContainer.style.padding = '0'; 
+            modalBodyContainer.appendChild(formElement);
+        }
+
+        document.body.appendChild(modalElement);
+
+        // Enfocar primer input
+        const firstInput = formElement.querySelector('input');
+        if (firstInput) firstInput.focus();
+
+        // Manejar cierre para resolver la promesa
+        const originalRemove = modalElement.remove;
+        modalElement.remove = function () {
+            originalRemove.call(this);
+            resolve(true); // Resolvemos true indicando que se cerró (puede haber guardado o no)
         };
     });
 }
@@ -192,27 +287,27 @@ export function openSuperAdminSettingsModal() {
 
         const modalBody = settingsModalElement.querySelector('#modal-body-container');
         modalBody.style.padding = '0';
-        
+
         // 2. Inyectar componente de settings
         const { element: settingsElement, getSettingsData } = SuperAdminSettings(settingsModalElement);
-        
+
         if (modalBody) {
             modalBody.innerHTML = '';
             modalBody.appendChild(settingsElement);
         }
-        
+
         // 3. Crear Footer y Botones
         const modalFooterTarget = settingsModalElement.querySelector('#modal-footer-container');
-        
+
         const saveButton = document.createElement('button');
         saveButton.className = 'btn-primary';
         saveButton.innerHTML = `<i class="bi bi-save-fill me-1"></i> Guardar Cambios`;
         saveButton.id = 'btn-save-global-settings';
-        
+
         const cancelButton = document.createElement('button');
         cancelButton.className = 'btn-secondary';
         cancelButton.innerHTML = `Cancelar`;
-        
+
         modalFooterTarget.append(cancelButton, saveButton);
 
         // --- 4. LÓGICA DE GUARDADO CORREGIDA ---
@@ -234,7 +329,7 @@ export function openSuperAdminSettingsModal() {
                 globalState.settings.appConfig.system.metadata.appName = data.appNameFull;
                 globalState.settings.products.tax_rate = data.defaultTax;
                 globalState.settings.products.available_categories = data.defaultCategories;
-                
+
                 // ✅ CLAVE: Guardar Apariencia
                 if (data.appearance) {
                     globalState.settings.appearance = data.appearance;
@@ -245,14 +340,14 @@ export function openSuperAdminSettingsModal() {
 
                 showToast('Configuración guardada exitosamente.', 'success');
                 settingsModalElement.remove();
-                
+
                 // C) Refrescar UI (Header, etc.)
-                triggerRerender(); 
+                triggerRerender();
 
             } catch (error) {
                 Logger.error('Error al guardar configuración:', error);
                 showToast('Error al guardar: ' + error.message, 'error');
-                
+
                 // Restaurar botón en caso de error
                 saveButton.innerHTML = originalBtnText;
                 saveButton.disabled = false;
@@ -264,11 +359,11 @@ export function openSuperAdminSettingsModal() {
         });
 
         document.body.appendChild(settingsModalElement);
-        
+
         const originalRemove = settingsModalElement.remove;
-        settingsModalElement.remove = function() {
+        settingsModalElement.remove = function () {
             originalRemove.call(this);
-            resolve(true); 
+            resolve(true);
         };
     });
 }
@@ -286,7 +381,7 @@ export function openRateUpdateModal() {
         const integer = parts[0];
         const fraction = parts[1] || '00';
         const mainFraction = fraction.substring(0, 2);
-        const extraFraction = fraction.substring(2); 
+        const extraFraction = fraction.substring(2);
 
         return `
             <span class="fintech-rate">
@@ -301,7 +396,7 @@ export function openRateUpdateModal() {
 
     const simboloBase = globalState.settings.currencies.base.symbol || 'Bs.';
     const currentRate = globalState.settings.currencies.principal.rate;
-    
+
     const content = document.createElement('div');
     content.style.width = '100%';
 
@@ -364,7 +459,7 @@ export function openRateUpdateModal() {
     const saveButton = document.createElement('button');
     saveButton.className = 'btn-primary';
     saveButton.innerHTML = `<i class="bi bi-check-lg me-1"></i> Aplicar Nueva Tasa`;
-    
+
     const cancelButton = document.createElement('button');
     cancelButton.className = 'btn-secondary';
     cancelButton.innerHTML = `Cerrar`;
@@ -379,7 +474,7 @@ export function openRateUpdateModal() {
         id: 'rate-update-modal',
         size: 'large'
     });
-    
+
     const modalFooterSlot = modal.querySelector('.modal-footer');
     if (modalFooterSlot) {
         modalFooterSlot.innerHTML = '';
@@ -395,7 +490,7 @@ export function openRateUpdateModal() {
 
     const wifiIcon = headerWidget.querySelector('#wifi-status-icon');
     const heroDateDisplay = content.querySelector('#hero-rate-date');
-    
+
     const updateConnectivityUI = () => {
         const isOnline = navigator.onLine;
         wifiIcon.className = isOnline ? 'status-wifi online' : 'status-wifi offline';
@@ -418,13 +513,13 @@ export function openRateUpdateModal() {
     const clockEl = headerWidget.querySelector('#live-clock');
     const updateClock = () => {
         const now = new Date();
-        clockEl.textContent = now.toLocaleTimeString('es-VE', { hour12: true, hour: '2-digit', minute:'2-digit', second:'2-digit' });
+        clockEl.textContent = now.toLocaleTimeString('es-VE', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
     };
     const clockInterval = setInterval(updateClock, 1000);
     updateClock();
 
     const originalRemove = modal.remove;
-    modal.remove = function() {
+    modal.remove = function () {
         clearInterval(clockInterval);
         window.removeEventListener('online', updateConnectivityUI);
         window.removeEventListener('offline', updateConnectivityUI);
@@ -434,13 +529,13 @@ export function openRateUpdateModal() {
     const performSave = (newRate) => {
         const finalRate = parseFloat(newRate);
         globalState.settings.currencies.principal.rate = finalRate;
-        
+
         // Persistir Tasa
-        saveState(globalState); 
+        saveState(globalState);
         localStorage.setItem('buca_last_known_rate_usd', finalRate.toString());
-        
+
         Logger.info(`Tasa aplicada correctamente: ${finalRate}`);
-        triggerRerender(); 
+        triggerRerender();
         showToast(`Tasa actualizada a ${simboloBase} ${finalRate.toString()}`, 'success');
         modal.remove();
     };
@@ -459,7 +554,7 @@ export function openRateUpdateModal() {
         if (diffPercent > 0.10) {
             showConfirmationModal(
                 '¿Cambio significativo?',
-                `La nueva tasa varía un <strong>${(diffPercent*100).toFixed(0)}%</strong>. ¿Confirmar?`,
+                `La nueva tasa varía un <strong>${(diffPercent * 100).toFixed(0)}%</strong>. ¿Confirmar?`,
                 () => performSave(newRate),
                 { confirmText: 'Sí, aplicar', confirmButtonClass: 'btn-warning' }
             );
@@ -474,21 +569,21 @@ export function openRateUpdateModal() {
     if (navigator.onLine) {
         const spinner = content.querySelector('#api-loading-spinner');
         const heroRateDisplay = content.querySelector('#hero-rate-display');
-        
+
         spinner.style.display = 'block';
 
         fetchCurrentRates().then(data => {
             spinner.style.display = 'none';
             const apiRate = parseFloat(data.current.usd);
-            const apiDate = new Date(data.current.date + 'T12:00:00'); 
-            
+            const apiDate = new Date(data.current.date + 'T12:00:00');
+
             if (!isNaN(apiRate)) {
                 heroRateDisplay.innerHTML = formatFintechRate(apiRate, simboloBase);
                 const dateStr = apiDate.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' });
                 heroDateDisplay.innerHTML = `<span class="text-success">● En línea</span> • Oficial: <strong>${dateStr}</strong>`;
-                
+
                 const input = content.querySelector('#manual-rate-input');
-                if(input && Math.abs(parseFloat(input.value) - currentRate) < 0.01) {
+                if (input && Math.abs(parseFloat(input.value) - currentRate) < 0.01) {
                     input.value = apiRate.toString();
                 }
             }
@@ -501,13 +596,13 @@ export function openRateUpdateModal() {
             const listEl = content.querySelector('#rate-history-list');
             if (history && history.length > 0) {
                 const today = new Date();
-                today.setHours(0,0,0,0);
+                today.setHours(0, 0, 0, 0);
 
                 listEl.innerHTML = history.map((item, index) => {
-                    const prevItem = history[index + 1]; 
+                    const prevItem = history[index + 1];
                     const dateObj = new Date(`${item.date}T12:00:00`);
                     const itemDate = new Date(`${item.date}T00:00:00`);
-                    
+
                     let dayBadgeHTML = '';
                     let rowClass = '';
 
@@ -521,7 +616,7 @@ export function openRateUpdateModal() {
                     const dayName = dateObj.toLocaleDateString('es-VE', { weekday: 'long' });
                     const fullDate = dateObj.toLocaleDateString('es-VE', { day: 'numeric', month: 'long' });
                     const val = parseFloat(item.usd);
-                    
+
                     let percentHTML = '';
                     if (prevItem) {
                         const prevVal = parseFloat(prevItem.usd);

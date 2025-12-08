@@ -6,9 +6,10 @@
 
 import { Logger } from './logger.service.js';
 import { state } from '../store/state.js';
+import config from '../config.js';
 
-const API_URL_CURRENT = 'https://api.dolarvzla.com/public/exchange-rate';
-const API_URL_HISTORY = 'https://api.dolarvzla.com/public/exchange-rate/list';
+const API_URL_CURRENT = config.api.exchangeRateCurrent;
+const API_URL_HISTORY = config.api.exchangeRateHistory;
 const LOCAL_STORAGE_KEY_USD = 'buca_last_known_rate_usd';
 
 export async function fetchCurrentRates() {
@@ -51,7 +52,7 @@ export async function initRateService() {
 
         // 2. Historial
         const history = await fetchRateHistory(2);
-        let trend = 'neutral'; 
+        let trend = 'neutral';
         let diffPercent = 0;
 
         if (history.length >= 2) {
@@ -63,14 +64,14 @@ export async function initRateService() {
 
         // 3. Guardar en Estado Global CON PRECISIÓN COMPLETA
         state.settings.currencies.principal.rate = currentRate;
-        state.settings.currencies.principal.trend = trend; 
+        state.settings.currencies.principal.trend = trend;
         state.settings.currencies.principal.diff = diffPercent;
 
         // 4. Guardar en localStorage con precisión completa
         localStorage.setItem(LOCAL_STORAGE_KEY_USD, currentRate.toString());
-        
+
         Logger.info(`✅ Tasa Aplicada: ${currentRate} (Precisión completa)`);
-        
+
         return { rate: currentRate, isOffline: false };
 
     } catch (error) {

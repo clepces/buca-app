@@ -1,8 +1,5 @@
 // services/storage-adapters/localStorage.adapter.js
-
-// --- ¡ERROR CORREGIDO! ---
-// Se eliminó: import { Logger } from '../logger.service.js';
-// -------------------------
+import { Logger } from '../logger.service.js';
 
 const DB_KEY = 'buc_local_storage_db_app_v3';
 
@@ -17,6 +14,7 @@ function saveDb(db) {
 export const localStorageAdapter = {
     init: async () => {
         console.log('Adaptador LocalStorage inicializado.');
+        // Logger.info('Adaptador LocalStorage inicializado.');
     },
     getAllProducts: async (state) => getDb().products || [],
     saveProduct: async (state, product) => {

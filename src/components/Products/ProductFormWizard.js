@@ -10,6 +10,7 @@
 // ======================================================
 
 import { Logger } from '../../services/logger.service.js';
+import { Button } from '../Common/Button.js';
 
 /**
  * Inicializa y controla un wizard de N pasos dentro de un modal.
@@ -18,6 +19,10 @@ import { Logger } from '../../services/logger.service.js';
  * @param {HTMLElement} config.wizardStepperEl - El elemento stepper del header.
  * @param {NodeListOf<HTMLElement>} config.wizardStepsEls - Una lista de N divs de contenido.
  * @param {boolean} config.isEditMode - Para etiqutar los botones correctamente.
+ * @param {object} config.texts - Textos personalizados para los botones.
+ * @param {string} config.texts.save - Texto para el botón Guardar (ej: "Guardar Empleado").
+ * @param {string} config.texts.update - Texto para el botón Actualizar (ej: "Actualizar Empleado").
+ * @param {string} config.texts.calculate - Texto para el botón Calcular/Revisar.
  * @param {object} config.callbacks - Funciones que el wizard llamará.
  * @param {function} config.callbacks.onStepNext - Se llama al pulsar "Siguiente".
  * @param {function} config.callbacks.onStepPrev - Se llama al pulsar "Anterior".
@@ -26,7 +31,17 @@ import { Logger } from '../../services/logger.service.js';
  * @returns {object} - Una API para controlar el wizard externamente.
  */
 export function initProductFormWizard(config) {
-    const { modalElementRef, wizardStepperEl, wizardStepsEls, isEditMode, callbacks } = config;
+    const { modalElementRef, wizardStepperEl, wizardStepsEls, isEditMode, callbacks, texts } = config;
+
+    // --- Configuración de Textos por Defecto ---
+    const defaultTexts = {
+        save: 'Guardar Producto',
+        update: 'Actualizar Producto',
+        calculate: 'Calcular y Revisar',
+        next: 'Siguiente',
+        prev: 'Anterior'
+    };
+    const uiTexts = { ...defaultTexts, ...texts };
 
     // --- ¡INICIO DE CORRECCIÓN 1! ---
     const totalSteps = wizardStepsEls.length; // ¡Dinámico! (Será 4 para Productos, 3 para Compañía)
@@ -49,20 +64,20 @@ export function initProductFormWizard(config) {
      * Muestra u oculta los botones del footer según el paso actual.
      */
     function updateFooterButtons(stepNum) {
-        if (!btnPrev || !btnNext || !btnCalculate || !btnSave) { 
+        if (!btnPrev || !btnNext || !btnCalculate || !btnSave) {
             // console.log("Botones de footer aún no creados.");
-            return; 
+            return;
         }
-        
+
         // Ocultar todos primero
-        btnPrev.style.display = 'none'; 
-        btnNext.style.display = 'none'; 
-        btnCalculate.style.display = 'none'; 
+        btnPrev.style.display = 'none';
+        btnNext.style.display = 'none';
+        btnCalculate.style.display = 'none';
         btnSave.style.display = 'none';
 
         // --- ¡INICIO DE CORRECCIÓN 3! ---
         // Lógica de botones dinámicos
-            
+
         if (stepNum > 1) {
             btnPrev.style.display = 'inline-flex';
         }
@@ -70,30 +85,30 @@ export function initProductFormWizard(config) {
         if (stepNum === totalSteps) {
             // --- PASO FINAL (Resumen) ---
             // (Ej: 4 de 4, o 3 de 3)
-            btnPrev.innerHTML = `<i class="bi bi-pencil-fill me-1"></i> Volver a Editar`; 
+            btnPrev.innerHTML = `<i class="bi bi-pencil-fill me-1"></i> Volver a Editar`;
             btnSave.style.display = 'inline-flex';
-        
+
         } else if (stepNum === totalSteps - 1) {
             // --- PENÚLTIMO PASO (Datos antes de Resumen) ---
             // (Ej: 3 de 4, o 2 de 3)
             btnCalculate.style.display = 'inline-flex';
-        
+
         } else {
             // --- CUALQUIER PASO ANTERIOR ---
             // (Ej: 1 de 4, 2 de 4, o 1 de 3)
-            btnNext.style.display = 'inline-flex'; 
-            btnNext.innerHTML = `Siguiente <i class="bi bi-arrow-right ms-1"></i>`; 
+            btnNext.style.display = 'inline-flex';
+            btnNext.innerHTML = `${uiTexts.next} <i class="bi bi-arrow-right ms-1"></i>`;
         }
 
         // Caso especial: Si el wizard solo tiene 2 pasos (ej. Info y Resumen)
         if (totalSteps === 2 && stepNum === 1) {
-             btnNext.style.display = 'none'; // Ocultar "Siguiente"
-             btnCalculate.style.display = 'inline-flex'; // Mostrar "Revisar" de una vez
+            btnNext.style.display = 'none'; // Ocultar "Siguiente"
+            btnCalculate.style.display = 'inline-flex'; // Mostrar "Revisar" de una vez
         }
 
         // Renombrar "Anterior" en el paso 2 (siempre es el mismo)
         if (stepNum === 2) {
-             btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> Anterior`; 
+            btnPrev.innerHTML = `<i class="bi bi-arrow-left me-1"></i> ${uiTexts.prev}`;
         }
         // --- FIN DE CORRECCIÓN 3 ---
     };
@@ -103,30 +118,30 @@ export function initProductFormWizard(config) {
      * @param {number} stepNum - El número del paso (1 a N).
      */
     function showStep(stepNum) {
-        
+
         // --- ¡INICIO DE CORRECCIÓN 2! ---
         if (stepNum < 1 || stepNum > totalSteps) { // ¡Validación dinámica!
             Logger.warn(`[Wizard] Número de paso inválido: ${stepNum} (Total: ${totalSteps})`);
-            return; 
+            return;
         }
         // --- FIN DE CORRECCIÓN 2 ---
-        
+
         currentStep = stepNum;
 
         // Actualizar paneles de contenido
-        wizardStepsEls.forEach(step => { 
-            step.style.display = (parseInt(step.dataset.step) === currentStep) ? 'block' : 'none'; 
+        wizardStepsEls.forEach(step => {
+            step.style.display = (parseInt(step.dataset.step) === currentStep) ? 'block' : 'none';
         });
 
         // Actualizar stepper de header
-        wizardStepperEl.querySelectorAll('.step').forEach(step => { 
-            const stepData = parseInt(step.dataset.step); 
-            step.classList.toggle('active', stepData === currentStep); 
-            step.classList.toggle('completed', stepData < currentStep); 
-            if (stepData >= currentStep) { 
-                step.classList.remove('completed'); 
-            } 
-        }); 
+        wizardStepperEl.querySelectorAll('.step').forEach(step => {
+            const stepData = parseInt(step.dataset.step);
+            step.classList.toggle('active', stepData === currentStep);
+            step.classList.toggle('completed', stepData < currentStep);
+            if (stepData >= currentStep) {
+                step.classList.remove('completed');
+            }
+        });
 
         // Actualizar botones del footer
         updateFooterButtons(currentStep);
@@ -142,35 +157,48 @@ export function initProductFormWizard(config) {
             return;
         }
         modalFooterContainer.innerHTML = '';
-        
-        // --- Crear Botones ---
-        btnPrev = document.createElement('button');
-        btnPrev.type = 'button';
-        btnPrev.id = 'modal-btn-prev';
-        btnPrev.className = 'btn-secondary me-auto';
-        
-        btnNext = document.createElement('button');
-        btnNext.type = 'button';
-        btnNext.id = 'modal-btn-next';
-        btnNext.className = 'btn-primary';
 
-        btnCalculate = document.createElement('button');
-        btnCalculate.type = 'button';
-        btnCalculate.id = 'modal-btn-calculate';
-        btnCalculate.className = 'btn-primary';
-        btnCalculate.innerHTML = `<i class="bi bi-calculator me-1"></i> Calcular y Revisar`;
+        // --- Crear Botones (Refactored to use Button component) ---
+        // btnPrev
+        btnPrev = Button({
+            text: uiTexts.prev,
+            variant: 'secondary',
+            id: 'modal-btn-prev',
+            classes: 'me-auto',
+            icon: 'bi-arrow-left',
+            iconPosition: 'start',
+            onClick: handlePrev
+        });
 
-        btnSave = document.createElement('button');
-        btnSave.type = 'button'; // Es 'button' para prevenir submit del form
-        btnSave.id = isEditMode ? 'modal-btn-update' : 'modal-btn-save';
-        btnSave.className = 'btn-primary';
-        btnSave.innerHTML = `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? 'Actualizar Producto' : 'Guardar Producto'}`;
+        // btnNext
+        btnNext = Button({
+            text: uiTexts.next,
+            variant: 'primary',
+            id: 'modal-btn-next',
+            icon: 'bi-arrow-right',
+            iconPosition: 'end',
+            onClick: handleNext
+        });
 
-        // --- Asignar Callbacks (CORREGIDO) ---
-        btnPrev.addEventListener('click', handlePrev);
-        btnNext.addEventListener('click', handleNext);
-        btnCalculate.addEventListener('click', handleCalculate);
-        btnSave.addEventListener('click', handleSubmit);
+        // btnCalculate
+        btnCalculate = Button({
+            text: uiTexts.calculate,
+            variant: 'primary',
+            id: 'modal-btn-calculate',
+            icon: 'bi-clipboard-check',
+            iconPosition: 'start',
+            onClick: handleCalculate
+        });
+
+        // btnSave
+        btnSave = Button({
+            text: isEditMode ? uiTexts.update : uiTexts.save,
+            variant: 'primary',
+            id: isEditMode ? 'modal-btn-update' : 'modal-btn-save',
+            icon: isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill',
+            iconPosition: 'start',
+            onClick: handleSubmit
+        });
 
         // Añadir botones al DOM
         modalFooterContainer.append(btnPrev, btnCalculate, btnNext, btnSave);
@@ -197,7 +225,7 @@ export function initProductFormWizard(config) {
      */
     function cleanup() {
         // console.log("Limpiando listeners del wizard...");
-        
+
         // --- CORREGIDO: Ahora sí se pueden remover ---
         btnPrev?.removeEventListener('click', handlePrev);
         btnNext?.removeEventListener('click', handleNext);
@@ -216,19 +244,26 @@ export function initProductFormWizard(config) {
         cleanup,
         getStep: () => currentStep,
         setSaveButtonBusy: (isBusy = true) => {
-            if (btnSave) {
-                btnSave.disabled = isBusy;
-                if (isBusy) {
-                    btnSave.innerHTML = `<i class="bi bi-hourglass-split me-1"></i> Guardando...`;
-                } else {
-                    // Re-establece el texto correcto (Guardar o Actualizar)
-                    btnSave.innerHTML = `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? 'Actualizar Producto' : 'Guardar Producto'}`;
-                    
-                    // Asegurarse de que el botón de Guardar Compañía también se resetee
-                    if (modalElementRef.id === 'add-company-modal') {
-                         btnSave.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> Crear Negocio`;
-                    }
+            if (btnSave && typeof btnSave.setLoading === 'function') {
+                btnSave.setLoading(isBusy);
+                // If not busy, ensure text restores to correct state (update vs save)
+                if (!isBusy) {
+                    // We might need to manually restore the icon/text if setLoading doesn't know context (Update vs Save)
+                    // But wait, setLoading(false) in my Button implementation restores based on... wait.
+                    // My Button implementation:
+                    // renderContent checks 'loading' param or 'icon'/'text' variables in scope.
+                    // But those variables are from the CLOSURE of the Button function.
+                    // The formatting might be lost if I don't pass them or if they aren't stateful.
+                    // Actually, my Button component 'renderContent' uses 'text' and 'icon' from the props passed at creation time.
+                    // If I change innerHTML manually elsewhere (like inside updateFooterButtons), 'setLoading(false)' will revert to the INITIAL props,
+                    // which might be WRONG if the button changed state (e.g. from Save to Update, or if it's the Save button which is static).
+                    // The Save button IS static (Save or Update determined at creation).
+                    // So setLoading(false) should work fine for Save button.
                 }
+            } else if (btnSave) {
+                // Fallback
+                btnSave.disabled = isBusy;
+                btnSave.innerHTML = isBusy ? `<i class="bi bi-hourglass-split me-1"></i> Guardando...` : `<i class="bi ${isEditMode ? 'bi-arrow-repeat' : 'bi-save-fill'} me-1"></i> ${isEditMode ? uiTexts.update : uiTexts.save}`;
             }
         }
     };

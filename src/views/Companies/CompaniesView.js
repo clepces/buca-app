@@ -13,16 +13,17 @@ import { can } from '../../services/permissions.service.js';
 import { PERMISSIONS } from '../../services/roles.config.js';
 import { initTippy, destroyTippy } from '../../utils/tippy-helper.js';
 import { openCompanyModal, showConfirmationModal } from '../../services/modal.service.js';
-import { loadAllBusinesses } from '../../services/storage.service.js'; 
+import { loadAllBusinesses } from '../../services/storage.service.js';
 import { showToast } from '../../services/toast.service.js';
 import { deleteBusiness, restoreBusiness } from '../../services/admin.service.js';
 import { useListController } from '../../utils/useListController.js'; // <--- NUEVO
+import { debounce } from '../../utils/debounce.js';
 
 export function CompaniesView(element, state) {
-    
+
     // --- 1. INICIALIZACIÓN ---
     const canCreate = can(PERMISSIONS.CREATE_COMPANY);
-    
+
     // Estado local mínimo (solo lo que el controlador no maneja)
     const viewState = {
         allBusinesses: [], // "Fuente de verdad" completa
@@ -42,7 +43,7 @@ export function CompaniesView(element, state) {
     // Filtra la lista global según el tab y actualiza el controlador
     const applyTabFilter = (filterType) => {
         viewState.currentFilter = filterType;
-        
+
         let filteredData = [];
         if (filterType === 'deleted') {
             filteredData = viewState.allBusinesses.filter(b => b.status === 'deleted');
@@ -61,16 +62,16 @@ export function CompaniesView(element, state) {
         try {
             // Cargar datos crudos
             const rawData = await loadAllBusinesses();
-            
+
             // Normalizar datos
             viewState.allBusinesses = rawData.map(b => ({
                 id: b.id,
                 name: b.name || b.info?.name || 'Sin Nombre',
                 planId: b.planId || b.info?.plan || 'plan_basic',
                 status: b.status || b.info?.subscriptionStatus || 'active',
-                createdAt: b.createdAt 
+                createdAt: b.createdAt
             }));
-            
+
             // Calcular estadísticas
             viewState.stats.total = viewState.allBusinesses.length;
             viewState.stats.deleted = viewState.allBusinesses.filter(b => b.status === 'deleted').length;
@@ -84,7 +85,7 @@ export function CompaniesView(element, state) {
         } catch (error) {
             Logger.error('Error cargando data:', error);
             const container = element.querySelector("#companies-table-container");
-            if(container) container.innerHTML = EmptyState({ icon: 'bi-wifi-off', message: 'Error de conexión' });
+            if (container) container.innerHTML = EmptyState({ icon: 'bi-wifi-off', message: 'Error de conexión' });
         }
     };
 
@@ -97,7 +98,7 @@ export function CompaniesView(element, state) {
         };
         setVal('stat-total-companies', viewState.stats.total);
         setVal('stat-active-companies', viewState.stats.active);
-        
+
         // Ajuste dinámico para la tarjeta de "Inactivos/Papelera"
         const trashCard = element.querySelector('#stat-inactive-companies');
         if (trashCard) {
@@ -110,14 +111,14 @@ export function CompaniesView(element, state) {
     const updateFilterButtonsUI = () => {
         const btnActive = element.querySelector('[data-filter="active"]');
         const btnDeleted = element.querySelector('[data-filter="deleted"]');
-        
+
         if (btnActive && btnDeleted) {
             const isDeletedMode = viewState.currentFilter === 'deleted';
-            
+
             btnActive.classList.toggle('active', !isDeletedMode);
             btnActive.classList.toggle('bg-primary-subtle', !isDeletedMode);
             btnActive.classList.toggle('text-primary', !isDeletedMode);
-            
+
             btnDeleted.classList.toggle('active', isDeletedMode);
             btnDeleted.classList.toggle('bg-danger-subtle', isDeletedMode);
             btnDeleted.classList.toggle('text-danger', isDeletedMode);
@@ -135,7 +136,7 @@ export function CompaniesView(element, state) {
         const itemsToShow = listController.paginatedData;
 
         // Renderizar Tabla
-        tableContainer.innerHTML = CompaniesTable({ 
+        tableContainer.innerHTML = CompaniesTable({
             companies: itemsToShow,
             selectedIds: viewState.selectedCompanies,
             isAllSelected: itemsToShow.length > 0 && itemsToShow.every(c => viewState.selectedCompanies.has(c.id))
@@ -212,10 +213,10 @@ export function CompaniesView(element, state) {
         const searchInput = element.querySelector('#view-search-input');
         if (searchInput) {
             searchInput.placeholder = "Buscar empresa...";
-            searchInput.addEventListener('input', (e) => {
+            searchInput.addEventListener('input', debounce((e) => {
                 listController.setSearch(e.target.value);
                 updateGrid();
-            });
+            }, 300));
         }
     };
 
@@ -223,7 +224,7 @@ export function CompaniesView(element, state) {
 
     const handleActions = async (e) => {
         const target = e.target;
-        
+
         // -- Paginación --
         if (target.closest('.btn-page')) {
             listController.setPage(parseInt(target.closest('.btn-page').dataset.page));
@@ -268,7 +269,7 @@ export function CompaniesView(element, state) {
             loadData();
             return;
         }
-        
+
         // Acciones de Fila
         if (!companyId) return;
 
@@ -309,11 +310,11 @@ export function CompaniesView(element, state) {
             );
         }
     };
-    
+
     // --- 5. START ---
     renderLayout();
     loadData();
-    
+
     element.addEventListener('click', handleActions);
 
     return () => {

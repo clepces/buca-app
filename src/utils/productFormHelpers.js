@@ -4,15 +4,14 @@
 // VERSIÓN PREMIUM - UI MEJORADA
 // ======================================================
 
+import { normalizeValue, formatNumber, formatCurrency } from './formatters.js';
+
 /**
  * Normaliza un valor para comparación.
  */
-const normalize = (val) => {
-    if (val === null || val === undefined) return '';
-    if (typeof val === 'string') return val.trim();
-    if (typeof val === 'number') return val; 
-    return val;
-};
+const normalize = normalizeValue;
+
+// ... keeping hasChanged ...
 
 /**
  * Compara dos valores (nuevo y antiguo) de forma robusta.
@@ -20,11 +19,11 @@ const normalize = (val) => {
 const hasChanged = (newVal, oldVal, fieldName) => {
     const newNorm = normalize(newVal);
     const oldNorm = normalize(oldVal);
-    
+
     if (typeof newNorm === 'number' && typeof oldNorm === 'number') {
         return newNorm !== oldNorm;
     }
-    
+
     const oldStr = String(oldNorm);
     const newStr = String(newNorm);
     return oldStr !== newStr;
@@ -42,12 +41,8 @@ export const fText = (val) => {
 
 // --- Formateadores Específicos ---
 
-const formatNumber = (num, decimals = 2) => new Intl.NumberFormat('es-VE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(num);
-
 export const fCurr = (val, simboloPrincipal = '$') => {
-    const norm = normalize(val);
-    const num = typeof norm === 'number' ? norm : parseFloat(norm) || 0;
-    return `${simboloPrincipal}${formatNumber(num)}`;
+    return formatCurrency(val, simboloPrincipal);
 };
 
 export const fPerc = (val) => {
@@ -70,12 +65,12 @@ export const fPeso = (val) => {
  * Incluye: badges de estado, iconos editables siempre visibles, animaciones
  */
 export const diff = (label, newVal, oldVal, formatter = fText, formatterConfig) => {
-    
+
     const formattedOld = formatter === fCurr ? formatter(oldVal, formatterConfig) : formatter(oldVal);
     const formattedNew = formatter === fCurr ? formatter(newVal, formatterConfig) : formatter(newVal);
-    
+
     const changed = hasChanged(newVal, oldVal, label);
-    
+
     if (changed) {
         // 🎨 Campo CAMBIADO - Con badge amarillo y animación
         return `

@@ -17,20 +17,21 @@ import { showToast } from '../../../services/toast.service.js';
 import { renderProductCards } from './cards/ProductCards.js';
 import { initTippy, destroyTippy } from '../../../utils/tippy-helper.js';
 import { useListController } from '../../../utils/useListController.js';
+import { debounce } from '../../../utils/debounce.js';
 
 export function BusinessProductsView(element, state) {
-    
+
     // --- 1. CONFIGURACIÓN E INICIALIZACIÓN DEL CONTROLADOR ---
     const listController = useListController({
         itemsPerPage: 8,
         searchKeys: ['name', 'brand', 'categoryId'] // Campos donde buscará el filtro
     });
-    
+
     // Cargar datos iniciales del estado global
     listController.setData(globalState.products);
 
     // --- 2. FUNCIONES DE UTILIDAD Y RENDERIZADO ---
-    
+
     // Carga de estilos específicos para las tarjetas de producto
     const loadCSS = () => {
         const viewCSS = 'src/styles/views/inventory/products/product-view.css';
@@ -47,12 +48,12 @@ export function BusinessProductsView(element, state) {
         const container = element.querySelector(".product-list-container");
         const paginationContainer = element.querySelector("#product-pagination-container");
         const titleCounter = element.querySelector("#view-title-counter");
-        
+
         if (!container) return;
 
         // 1. Obtener datos procesados (filtrados y paginados)
         const productsToShow = listController.paginatedData;
-        
+
         // 2. Renderizar tarjetas o estado vacío
         if (productsToShow.length > 0) {
             container.innerHTML = renderProductCards(productsToShow, globalState.settings);
@@ -93,7 +94,7 @@ export function BusinessProductsView(element, state) {
     // Renderizado de la estructura principal (Layout)
     const render = () => {
         const canCreate = can(PERMISSIONS.CREATE_PRODUCT);
-        
+
         // Generar Header estandarizado
         const headerHTML = ViewHeader({
             title: 'Inventario',
@@ -123,23 +124,23 @@ export function BusinessProductsView(element, state) {
                     </div>
             </div>
         `;
-        
+
         // Conectar evento de búsqueda del input generado por ViewHeader
         const searchInput = element.querySelector('#view-search-input');
         if (searchInput) {
             searchInput.placeholder = "Buscar por nombre, marca...";
             searchInput.value = listController.searchTerm;
-            searchInput.addEventListener('input', (e) => {
+            searchInput.addEventListener('input', debounce((e) => {
                 listController.setSearch(e.target.value);
                 updateGrid();
-            });
+            }, 300));
         }
     };
 
     // --- 3. MANEJADORES DE EVENTOS (ACTIONS) ---
     const handleActions = async (e) => {
         const target = e.target;
-        
+
         // -- Paginación --
         if (target.closest('.btn-page')) {
             listController.setPage(parseInt(target.closest('.btn-page').dataset.page));
@@ -156,7 +157,7 @@ export function BusinessProductsView(element, state) {
             updateGrid();
             return;
         }
-        
+
         // -- Items por página --
         if (target.id === 'items-per-page') {
             listController.setItemsPerPage(parseInt(target.value));
@@ -187,7 +188,7 @@ export function BusinessProductsView(element, state) {
             showToast('Función "Ampliar Imagen" (Próximamente)', 'info');
             return;
         }
-        
+
         // 3. Toggle Menú de Tarjeta
         if (action === 'menu-toggle') {
             e.stopPropagation();
@@ -213,11 +214,11 @@ export function BusinessProductsView(element, state) {
                         listController.setData(globalState.products);
                         updateGrid();
                     }
-                } else { 
-                    Logger.error(`Producto ${productId} no encontrado.`); 
+                } else {
+                    Logger.error(`Producto ${productId} no encontrado.`);
                 }
-            } else { 
-                Logger.warn(`Sin permiso para editar.`); 
+            } else {
+                Logger.warn(`Sin permiso para editar.`);
             }
         }
 
@@ -237,10 +238,10 @@ export function BusinessProductsView(element, state) {
                             listController.setData(globalState.products); // Actualizar lista local
                             updateGrid();
                         },
-                        { 
-                            icon: 'bi bi-trash3-fill text-danger', 
-                            confirmText: 'Sí, eliminar', 
-                            confirmButtonClass: 'btn-danger' 
+                        {
+                            icon: 'bi bi-trash3-fill text-danger',
+                            confirmText: 'Sí, eliminar',
+                            confirmButtonClass: 'btn-danger'
                         }
                     );
                 } else { Logger.error(`Producto no encontrado.`); }
@@ -250,8 +251,8 @@ export function BusinessProductsView(element, state) {
         // 6. Abastecer (Placeholder)
         if (action === 'abastecer') {
             e.stopPropagation();
-             Logger.info(`Acción 'abastecer' para ${productId}`);
-             showToast('Función "Abastecer" (Próximamente)', 'info');
+            Logger.info(`Acción 'abastecer' para ${productId}`);
+            showToast('Función "Abastecer" (Próximamente)', 'info');
         }
 
         // 7. Toggle Moneda (Visualización)

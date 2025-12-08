@@ -184,14 +184,12 @@ const fetchUserSessionContext = async (uid, email) => {
 	const userDirRef = doc(db, 'user_directory', uid);
 	const userDirSnap = await getDoc(userDirRef);
 
-	console.log('--- DEBUG: Datos leídos de user_directory ---');
-	console.log('userDirSnap.exists():', userDirSnap.exists())
+	Logger.debug('--- DEBUG: Datos leídos de user_directory ---');
+	Logger.debug('userDirSnap.exists():', userDirSnap.exists())
 
 	if (userDirSnap.exists()) {
 		const userDirData = userDirSnap.data();
-		console.log('userDirData:', userDirData);
-		console.log('Tipo de businessId:', typeof userDirData.businessId);
-		console.log('Valor de businessId:', userDirData.businessId);
+		Logger.debug('userDirData:', userDirData);
 
 		if (userDirData.role === 'super_admin') {
 			const superAdminRef = doc(db, 'super_admins', uid);
@@ -200,7 +198,7 @@ const fetchUserSessionContext = async (uid, email) => {
 			if (superAdminSnap.exists()) {
 				adminName = superAdminSnap.data()['name '] || superAdminSnap.data().name || 'Super Admin';
 			} else {
-				console.warn(`Super Admin con UID ${uid} no encontrado en super_admins.`);
+				Logger.warn(`Super Admin con UID ${uid} no encontrado en super_admins.`);
 			}
 			return {
 				uid,
@@ -212,7 +210,7 @@ const fetchUserSessionContext = async (uid, email) => {
 			};
 		}
 
-		console.log('[DEBUG] userDirData:', userDirData);
+		Logger.debug('[DEBUG] userDirData:', userDirData);
 		const { businessId } = userDirData;
 		if (!businessId) throw new Error('AUTH_NO_BUSINESS_ID');
 
@@ -225,7 +223,7 @@ const fetchUserSessionContext = async (uid, email) => {
 		const { name, jobTitle, departmentIds } = userProfileData;
 
 		if (!name || !jobTitle) {
-			console.warn(`Perfil de usuario ${uid} en negocio ${businessId} incompleto. Falta name o jobTitle.`);
+			Logger.warn(`Perfil de usuario ${uid} en negocio ${businessId} incompleto. Falta name o jobTitle.`);
 		}
 
 		let userRole = ROLES.OPERADOR; // Rol por defecto es Operador
@@ -247,7 +245,7 @@ const fetchUserSessionContext = async (uid, email) => {
 		};
 
 	} else {
-		console.log('El documento NO existe en user_directory para UID:', uid);
+		Logger.warn('El documento NO existe en user_directory para UID:', uid);
 		throw new Error('AUTH_USER_NOT_IN_DIRECTORY');
 	}
 };

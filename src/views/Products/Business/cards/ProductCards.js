@@ -5,26 +5,11 @@
 
 import { EmptyState } from '../../../../components/Common/EmptyState.js';
 
-function formatNumberAbbreviated(num) {
-    if (num < 10000) { 
-         return new Intl.NumberFormat('es-VE', { 
-            minimumFractionDigits: 2, 
-            maximumFractionDigits: 2 
-        }).format(num);
-    }
-    return new Intl.NumberFormat('es-VE', { 
-        notation: 'compact', 
-        maximumFractionDigits: 2 
-    }).format(num);
-}
+import { normalizeValue, formatNumber, formatNumberAbbreviated, formatCurrency } from '../../../../utils/formatters.js';
 
-// Formateador estricto para tooltips (siempre muestra todos los decimales necesarios)
-const fullFormat = (num, symbol) => {
-    return `${symbol} ` + new Intl.NumberFormat('es-VE', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-    }).format(num);
-};
+// Local helpers replaced by imports from utils/formatters.js
+const fullFormat = (num, symbol) => formatCurrency(num, symbol);
+
 
 function renderSingleProductCard(product, settings) {
     const { symbol: simboloPrincipal } = settings.currencies.principal;
@@ -33,13 +18,13 @@ function renderSingleProductCard(product, settings) {
 
     const stock = product.stock?.current ?? 0;
     const stockMin = product.stock?.minThreshold ?? 10;
-    
+
     const pvp_paq = Number(product.pricing?.priceLists?.[0]?.packageSellPrice ?? 0);
     const pvp_unit = Number(product.pricing?.priceLists?.[0]?.unitSellPrice ?? 0);
-    
+
     const pvp_paq_base_raw = pvp_paq * tasaCambio;
     const pvp_unit_base_raw = pvp_unit * tasaCambio;
-    
+
     const pvp_paq_base = Number(pvp_paq_base_raw.toFixed(2));
     const pvp_unit_base = Number(pvp_unit_base_raw.toFixed(2));
 
@@ -47,15 +32,12 @@ function renderSingleProductCard(product, settings) {
     if (stock === 0) stockStatus = 'stock-out';
     else if (stock <= stockMin) stockStatus = 'stock-low';
 
-    const formatMoney = (val) => new Intl.NumberFormat('es-VE', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-    }).format(val);
+    const formatMoney = (val) => formatNumber(val);
 
     // ✅ TOOLTIPS SIMPLES (sin HTML, solo texto)
     const unitTooltip = `${simboloPrincipal}${pvp_unit} × ${tasaCambio.toFixed(4)} = ${simboloBase}${formatMoney(pvp_unit_base)}`;
     const paqTooltip = `${simboloPrincipal}${pvp_paq} × ${tasaCambio.toFixed(4)} = ${simboloBase}${formatMoney(pvp_paq_base)}`;
-    
+
     const unitDisplayVal = `${simboloPrincipal} ${formatNumberAbbreviated(pvp_unit)}`;
     const paqDisplayVal = `${simboloPrincipal} ${formatNumberAbbreviated(pvp_paq)}`;
 

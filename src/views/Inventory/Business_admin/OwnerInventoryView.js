@@ -9,6 +9,7 @@ import { Logger } from '../../../services/logger.service.js';
 import { StatCard } from '../../../components/Common/StatCard.js';
 import { getDashboardStats } from '../../../services/dashboard.service.js';
 import { state as globalState } from '../../../store/state.js';
+import { formatCurrency } from '../../../utils/formatters.js';
 
 export function OwnerInventoryView(element, state) {
 
@@ -22,14 +23,10 @@ export function OwnerInventoryView(element, state) {
             document.head.appendChild(link);
         }
     };
-    
+
     // Obtener estadísticas
     const stats = getDashboardStats(globalState.products);
     const symbol = globalState.settings.currencies.principal.symbol || '$';
-    
-    const formatCurrency = (num) => `${symbol}${new Intl.NumberFormat('es-VE', { 
-        minimumFractionDigits: 2, maximumFractionDigits: 2 
-    }).format(num)}`;
 
     element.innerHTML = `
         <div class="view-panel-content">
@@ -49,31 +46,31 @@ export function OwnerInventoryView(element, state) {
             </div>
 
             <div class="panel-grid">
-                 ${StatCard({ 
-                    title: 'Productos Registrados', 
-                    value: stats.totalProducts, 
-                    icon: 'bi-boxes', 
-                    className: 'productos' 
-                 })}
-                 ${StatCard({ 
-                    title: 'Inversión Total', 
-                    value: formatCurrency(stats.totalInvestment), 
-                    icon: 'bi-cash-coin', 
-                    className: 'inversion' 
-                 })}
-                 ${StatCard({ 
-                    title: 'Valor de Stock', 
-                    value: formatCurrency(stats.totalStockValue), 
-                    icon: 'bi-box-seam', 
-                    className: 'stock' 
-                 })}
-                 ${StatCard({ 
-                    title: 'Ganancia Potencial', 
-                    value: formatCurrency(stats.potentialProfit), 
-                    icon: 'bi-graph-up-arrow', 
-                    className: 'ganancia',
-                    isNegative: stats.potentialProfit < 0
-                 })}
+                 ${StatCard({
+        title: 'Productos Registrados',
+        value: stats.totalProducts,
+        icon: 'bi-boxes',
+        className: 'productos'
+    })}
+                 ${StatCard({
+        title: 'Inversión Total',
+        value: formatCurrency(stats.totalInvestment, symbol),
+        icon: 'bi-cash-coin',
+        className: 'inversion'
+    })}
+                 ${StatCard({
+        title: 'Valor de Stock',
+        value: formatCurrency(stats.totalStockValue, symbol),
+        icon: 'bi-box-seam',
+        className: 'stock'
+    })}
+                 ${StatCard({
+        title: 'Ganancia Potencial',
+        value: formatCurrency(stats.potentialProfit, symbol),
+        icon: 'bi-graph-up-arrow',
+        className: 'ganancia',
+        isNegative: stats.potentialProfit < 0
+    })}
              </div>
              
              <div class="dashboard-grid-2-col mt-4">
@@ -85,9 +82,9 @@ export function OwnerInventoryView(element, state) {
                         </div>
                     <div class="dashboard-card-body">
                         ${EmptyState({
-                            icon: 'bi-graph-up',
-                            message: 'Lista de productos más vendidos próximamente.'
-                        })}
+        icon: 'bi-graph-up',
+        message: 'Lista de productos más vendidos próximamente.'
+    })}
                     </div>
                 </div>
 
@@ -98,9 +95,9 @@ export function OwnerInventoryView(element, state) {
                     </div>
                     <div class="dashboard-card-body">
                         ${EmptyState({
-                            icon: 'bi-exclamation-triangle',
-                            message: 'No hay productos con bajo stock.'
-                        })}
+        icon: 'bi-exclamation-triangle',
+        message: 'No hay productos con bajo stock.'
+    })}
                         </div>
                 </div>
 

@@ -167,7 +167,7 @@ exports.createBusinessUser = functions.https.onRequest((request, response) => {
       // Validamos roles permitidos para crear usuarios
       const allowedRoles = ["Propietario", "super_admin"];
       if (!allowedRoles.includes(requesterData.role)) {
-        throw new Error("No tienes permisos para crear empleados.");
+        throw new Error(`No tienes permisos para crear empleados. Rol actual: ${requesterData.role}`);
       }
 
       console.log(`Solicitante autorizado: ${requesterUid} para negocio: ${requesterBusinessId}`);

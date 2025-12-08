@@ -22,7 +22,7 @@ import { PERMISSIONS } from './services/roles.config.js';
 import { routes } from './router/routes.js';
 import { MODULES } from './services/modules.config.js';
 import { ROLES } from './services/roles.config.js';
-import { initRateService } from './services/rate.service.js'; 
+import { initRateService } from './services/rate.service.js';
 import { showToast } from './services/toast.service.js';
 import { openRateUpdateModal, openSuperAdminSettingsModal } from './services/modal.service.js';
 import { initTippy } from './utils/tippy-helper.js';
@@ -32,7 +32,7 @@ export default class App {
     constructor(rootElement, initialState, mainLoader) {
         this.root = rootElement;
         this.mainLoader = mainLoader;
-        this.currentViewCleanup = () => {};
+        this.currentViewCleanup = () => { };
         this.boundHandleGlobalActions = this.handleGlobalActions.bind(this);
         this.isLoggingOut = false;
         this.hasGlobalListener = false;
@@ -51,16 +51,16 @@ export default class App {
             Logger.warn('App: Conexión perdida. Pasando a modo offline.');
             showToast('Sin conexión a internet. Trabajando en modo local.', 'warning', 5000);
             document.body.classList.add('is-offline');
-            state.ui.isOffline = true; 
+            state.ui.isOffline = true;
         });
 
         window.addEventListener('online', () => {
             Logger.info('App: Conexión restablecida.');
             showToast('Conexión restablecida. Sincronizando...', 'success', 3000);
             document.body.classList.remove('is-offline');
-            
+
             const currentPath = window.location.hash || '#/';
-            this.handleNavigation(currentPath); 
+            this.handleNavigation(currentPath);
         });
     }
 
@@ -69,22 +69,22 @@ export default class App {
             const profileMenu = document.getElementById('header-profile-dropdown');
             const profileButton = e.target.closest('[data-action="toggle-profile-menu"]');
 
-            if (profileMenu && 
-                profileMenu.classList.contains('show') && 
-                !profileButton && 
+            if (profileMenu &&
+                profileMenu.classList.contains('show') &&
+                !profileButton &&
                 !profileMenu.contains(e.target)) {
-                
+
                 profileMenu.classList.remove('show');
             }
 
             const actionsMenu = document.getElementById('actions-menu-dropdown');
             const actionsButton = e.target.closest('[data-action="toggle-actions-menu"]');
 
-            if (actionsMenu && 
-                actionsMenu.classList.contains('show') && 
-                !actionsButton && 
+            if (actionsMenu &&
+                actionsMenu.classList.contains('show') &&
+                !actionsButton &&
                 !actionsMenu.contains(e.target)) {
-                
+
                 actionsMenu.classList.remove('show');
             }
 
@@ -92,16 +92,16 @@ export default class App {
             const langMenu = document.getElementById('header-language-dropdown');
             const langBtn = e.target.closest('[data-action="toggle-language-menu"]');
 
-            if (langMenu && 
-                langMenu.classList.contains('show') && 
-                !langBtn && 
+            if (langMenu &&
+                langMenu.classList.contains('show') &&
+                !langBtn &&
                 !langMenu.contains(e.target)) {
-                
+
                 langMenu.classList.remove('show');
             }
         });
     }
-    
+
     async handleAuthStateChange(user) {
         if (user) {
             if (!this.root.contains(this.mainLoader.element)) {
@@ -112,7 +112,7 @@ export default class App {
             } else {
                 this.mainLoader.updateMessage('Verificando credenciales...');
             }
-            const sessionData = await tracedLoadUserData(user);            
+            const sessionData = await tracedLoadUserData(user);
             if (sessionData) {
                 setUser({
                     uid: sessionData.user.uid,
@@ -124,15 +124,15 @@ export default class App {
                 });
                 this.mainLoader.updateMessage('Obteniendo tasas de cambio...');
                 await delay(500);
-                const rateInfo = await initRateService();                
-                state.settings.currencies.principal.rate = rateInfo.rate;                
+                const rateInfo = await initRateService();
+                state.settings.currencies.principal.rate = rateInfo.rate;
                 if (state.session.business.id === 'admin_view') {
                     this.mainLoader.updateMessage('Bienvenido, Administrador');
                     state.products = [];
                 } else {
                     this.mainLoader.updateMessage('Cargando datos del negocio...');
                     try {
-                        const businessData = await loadBusinessData(state); 
+                        const businessData = await loadBusinessData(state);
                         state.products = (businessData && businessData.products) ? businessData.products : [];
                     } catch (error) {
                         Logger.error('Error cargando datos:', error);
@@ -141,7 +141,7 @@ export default class App {
                 }
                 await delay(1500);
                 this.bootAuthenticatedApp(sessionData);
-                await delay(1000); 
+                await delay(1000);
                 if (rateInfo.isOffline) {
                     showToast(`Modo Offline: Usando tasa guardada (Bs. ${rateInfo.rate})`, 'warning', 5000);
                 }
@@ -151,10 +151,10 @@ export default class App {
 
             } else {
                 Logger.warn('No se pudo cargar sesión. Mostrando login.');
-                await logout(); 
+                await logout();
             }
         } else {
-            this.mainLoader.hide();             
+            this.mainLoader.hide();
             if (this.isLoggingOut) {
                 const loaderContainer = this.root.querySelector('.app-loader');
                 if (loaderContainer) {
@@ -177,13 +177,13 @@ export default class App {
         Logger.info('App: arrancando aplicación autenticada.');
         this.mainLoader.hide();
         this.renderLayout();
-        const canViewDashboard = can(PERMISSIONS.VIEW_DASHBOARD);        
+        const canViewDashboard = can(PERMISSIONS.VIEW_DASHBOARD);
         const userRole = sessionData?.user?.role || state.session?.user?.role;
         Logger.trace(`[App] bootAuthenticatedApp: Rol del usuario es ${userRole}`);
         const defaultRoute = '#/';
         let redirectTo = defaultRoute;
         if (!canViewDashboard) {
-            Logger.warn('Usuario no tiene permiso para Dashboard. Buscando ruta alternativa...');           
+            Logger.warn('Usuario no tiene permiso para Dashboard. Buscando ruta alternativa...');
             if (userRole === ROLES.CAJERO && can(PERMISSIONS.VIEW_POS_MODULE)) {
                 redirectTo = '#/pos';
             } else if (userRole === ROLES.OPERADOR && can(PERMISSIONS.VIEW_INVENTORY_MODULE)) {
@@ -204,16 +204,16 @@ export default class App {
                 Logger.info(`Ya estamos en la ruta correcta (${currentHash}). Renderizando layout e iniciando router.`);
             }
         }
-        await delay(50);        
+        await delay(50);
         Logger.trace('ιχ Llamando a initRouter después de posible redirección.');
         initRouter(this.handleNavigation.bind(this));
-        
+
         if (!this.hasGlobalListener) {
             document.body.addEventListener('click', this.boundHandleGlobalActions, true);
-            
+
             // --- ¡AQUÍ INICIAMOS EL LISTENER DE CIERRE DE MENÚS! ---
-            this.initGlobalClickListener(); 
-            
+            this.initGlobalClickListener();
+
             this.hasGlobalListener = true;
             Logger.info('Listeners globales añadidos.');
         }
@@ -246,7 +246,7 @@ export default class App {
     async handleGlobalActions(e) {
         const link = e.target.closest('a[data-route]');
         if (link) {
-            e.preventDefault(); 
+            e.preventDefault();
             const newPath = link.dataset.route;
             if (window.location.hash !== newPath) {
                 window.location.hash = newPath;
@@ -254,17 +254,17 @@ export default class App {
             return;
         }
         const actionElement = e.target.closest('[data-action]');
-        if (!actionElement) return;     
+        if (!actionElement) return;
 
         const action = actionElement.dataset.action;
 
         // NUEVO: Manejo del Menú de Idioma
         const langMenu = document.getElementById('header-language-dropdown');
-        
+
         if (action === 'toggle-language-menu') {
             e.stopPropagation();
             langMenu?.classList.toggle('show');
-            
+
             // Cerrar otros menús si están abiertos
             document.getElementById('header-profile-dropdown')?.classList.remove('show');
             return;
@@ -304,7 +304,7 @@ export default class App {
                 showToast('No tienes permisos para añadir productos.', 'warning');
             }
             return;
-       }
+        }
 
         // 1. ABRIR/CERRAR MENÚ DESPLEGABLE (PERFIL)
         const profileDropdown = document.getElementById('header-profile-dropdown');
@@ -336,19 +336,19 @@ export default class App {
                     openRateUpdateModal();
                     break;
                 case 'open-config':
-                        // Verificamos permisos
-                        if (can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) || can(PERMISSIONS.EDIT_SETTINGS_SYSTEM)) {
-                            Logger.info('Abriendo modal de Configuración Global...');
-                            openSuperAdminSettingsModal();
-                        } else {
-                            Logger.warn('Intento de abrir config sin permisos.');
-                        }
-                        break;
+                    // Verificamos permisos
+                    if (can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) || can(PERMISSIONS.EDIT_SETTINGS_SYSTEM)) {
+                        Logger.info('Abriendo modal de Configuración Global...');
+                        openSuperAdminSettingsModal();
+                    } else {
+                        Logger.warn('Intento de abrir config sin permisos.');
+                    }
+                    break;
                 case 'toggle-theme':
-                        this.toggleTheme();
+                    this.toggleTheme();
                     break;
                 default:
-                     if (action === 'toggle-actions-menu') {
+                    if (action === 'toggle-actions-menu') {
                         e.stopPropagation(); // Evitar cierre inmediato
                         dropdown?.classList.toggle('show');
                     } else {
@@ -371,7 +371,7 @@ export default class App {
                 ${Footer(state)}
             </div>
         `;
-        
+
         // Inicializa Tippy en todo el layout
         initTippy(this.root);
 
@@ -394,20 +394,20 @@ export default class App {
     async handleNavigation(path) {
         const viewContainer = document.getElementById('view-container');
         if (!viewContainer) {
-             Logger.error("Contenedor de vista no encontrado (#view-container).");
-             return;
+            Logger.error("Contenedor de vista no encontrado (#view-container).");
+            return;
         }
         if (typeof this.currentViewCleanup === 'function') {
             try { this.currentViewCleanup(); }
             catch (e) { Logger.error('Error en cleanup de vista:', e); }
-            this.currentViewCleanup = () => {};
+            this.currentViewCleanup = () => { };
         }
         const route = routes.find(r => r.path === path);
         const defaultRoute = routes.find(r => r.path === '#/');
         if (!route) {
-             Logger.warn(`Ruta no encontrada: ${path}. Redirigiendo a Dashboard.`);
-             window.location.hash = '#/';
-             return;
+            Logger.warn(`Ruta no encontrada: ${path}. Redirigiendo a Dashboard.`);
+            window.location.hash = '#/';
+            return;
         }
         if (!can(route.permission)) {
             Logger.warn(`Acceso denigado a: ${path}. Redirigiendo a ruta por defecto.`);
@@ -417,9 +417,9 @@ export default class App {
         }
         const newNavContext = route?.context || MODULES.CORE;
         if (state.ui.navContext !== newNavContext) {
-             state.ui.navContext = newNavContext;
-             this.renderLayout();
-             await delay(10);
+            state.ui.navContext = newNavContext;
+            this.renderLayout();
+            await delay(10);
         } else {
             document.querySelectorAll('.nav-button, .contextual-nav-button').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('href') === path);
@@ -427,8 +427,8 @@ export default class App {
         }
         const updatedViewContainer = document.getElementById('view-container');
         if (!updatedViewContainer) {
-             Logger.error("Contenedor de vista desaparecido después de renderLayout().");
-             return;
+            Logger.error("Contenedor de vista desaparecido después de renderLayout().");
+            return;
         }
         updatedViewContainer.classList.add('fade-out');
         await delay(150);
@@ -437,15 +437,15 @@ export default class App {
             this.currentViewCleanup = ViewComponent(updatedViewContainer, state);
         } catch (loadError) {
             Logger.error(`Error cargando componente para la vista ${path}:`, loadError);
-            updatedViewContainer.innerHTML = `<p>Error al cargar la vista ${path}.</o>`;
-            this.currentViewCleanup = () => {};
+            updatedViewContainer.innerHTML = `<p>Error al cargar la vista ${path}.</p>`;
+            this.currentViewCleanup = () => { };
         } finally {
             updatedViewContainer.classList.remove('fade-out');
         }
     }
 
     showLogin() {
-        this.mainLoader.hide();         
+        this.mainLoader.hide();
         Logger.info('Mostrando pantalla de login...');
         if (typeof this.currentViewCleanup === 'function') {
             try {
@@ -453,7 +453,7 @@ export default class App {
             } catch (e) {
                 Logger.error('Error cleanup (login):', e);
             }
-            this.currentViewCleanup = () => {};
+            this.currentViewCleanup = () => { };
         }
         if (this.hasGlobalListener) {
             document.body.removeEventListener('click', this.boundHandleGlobalActions, true);

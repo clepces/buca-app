@@ -82,6 +82,6 @@ export const routes = [
         context: MODULES.CRM,
         isMainModule: true,
         label: 'Equipo',
-        icon: 'bi-people'
+        icon: 'bi-person-badge'
     },
 ];

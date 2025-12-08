@@ -1,32 +1,24 @@
 import { Logger } from './logger.service.js';
+import { validateTextFields, validateNumericFields, productExists, validateExchangeRate } from '../utils/validators.js';
 
 export function validarCamposTexto(...fields) {
-    return fields.every(field => field && field.trim() !== '');
+    return validateTextFields(...fields);
 }
 
 export function validarCamposNumericos(costo, ganancia, unidades) {
-    if (isNaN(costo) || isNaN(ganancia) || isNaN(unidades)) {
-        return { esValido: false, mensaje: "Costo, ganancia y unidades deben ser números." };
-    }
-    if (costo <= 0 || unidades <= 0) {
-        return { esValido: false, mensaje: "Costo y unidades deben ser mayores a cero." };
-    }
-    if (ganancia < 0) {
-        return { esValido: false, mensaje: "El porcentaje de ganancia no puede ser negativo." };
-    }
-    return { esValido: true, mensaje: "" };
+    const result = validateNumericFields(costo, ganancia, unidades);
+    return {
+        esValido: result.isValid,
+        mensaje: result.message
+    };
 }
 
 export function productoExiste(nombre, marca, productos, idExcluir = null) {
-    return productos.some(p =>
-        p.name.toLowerCase() === nombre.toLowerCase() &&
-        p.brand.toLowerCase() === marca.toLowerCase() &&
-        p.id !== idExcluir
-    );
+    return productExists(nombre, marca, productos, idExcluir);
 }
 
 export function validarTasaBCV(rate) {
-    return !isNaN(rate) && rate > 0;
+    return validateExchangeRate(rate);
 }
 
 export async function sha256(string) {
