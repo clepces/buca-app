@@ -4,17 +4,22 @@
 // ======================================================
 import { state as globalState } from '../store/state.js';
 import { Modal } from '../components/Common/Modal.js';
+
 import { ProductForm } from '../components/Products/ProductForm.js';
 import { CompanyForm } from '../components/Companies/CompanyForm.js';
-// 1. Importamos el formulario de Empleado
 import { EmployeeForm } from '../components/Team/EmployeeForm.js';
+import { ClientForm } from '../components/People/ClientForm.js';
+import { SuperAdminSettings } from '../components/Settings/SuperAdminSettings.js';
+
 import { Logger } from './logger.service.js';
 import { fetchCurrentRates, fetchRateHistory } from './rate.service.js';
 import { showToast } from './toast.service.js';
+
 import { triggerRerender } from '../store/actions.js';
 import { PERMISSIONS } from './roles.config.js';
 import { can } from './permissions.service.js';
-import { SuperAdminSettings } from '../components/Settings/SuperAdminSettings.js';
+
+
 import { saveState } from './storage.service.js';
 
 
@@ -182,22 +187,16 @@ export function openClientModal(clientToEdit = null) {
             size: 'medium'
         });
 
-        // Dynamic Import para evitar ciclos si fuera necesario, 
-        // aunque aquí lo importamos arriba (ver imports).
-        // Vamos a asumir que lo añadimos a los imports estáticos.
+        const formElement = ClientForm(modalElement, clientToEdit);
+        const body = modalElement.querySelector('#modal-body-container');
+        if (body) {
+            body.innerHTML = '';
+            body.appendChild(formElement);
+        }
 
-        import('../components/People/ClientForm.js').then(({ ClientForm }) => {
-            const formElement = ClientForm(modalElement, clientToEdit);
-            const body = modalElement.querySelector('#modal-body-container');
-            if (body) {
-                body.innerHTML = '';
-                body.appendChild(formElement);
-            }
-
-            // Focus
-            const firstInput = formElement.querySelector('input');
-            if (firstInput) firstInput.focus();
-        });
+        // Focus
+        const firstInput = formElement.querySelector('input');
+        if (firstInput) firstInput.focus();
 
         document.body.appendChild(modalElement);
 

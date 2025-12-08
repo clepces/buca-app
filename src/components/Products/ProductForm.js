@@ -4,20 +4,30 @@
 // PROPÓSITO: Orquesta el formulario, maneja la lógica de 
 // negocio y delega la UI al Wizard y al Summary.
 // ======================================================
-    
+
 import { calcularPrecioVenta } from '../../services/calculation.service.js';
 import { validarCamposTexto, productoExiste } from '../../services/validation.service.js';
-import { addProductToState, updateProductInState, addTemplateToState, updateTemplateInState } from '../../store/actions.js';
+import {
+    addProductToState,
+    updateProductInState,
+    addTemplateToState,
+    updateTemplateInState
+} from '../../store/actions.js';
 import { showToast } from '../../services/toast.service.js';
 import { state as globalState } from '../../store/state.js';
 import { Logger } from '../../services/logger.service.js';
 import { initProductFormWizard } from './ProductFormWizard.js';
-import { renderNewProductSummary, renderEditProductSummary, bindOfferButtonEvents, bindCurrencyToggleEvents } from './ProductFormSummary.js';
+import {
+    renderNewProductSummary,
+    renderEditProductSummary,
+    bindOfferButtonEvents,
+    bindCurrencyToggleEvents
+} from './ProductFormSummary.js';
 
 export function ProductForm(productToEdit = null, modalElementRef, isGlobal = false) {
     const element = document.createElement('div');
     element.className = 'product-form-wrapper';
-    
+
     // --- 1. Configuración y Estado ---
     const isEditMode = productToEdit !== null;
     const categories = globalState.settings.products.available_categories || [];
@@ -25,20 +35,20 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
     const simboloBase = globalState.settings.currencies.base.symbol || 'Bs.';
     const tasaIVA = globalState.settings.products.tax_rate;
     const tasaCambio = globalState.settings.currencies.principal.rate;
-    
+
     let lastCalculatedPrices = null;
     let wizardAPI = null; // API para controlar el wizard (showStep, setSaveButtonBusy, etc.)
 
     // --- 2. Captura de Datos Originales (Lógica de Negocio) ---
     const originalPriceList = isEditMode ? (productToEdit?.pricing?.priceLists?.[0] || {}) : {};
-    
+
     // (Opcional: Logs de depuración)
     // if (isEditMode) {
     //     console.group('🔍 DEBUG: Captura de Valores Originales');
     //     console.log('productToEdit completo:', productToEdit);
     //     console.log('originalPriceList:', originalPriceList);
     // }
-    
+
     const originalData = {
 
         // Texto (con .trim())
@@ -54,26 +64,26 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
         unidadesPorPaquete: isEditMode ? (productToEdit?.pricing?.unitsPerPackage || 0) : 0,
         stock: isEditMode ? (productToEdit?.stock?.current || 0) : 0,
         ganancia: isEditMode ? (originalPriceList.marginPercentage || productToEdit?.pricing?.marginPercentage || 0) : 0,
-        
+
         // Números (con || null)
         peso: isEditMode ? (productToEdit?.dimensions?.weight || null) : null,
-        
+
         // Precios (con || 0)
         precioUnitario: isEditMode ? (originalPriceList.unitSellPrice || productToEdit?.pricing?.unitSellPrice || 0) : 0,
         precioPaquete: isEditMode ? (originalPriceList.packageSellPrice || productToEdit?.pricing?.packageSellPrice || 0) : 0,
-        
+
         // Valor de inventario (calculado)
-        valorInventarioOriginal: isEditMode ? ( 
-                (productToEdit?.pricing?.packageCost || 0) / (productToEdit?.pricing?.unitsPerPackage || 1) 
+        valorInventarioOriginal: isEditMode ? (
+            (productToEdit?.pricing?.packageCost || 0) / (productToEdit?.pricing?.unitsPerPackage || 1)
         ) * (productToEdit?.stock?.current || 0) : 0,
     };
-    
+
     // (Opcional: Logs de depuración)
     // if (isEditMode) {
     //     console.log('originalData construido:', originalData);
     //     console.groupEnd();
     // }
-    
+
     // --- 3. Renderizado del HTML (Vista) ---
     // Este HTML es el "esqueleto" que controlará el Wizard.
     element.innerHTML = `
@@ -262,7 +272,7 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
         const unidadesEnPaqueteInput = parseInt(unidadesPorPaqueteInput.value) || 0;
         const totalUnidadesRegistrarInput = parseInt(totalUnidadesInput.value);
         const paquetes = parseInt(paquetesInput.value) || 0;
-        
+
         // 2. Validar campos requeridos
         if (costoPorPaquete <= 0 || ganancia < 0 || !totalUnidadesRegistrarInput || totalUnidadesRegistrarInput <= 0) {
             showToast("Completa Costo(*), Ganancia(*) y Stock(*) con valores válidos.", "warning");
@@ -281,9 +291,9 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
         // 4. Calcular precios
         const unidadesParaCalculoPrecio = unidadesEnPaqueteInput > 0 ? unidadesEnPaqueteInput : 1;
         lastCalculatedPrices = calcularPrecioVenta(
-            costoPorPaquete, 
-            ganancia, 
-            unidadesParaCalculoPrecio, 
+            costoPorPaquete,
+            ganancia,
+            unidadesParaCalculoPrecio,
             globalState.settings
         );
 
@@ -301,14 +311,14 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
 
             // console.log('newData construido:', newData);
             // console.groupEnd();
-            
+
             // 6. Renderizar el resumen (usando los componentes importados)
             const summaryContainer = element.querySelector('#summary-view');
             const config = { simboloPrincipal, simboloBase, tasaIVA, tasaCambio };
 
             if (isEditMode) {
                 summaryContainer.innerHTML = renderEditProductSummary(newData, originalData, config);
-           } else {
+            } else {
                 summaryContainer.innerHTML = renderNewProductSummary(newData, config);
                 // Bindear eventos solo para el resumen de "Crear"
                 bindCurrencyToggleEvents(summaryContainer, config); // <--- Pasar 'config'
@@ -337,7 +347,7 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
             }
             return;
         }
-        
+
         // Si no se han calculado precios, volver al paso 3
         if (!lastCalculatedPrices) {
             showToast("Hubo un error al calcular precios. Vuelve al Paso 3.", "warning");
@@ -357,7 +367,7 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
         const sku = skuInput.value.trim();
         const barcode = barcodeInput.value.trim();
         const peso = parseFloat(pesoInput.value) || null;
-        
+
         // Decidir el precio final del paquete (manual o calculado)
         const overridePackagePriceInput = element.querySelector('#override-package-price');
         const precioPaqueteManual = overridePackagePriceInput ? parseFloat(overridePackagePriceInput.value) : NaN;
@@ -376,7 +386,7 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
             barcode: barcode || null,
             isActive: productToEdit?.isActive ?? true,
             isFeatured: productToEdit?.isFeatured ?? false,
-            
+
             dimensions: {
                 weight: peso,
                 weightUnit: 'kg',
@@ -385,11 +395,11 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
                 depth: productToEdit?.dimensions?.depth || null,
                 dimensionUnit: productToEdit?.dimensions?.dimensionUnit || 'cm'
             },
-            stock: { 
-                current: totalUnidades, 
-                minThreshold: productToEdit?.stock?.minThreshold ?? 10, 
-                warehouseId: productToEdit?.stock?.warehouseId ?? 'wh_principal' 
-            }, 
+            stock: {
+                current: totalUnidades,
+                minThreshold: productToEdit?.stock?.minThreshold ?? 10,
+                warehouseId: productToEdit?.stock?.warehouseId ?? 'wh_principal'
+            },
             pricing: {
                 packageCost: costo,
                 unitsPerPackage: unidadesPorPaquete,
@@ -408,13 +418,13 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
             updatedAt: new Date().toISOString(),
             supplier: productToEdit?.supplier || null
         };
-        
+
         if (isEditMode) {
             productData.id = productToEdit.id;
         }
-        
+
         // LÓGICA DE GUARDADO CONDICIONAL
-        try { 
+        try {
             if (isGlobal) {
                 // --- MODO PLANTILLA GLOBAL ---
                 if (isEditMode) {
@@ -426,29 +436,29 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
                 }
             } else {
                 // --- MODO PRODUCTO DE NEGOCIO (EXISTENTE) ---
-                if (isEditMode) { 
-                    await updateProductInState(globalState, productData.id, productData); 
-                    showToast(`Producto "${nombre}" actualizado.`, "success"); 
-                } else { 
-                    
-                    if (productoExiste(nombre, marca, globalState.products)) { 
-                        showToast("Ya existe producto con nombre y marca.", "error"); 
-                        wizardAPI.showStep(1); 
-                        throw new Error("Producto duplicado"); 
+                if (isEditMode) {
+                    await updateProductInState(globalState, productData.id, productData);
+                    showToast(`Producto "${nombre}" actualizado.`, "success");
+                } else {
+
+                    if (productoExiste(nombre, marca, globalState.products)) {
+                        showToast("Ya existe producto con nombre y marca.", "error");
+                        wizardAPI.showStep(1);
+                        throw new Error("Producto duplicado");
                     } else {
-                        await addProductToState(globalState, productData); 
-                        showToast(`Producto "${nombre}" creado.`, "success"); 
-                    } 
-                } 
+                        await addProductToState(globalState, productData);
+                        showToast(`Producto "${nombre}" creado.`, "success");
+                    }
+                }
             }
             modalElementRef.remove(); // Cerrar el modal
 
-        } catch (error) { 
-            Logger.error("Error al guardar:", error); 
-            if (error.message !== "Producto duplicado") { 
-                showToast("Error al guardar.", "error"); 
-            } 
-        } finally { 
+        } catch (error) {
+            Logger.error("Error al guardar:", error);
+            if (error.message !== "Producto duplicado") {
+                showToast("Error al guardar.", "error");
+            }
+        } finally {
             wizardAPI.setSaveButtonBusy(false); // Reactivar el botón
         }
     };
@@ -480,7 +490,7 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
 
         const label = button.dataset.fieldLabel;
         const currentValue = button.dataset.currentValue;
-        
+
         // Mapeo de etiquetas a IDs de inputs
         const fieldMap = {
             'Nombre': { id: '#producto', type: 'text' },
@@ -506,7 +516,7 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
             input.rows = 3;
         } else if (fieldInfo.type === 'select' && fieldInfo.id === '#categoria') {
             input = document.createElement('select');
-            const optionsHTML = categories.map(cat => 
+            const optionsHTML = categories.map(cat =>
                 `<option value="${cat}" ${currentValue === cat ? 'selected' : ''}>${cat}</option>`
             ).join('');
             input.innerHTML = `<option value="">Selecciona</option>${optionsHTML}`;
@@ -523,19 +533,19 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
 
         input.className = 'inline-edit-input';
         input.value = currentValue;
-        
+
         // 🎨 CAMBIO: Buscamos el contenedor del valor (.diff-value-premium)
         const valueContainer = button.closest('.diff-value-premium');
         if (!valueContainer) return;
 
         // Guardamos el HTML original para poder restaurarlo
         const originalHTML = valueContainer.innerHTML;
-        
+
         // Reemplazamos TODO el contenido con el input
         valueContainer.innerHTML = '';
         valueContainer.appendChild(input);
         input.focus();
-        
+
         if (input.select) {
             input.select();
         }
@@ -543,13 +553,13 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
         // Guardar función
         const saveEdit = () => {
             const newValue = input.value;
-            
+
             // Actualizar el input oculto del formulario
             const originalFormInput = element.querySelector(fieldInfo.id);
             if (originalFormInput) {
                 originalFormInput.value = newValue;
             }
-            
+
             // Remover listeners
             input.removeEventListener('blur', saveEdit);
             input.removeEventListener('keydown', onKeydown);
@@ -567,7 +577,7 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
                 input.removeEventListener('blur', saveEdit);
                 input.removeEventListener('keydown', onKeydown);
                 valueContainer.innerHTML = originalHTML;
-                
+
                 // 🎨 IMPORTANTE: Re-bindear el evento al botón restaurado
                 const restoredButton = valueContainer.querySelector('[data-action="inline-edit"]');
                 if (restoredButton) {
@@ -584,10 +594,10 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
     // --- 6. Inicialización del Wizard ---
     // (Se ejecuta después de un breve delay para asegurar que el modal esté en el DOM)
     setTimeout(() => {
-        
+
         // Definir los callbacks que el Wizard ejecutará
         const wizardCallbacks = {
-            
+
             onStepNext: () => {
                 const currentStep = wizardAPI.getStep();
                 if (currentStep === 1) {
@@ -605,18 +615,18 @@ export function ProductForm(productToEdit = null, modalElementRef, isGlobal = fa
                     wizardAPI.showStep(3);
                 }
             },
-            
+
             onStepPrev: () => {
                 const currentStep = wizardAPI.getStep();
                 if (currentStep === 4) wizardAPI.showStep(3);
                 else if (currentStep === 3) wizardAPI.showStep(2);
                 else if (currentStep === 2) wizardAPI.showStep(1);
             },
-            
+
             onCalculate: () => {
                 calculateAndShowSummary();
             },
-            
+
             onSubmit: () => {
                 handleSave();
             }
