@@ -9,6 +9,7 @@ dist/
 *.sublime-project
 
 # Archivos de entorno y secretos
+.firebase/hosting.*.cache
 .env
 .DS_Store
 .hintrc
