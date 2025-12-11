@@ -1,8 +1,10 @@
 # Dependencias de Node.js
 node_modules/
+dist/
 
 # Archivos de configuración de editores
 .vscode/
+
 *.sublime-workspace
 *.sublime-project
 
