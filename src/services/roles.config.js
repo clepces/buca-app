@@ -22,6 +22,7 @@ export const PERMISSIONS = {
 
     // --- Productos (Inventario) ---
     VIEW_INVENTORY_MODULE: 'view:inventory_module',     // Ver el módulo de Inventario (incluye resumen y sub-vistas)
+
     VIEW_PRODUCTS: 'view:products',                     // Ver la lista de productos
     CREATE_PRODUCT: 'product:create',                   // Crear un nuevo producto
     EDIT_PRODUCT: 'product:edit',                       // Editar un producto existente
@@ -29,17 +30,17 @@ export const PERMISSIONS = {
 
     // --- Punto de Venta (POS) ---
     VIEW_POS_MODULE: 'view:pos_module',                 // Ver el módulo de Punto de Venta
-    VIEW_POS: 'view:pos',
+    VIEW_POS: 'view:pos',                               // Ver el punto de venta
     USE_POS: 'pos:use',                                 // Realizar ventas/transacciones en el POS
 
     // --- Clientes (CRM) ---
     VIEW_CLIENTS_MODULE: 'view:clients_module',         // Ver el módulo de Clientes
-    VIEW_CLIENTS: 'view:clients',
+    VIEW_CLIENTS: 'view:clients',                       // Ver la lista de clientes
     // TODO: Añadir permisos CREATE_CLIENT, EDIT_CLIENT, etc. si es necesario
 
     // --- Equipo ---
     VIEW_TEAM_MODULE: 'view:team_module',               // Ver el módulo de Equipo
-    VIEW_TEAM: 'view:team',
+    VIEW_TEAM: 'view:team',                             // Ver el equipo    
     // TODO: Añadir permisos CREATE_TEAM, EDIT_TEAM, etc. si es necesario
 
     // --- Empresas (Super Admin) --- NUEVO ---

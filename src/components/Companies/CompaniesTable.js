@@ -25,22 +25,22 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
             className = 'bg-dark-subtle text-dark-emphasis';
             planName = 'Empresarial';
         } else if (planLower.includes('advanced')) {
-             className = 'bg-info-subtle text-info-emphasis';
-             planName = 'Avanzado';
+            className = 'bg-info-subtle text-info-emphasis';
+            planName = 'Avanzado';
         }
         return `<span class="badge ${className}">${planName}</span>`;
     }
 
     function renderStatusBadge(status = 'active') {
         const statusLower = status.toLowerCase();
-        
+
         // --- LÓGICA PARA ESTADO ELIMINADO ---
         if (statusLower === 'deleted') {
             return `<span class="badge bg-secondary text-white badge-with-icon">
                         <i class="bi bi-trash3"></i> Eliminado
                     </span>`;
         }
-        
+
         let className = 'bg-success-subtle text-success-emphasis';
         let icon = 'bi-check-circle-fill';
 
@@ -83,10 +83,10 @@ export function CompaniesTable({ companies = [], selectedIds, isAllSelected }) {
             </thead>
             <tbody>
                 ${companies.map(company => {
-                    const isSelected = selectedIds.has(company.id);
-                    const isDeleted = company.status === 'deleted'; // Detectamos si está borrada
+        const isSelected = selectedIds.has(company.id);
+        const isDeleted = company.status === 'deleted'; // Detectamos si está borrada
 
-                    return `
+        return `
                     <tr data-company-id="${company.id}" class="${isSelected ? 'selected' : ''} ${isDeleted ? 'row-deleted' : ''}">
                         <td data-label="Select">
                             <input type="checkbox" class="form-check-input company-checkbox" data-action="select-one" data-company-id="${company.id}" ${isSelected ? 'checked' : ''}>

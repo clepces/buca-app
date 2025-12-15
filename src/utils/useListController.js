@@ -78,8 +78,9 @@ export function useListController(options = {}) {
         setFilter,
         setPage: (page) => state.currentPage = page,
         setItemsPerPage: (num) => { state.itemsPerPage = num; state.currentPage = 1; },
-        
+
         // Getters
+        get allData() { return state.allData; },
         get paginatedData() { return getPaginatedData(); },
         get totalItems() { return state.filteredData.length; },
         get totalPages() { return Math.ceil(state.filteredData.length / state.itemsPerPage); },

@@ -1,29 +1,127 @@
 // ======================================================
 // ARCHIVO: src/services/modal.service.js
-// ACTUALIZACIÓN: Inclusión de openEmployeeModal
+// VERSIÓN: 3.1.0 (Arquitectura Híbrida)
+// AUTOR: Clepces & IA Team
+// PROPÓSITO: Servicio Singleton para gestionar ventanas modales.
 // ======================================================
+
 import { state as globalState } from '../store/state.js';
 import { Modal } from '../components/Common/Modal.js';
 
+// --- Imports de Componentes Específicos (LEGACY) ---
 import { ProductForm } from '../components/Products/ProductForm.js';
 import { CompanyForm } from '../components/Companies/CompanyForm.js';
 import { EmployeeForm } from '../components/Team/EmployeeForm.js';
 import { ClientForm } from '../components/People/ClientForm.js';
 import { SuperAdminSettings } from '../components/Settings/SuperAdminSettings.js';
 
+// --- Servicios y Utilidades ---
 import { Logger } from './logger.service.js';
 import { fetchCurrentRates, fetchRateHistory } from './rate.service.js';
 import { showToast } from './toast.service.js';
-
 import { triggerRerender } from '../store/actions.js';
 import { PERMISSIONS } from './roles.config.js';
 import { can } from './permissions.service.js';
-
-
 import { saveState } from './storage.service.js';
 
+// ======================================================
+// 1. NUEVA ARQUITECTURA: MODAL GENÉRICO
+// Esta función reemplazará gradualmente a las específicas.
+// ======================================================
 
-// --- MODAL DE CONFIRMACIÓN (PEQUEÑO) ---
+/**
+ * Abre un modal dinámico controlado por un Wizard.
+ * @param {object} params
+ * @param {string} params.title - Título de la ventana.
+ * @param {object} params.wizard - Instancia de la clase DynamicWizard.
+ * @param {function} params.onSave - Función async que recibe la data final.
+ */
+export function openGenericModal({ title, wizard, onSave }) {
+    return new Promise((resolve) => {
+        // 1. Renderizar el contenido inicial del Wizard (Paso 1)
+        const contentElement = wizard.render();
+
+        // 2. Crear la estructura visual del Modal (Reutilizando componente existente)
+        const modalElement = Modal({
+            title: title,
+            contentElement: contentElement, // Se inyecta temporalmente
+            id: 'generic-modal-wrapper',
+            size: 'medium' // Puedes pasar esto como param si necesitas variar tamaño
+        });
+
+        // 3. Inyectar el contenido en el Body Container específico
+        // (Aseguramos que usamos la estructura interna de tu Modal.js)
+        const bodyContainer = modalElement.querySelector('#modal-body-container');
+        if (bodyContainer) {
+            bodyContainer.innerHTML = '';
+            bodyContainer.appendChild(contentElement);
+        }
+
+        // 4. Lógica del Footer Dinámico
+        // El Wizard decide qué botones mostrar (Atrás, Siguiente, Guardar)
+        const footerContainer = modalElement.querySelector('#modal-footer-container');
+
+        if (footerContainer) {
+            const updateFooter = () => {
+                footerContainer.innerHTML = ''; // Limpiar botones anteriores
+
+                const buttons = wizard.getFooterButtons(
+                    // Callback: onComplete (Guardar)
+                    async (data) => {
+                        try {
+                            await onSave(data); // Ejecutar la acción de actions.js
+                            modalElement.remove();
+                            resolve(true); // Éxito
+                        } catch (error) {
+                            console.error("Error al guardar desde modal:", error);
+                            // Aquí el botón del wizard debería encargarse de quitar el loading
+                        }
+                    },
+                    // Callback: onCancel (Cerrar)
+                    () => {
+                        modalElement.remove();
+                        resolve(false); // Cancelado
+                    },
+                    // Callback: onStepChange (Cuando cambia de paso, actualizar botones)
+                    () => {
+                        // Re-renderizamos el body y el footer
+                        const newContent = wizard.render();
+                        bodyContainer.innerHTML = '';
+                        bodyContainer.appendChild(newContent);
+                        updateFooter(); // Recursividad para actualizar botones
+                    }
+                );
+
+                // Insertar los botones generados
+                buttons.forEach(btn => {
+                    // Soporte para Button.js devolviendo String o DOM Node
+                    if (typeof btn === 'string') {
+                        const wrapper = document.createElement('div');
+                        wrapper.innerHTML = btn;
+                        footerContainer.appendChild(wrapper.firstChild);
+                    } else if (btn instanceof HTMLElement) {
+                        footerContainer.appendChild(btn);
+                    }
+                });
+            };
+
+            // Inicializar footer
+            updateFooter();
+        }
+
+        // 5. Mostrar en pantalla
+        document.body.appendChild(modalElement);
+
+        // Focus al primer input
+        const firstInput = contentElement.querySelector('input, select');
+        if (firstInput) firstInput.focus();
+    });
+}
+
+// ======================================================
+// 2. UTILIDADES DE SISTEMA (Alertas, Confirmaciones)
+// ======================================================
+
 export function showConfirmationModal(title, messageHTML, onConfirm, options = {}) {
     const defaults = {
         icon: 'bi bi-exclamation-triangle-fill text-warning',
@@ -87,7 +185,12 @@ export function showConfirmationModal(title, messageHTML, onConfirm, options = {
     document.body.appendChild(modal);
 }
 
-// --- MODAL DE PRODUCTO (GRANDE) ---
+// ======================================================
+// 3. MÉTODOS ESPECÍFICOS (LEGACY / COMPATIBILIDAD)
+// Se mantienen intactos para soportar módulos existentes.
+// ======================================================
+
+// --- PRODUCTO ---
 export function openProductModal(productToEdit = null, options = {}) {
     const { isGlobal = false } = options;
 
@@ -130,7 +233,7 @@ export function openProductModal(productToEdit = null, options = {}) {
     });
 }
 
-// --- MODAL DE COMPAÑÍA (GRANDE) ---
+// --- COMPAÑÍA ---
 export function openCompanyModal(companyToEdit = null) {
     return new Promise((resolve) => {
         const isEdit = companyToEdit !== null;
@@ -169,7 +272,7 @@ export function openCompanyModal(companyToEdit = null) {
     });
 }
 
-// --- MODAL DE CLIENTE (MEDIANO) ---
+// --- CLIENTE ---
 export function openClientModal(clientToEdit = null) {
     return new Promise((resolve) => {
         const isEdit = clientToEdit !== null;
@@ -194,7 +297,6 @@ export function openClientModal(clientToEdit = null) {
             body.appendChild(formElement);
         }
 
-        // Focus
         const firstInput = formElement.querySelector('input');
         if (firstInput) firstInput.focus();
 
@@ -208,7 +310,7 @@ export function openClientModal(clientToEdit = null) {
     });
 }
 
-// --- MODAL DE EMPLEADO (MEDIANO) ---
+// --- EMPLEADO ---
 export function openEmployeeModal(employeeToEdit = null) {
     return new Promise((resolve) => {
         const isEditMode = employeeToEdit !== null;
@@ -220,42 +322,35 @@ export function openEmployeeModal(employeeToEdit = null) {
         const dummyContent = document.createElement('div');
         dummyContent.textContent = 'Cargando formulario...';
 
-        // Creamos el Modal Wrapper
         const modalElement = Modal({
             title: modalTitle,
             contentElement: dummyContent,
             id: isEditMode ? 'edit-employee-modal' : 'add-employee-modal',
-            size: 'medium' // Tamaño mediano es suficiente para empleados
+            size: 'medium'
         });
 
-        // Instanciamos el Formulario (que ahora usará el Wizard internamente)
         const formElement = EmployeeForm(modalElement, employeeToEdit);
-
         const modalBodyContainer = modalElement.querySelector('#modal-body-container');
 
         if (modalBodyContainer) {
             modalBodyContainer.innerHTML = '';
-            // Quitamos padding si el wizard lo requiere, o lo dejamos si EmployeeForm lo maneja
-            // modalBodyContainer.style.padding = '0'; 
             modalBodyContainer.appendChild(formElement);
         }
 
         document.body.appendChild(modalElement);
 
-        // Enfocar primer input
         const firstInput = formElement.querySelector('input');
         if (firstInput) firstInput.focus();
 
-        // Manejar cierre para resolver la promesa
         const originalRemove = modalElement.remove;
         modalElement.remove = function () {
             originalRemove.call(this);
-            resolve(true); // Resolvemos true indicando que se cerró (puede haber guardado o no)
+            resolve(true);
         };
     });
 }
 
-// --- MODAL DE CONFIGURACIÓN GLOBAL (FULLSCREEN) ---
+// --- CONFIGURACIÓN GLOBAL (FULLSCREEN) ---
 export function openSuperAdminSettingsModal() {
     return new Promise((resolve) => {
         const modalTitle = '<i class="bi bi-shield-lock-fill me-2"></i> Configuración Global';
@@ -269,7 +364,6 @@ export function openSuperAdminSettingsModal() {
             size: 'fullscreen'
         });
 
-        // 1. Inyectar buscador en header
         const modalHeader = settingsModalElement.querySelector('.modal-header');
         const closeBtn = settingsModalElement.querySelector('.close');
         if (modalHeader && closeBtn) {
@@ -278,7 +372,7 @@ export function openSuperAdminSettingsModal() {
             headerActions.innerHTML = `
                 <div class="search-container">
                     <i class="bi bi-search search-icon"></i>
-                    <input type="search" id="search-settings" class="form-control" placeholder="Buscar ajustes (próximamente)..." disabled>
+                    <input type="search" id="search-settings" class="form-control" placeholder="Buscar ajustes..." disabled>
                 </div>
             `;
             modalHeader.insertBefore(headerActions, closeBtn);
@@ -287,7 +381,6 @@ export function openSuperAdminSettingsModal() {
         const modalBody = settingsModalElement.querySelector('#modal-body-container');
         modalBody.style.padding = '0';
 
-        // 2. Inyectar componente de settings
         const { element: settingsElement, getSettingsData } = SuperAdminSettings(settingsModalElement);
 
         if (modalBody) {
@@ -295,9 +388,7 @@ export function openSuperAdminSettingsModal() {
             modalBody.appendChild(settingsElement);
         }
 
-        // 3. Crear Footer y Botones
         const modalFooterTarget = settingsModalElement.querySelector('#modal-footer-container');
-
         const saveButton = document.createElement('button');
         saveButton.className = 'btn-primary';
         saveButton.innerHTML = `<i class="bi bi-save-fill me-1"></i> Guardar Cambios`;
@@ -309,9 +400,7 @@ export function openSuperAdminSettingsModal() {
 
         modalFooterTarget.append(cancelButton, saveButton);
 
-        // --- 4. LÓGICA DE GUARDADO CORREGIDA ---
         saveButton.addEventListener('click', async () => {
-            // Añadimos estado de carga al botón
             const originalBtnText = saveButton.innerHTML;
             saveButton.innerHTML = `<i class="bi bi-hourglass-split animate-spin me-1"></i> Guardando...`;
             saveButton.disabled = true;
@@ -320,7 +409,6 @@ export function openSuperAdminSettingsModal() {
                 const data = getSettingsData();
                 Logger.info('Guardando configuración global...', data);
 
-                // A) Actualizar estado local
                 if (!globalState.settings.appConfig.system) globalState.settings.appConfig.system = {};
                 if (!globalState.settings.appConfig.system.metadata) globalState.settings.appConfig.system.metadata = {};
 
@@ -329,25 +417,18 @@ export function openSuperAdminSettingsModal() {
                 globalState.settings.products.tax_rate = data.defaultTax;
                 globalState.settings.products.available_categories = data.defaultCategories;
 
-                // ✅ CLAVE: Guardar Apariencia
                 if (data.appearance) {
                     globalState.settings.appearance = data.appearance;
                 }
 
-                // B) Persistir en DB (Firebase/IndexedDB)
                 await saveState(globalState);
-
                 showToast('Configuración guardada exitosamente.', 'success');
                 settingsModalElement.remove();
-
-                // C) Refrescar UI (Header, etc.)
                 triggerRerender();
 
             } catch (error) {
                 Logger.error('Error al guardar configuración:', error);
                 showToast('Error al guardar: ' + error.message, 'error');
-
-                // Restaurar botón en caso de error
                 saveButton.innerHTML = originalBtnText;
                 saveButton.disabled = false;
             }
@@ -367,13 +448,14 @@ export function openSuperAdminSettingsModal() {
     });
 }
 
-// --- MODAL DE TASA (GRANDE) ---
+// --- TASA DE CAMBIO ---
 export function openRateUpdateModal() {
     if (!can(PERMISSIONS.EDIT_SETTINGS_BUSINESS) && !can(PERMISSIONS.EDIT_SETTINGS_SYSTEM)) {
         Logger.warn('Intento de abrir modal de tasa sin permisos.');
         return;
     }
 
+    // (Helper para formatear la tasa)
     function formatFintechRate(rate, symbol) {
         const rateStr = rate.toString();
         const parts = rateStr.split('.');
