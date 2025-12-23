@@ -36,8 +36,8 @@ export function getInitialState() {
 
 			// Manejo de tasa (Dólar/Bolívar)
 			currencies: {
-				base: { symbol: '$', name: 'USD' },
-				principal: { symbol: 'Bs.', rate: 0 }
+				base: { symbol: 'Bs.', name: 'VES' },
+				principal: { symbol: '$', rate: 0 }
 			},
 
 			// Configuración de productos
